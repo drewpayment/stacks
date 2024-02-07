@@ -2,7 +2,7 @@ import { eq, or } from 'drizzle-orm';
 import { drizzleClient } from '../client';
 import { paystub } from '../schema';
 import type { PaystubWith } from '$lib/types/paystbus.model';
-import type { InsertPaystub, SelectPaystub } from '$lib/types/db.model';
+import type { InsertPaystub, } from '$lib/types/db.model';
 import { error } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';
@@ -11,8 +11,6 @@ export const getPaystubs = async (clientId: string, startDate: number, endDate: 
   if (!clientId) {
     return [] as PaystubWith[];
   }
-  
-  
   
   const data = await drizzleClient.query.paystub.findMany({
     where: employeeId || campaignId

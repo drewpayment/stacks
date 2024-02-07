@@ -37,6 +37,13 @@ export const load = async ({ locals }) => {
       value: ee.id,
     }))];
   };
+  const payrollCycles = async () => {
+    const cycles = await getPayrollCycles(profile?.clientId || '', false);
+    return cycles.map(cc => ({
+      name: `${formatDate(cc.startDate)} - ${formatDate(cc.endDate)}`,
+      value: cc.id,
+    }));
+  }
   
   const startDate = dayjs().subtract(1, 'month').format('YYYY-MM-DD');
   const endDate = dayjs().format('YYYY-MM-DD');
@@ -46,6 +53,7 @@ export const load = async ({ locals }) => {
     employees: await employees(),
     startDate, 
     endDate,
+    cycles: await payrollCycles(),
   };
 }
 

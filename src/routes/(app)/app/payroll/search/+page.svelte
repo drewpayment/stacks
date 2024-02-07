@@ -5,9 +5,10 @@
 	import { Breadcrumb, BreadcrumbItem, Card, Label, Select, Input, Table, TableHead, TableHeadCell, TableBody, TableBodyCell, TableBodyRow, Button } from 'flowbite-svelte';
   import { ArrowUpRightFromSquareOutline } from 'flowbite-svelte-icons';
 	import type { Snapshot } from './$types.js';
+	import AttachPaystubToCycleModal from '$lib/components/AttachPaystubToCycleModal.svelte';
 
   export let data;
-  const { campaigns, employees, startDate, endDate, } = data;
+  const { campaigns, employees, startDate, endDate, cycles, } = data;
   
   let paystubs = [] as PaystubWith[];
   
@@ -113,7 +114,8 @@
             <TableBodyCell>{formatDate(paystub.payrollCycle?.paymentDate)}</TableBodyCell>
           {:else}
             <TableBodyCell>
-              <Button type="button" size="xs" color="alternative" outline pill>Add to Cycle</Button>
+              <Button type="button" size="xs" color="alternative" outline pill on:click={() => paystub.open = !paystub.open}>Add to Cycle</Button>
+              <AttachPaystubToCycleModal cycles={cycles} paystubId={paystub.id} open={paystub.open}></AttachPaystubToCycleModal>
             </TableBodyCell>
           {/if}
         </TableBodyRow>
