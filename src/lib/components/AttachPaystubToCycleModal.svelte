@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { Button, Label, Modal, Select } from 'flowbite-svelte';
+	import { createToast } from './Toast.svelte';
 
   export let paystubId: string;
   export let open = false;
@@ -11,13 +12,26 @@
 <Modal bind:open bind:size autoclose={false} class="w-full">
   <form action="?/add-to-cycle" class="flex flex-col" method="post"
     use:enhance={({ formData, cancel }) => {
-      const data = Object.fromEntries(formData.entries());
-      console.log(data);
-      cancel();
+      // const data = Object.fromEntries(formData.entries());
       
       return ({ result, update }) => {
-        if (!result.data) return;
-        console.log(result.data);
+        if (!result.data) {
+          createToast({
+            type: 'error',
+            title: 'Error',
+            description: 'An error occurred while attaching paystub to payroll cycle. Please try again.',
+          });
+          return;
+        }
+        
+        update();
+        open = false;
+        
+        createToast({
+          type: 'success',
+          title: 'Success',
+          description: 'Paystub has been successfully attached to payroll cycle.',
+        });
       }
     }}
   >

@@ -1,7 +1,7 @@
 import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns';
 import { getEmployees } from '$lib/drizzle/mysql/models/employees';
 import { getPayrollCycles } from '$lib/drizzle/mysql/models/payroll-cycles';
-import { getPaystubs } from '$lib/drizzle/mysql/models/paystubs.js';
+import { attachPayrollCycleToPaystub, getPaystubs } from '$lib/drizzle/mysql/models/paystubs.js';
 import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
 import { formatDate } from '$lib/utils';
 import { error } from '@sveltejs/kit';
@@ -81,5 +81,25 @@ export const actions = {
     return { 
       paystubs: await paystubs(),
     };
-  }
+  },
+  'add-to-cycle': async ({ locals, request }) => {
+    const session = await locals.auth.validate();
+    
+    if (!session) error(401, 'Unauthorized');
+    
+    const profile = await getUserProfileData(session?.user.userId);
+    
+    if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
+    
+    const payload = await request.formData();
+    const data = Object.fromEntries(payload.entries());
+    const { payrollCycleId: rawCycleId, paystubId: rawPaystubId } = data;
+    
+    const cycleId = rawCycleId as string;
+    const paystubId = rawPaystubId as string;
+    
+    const updated = await attachPayrollCycleToPaystub(paystubId, cycleId);
+    
+    return updated;
+  },
 }
