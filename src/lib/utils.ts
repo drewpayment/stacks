@@ -34,7 +34,35 @@ const toProperCase = (str: string): string => {
 	});
 }
 
-const formatDate = (date: any) => dayjs(Number(date)).format('MMMM D, YYYY');
+function determineEpochFormat(timestamp: number): 'seconds' | 'milliseconds' {
+  const numDigits = timestamp.toString().length;
+
+  if (numDigits >= 13) {
+    // Likely milliseconds
+    if (dayjs.unix(timestamp / 1000).isValid()) { 
+      return 'milliseconds'; 
+    }
+  } else if (numDigits === 10) {
+    // Likely seconds
+    if (dayjs.unix(timestamp).isValid()) { 
+      return 'seconds'; 
+    }
+  }
+
+  // Unable to determine definitively
+  throw new Error('Invalid timestamp format'); 
+}
+
+const formatDate = (date: any, format = 'MMMM D, YYYY') => {
+	const dateNum = Number(date);
+	
+	if (isNaN(dateNum)) {
+		return 'Invalid date';
+	}
+	
+	const epochFormat = determineEpochFormat(dateNum);
+	return epochFormat === 'seconds' ? dayjs.unix(dateNum).format(format) : dayjs(dateNum).format(format);
+}
 
 const formatCurrency = (amount: any) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 

@@ -3,14 +3,14 @@
 	import { enhance } from '$app/forms';
 	import SelectClient from '$lib/components/SelectClient.svelte';
 	import SelectedClientStore from '$lib/stores/client';
-	import { ChevronDown, Moon, Sun } from 'lucide-svelte';
+	import { ChevronDown, Moon, Plus, Sun } from 'lucide-svelte';
 	import { writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Dropdown, DropdownItem, DropdownDivider, Button } from 'flowbite-svelte';
 	import { page } from '$app/stores';
-	import { ChevronRightSolid } from 'flowbite-svelte-icons';
+	import { ChevronRightSolid, PlusSolid } from 'flowbite-svelte-icons';
 	import { setEmployeeOptions, setManualOverrides, setSelectedEmployee } from '$lib/components/context.js';
 	$: activeUrl = $page.url.pathname;
 	export let data;
@@ -88,8 +88,8 @@
 					Payroll<ChevronDown class="w-3 h-3 ml-2 text-primary-800 dark:text-white inline" />
 				</NavLi>
 				<Dropdown class="w-44 z-20">
-					<DropdownItem href="/app/payroll-cycles">Cycles</DropdownItem>
-					<DropdownItem href="/app/payroll-cycles/add">Create Cycle</DropdownItem>
+					<DropdownItem href="/app/payroll-cycles">Search Cycles</DropdownItem>
+					<DropdownItem href="/app/payroll-cycles/add">New Payroll Cycle</DropdownItem>
 					<DropdownItem href="/app/payroll/search">Search Paystubs</DropdownItem>
 					<DropdownItem href="/app/payroll/add">New Paystub</DropdownItem>
 				</Dropdown>

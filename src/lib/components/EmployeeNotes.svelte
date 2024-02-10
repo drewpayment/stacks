@@ -5,6 +5,9 @@
 	import SubmitButton from './SubmitButton.svelte';
 	import { enhance } from '$app/forms';
 	import { createToast } from './Toast.svelte';
+	import { Card, Textarea, Timeline, TimelineItem, Toolbar, ToolbarButton } from 'flowbite-svelte';
+	import { formatDate } from '$lib/utils';
+	import { ImageOutline, MapPinAltSolid, PaperClipOutline } from 'flowbite-svelte-icons';
   
   export let employeeId: string;
   export let notes: SelectEmployeeNotes[];
@@ -19,14 +22,6 @@
     orientation: 'horizontal',
     decorative: true,
   });
-  
-  const formatDate = (date: bigint) => {
-    const datejs = dayjs(Number(date));
-    
-    if (datejs.isValid()) return datejs.format('MM-DD-YYYY');
-    
-    return '';
-  }
 </script>
 
 <form action="?/add-note" method="post"
@@ -56,7 +51,31 @@
     }
   }}
 >
-	<div class="flex flex-col items-start justify-center">
+  <p class="text-xl text-gray-500 dark:text-white">Notes</p>
+  <Card class="pt-4 px-4 max-h-60 overflow-y-auto w-full max-w-full">
+    <Timeline>
+      {#each notes as note (note.id)}
+        <TimelineItem date={formatDate(note.created, 'MMMM D, YYYY H:m')}>
+          <p class="mb-4 text-base text-gray-500 dark:text-gray-400">
+            {note.note}
+          </p>
+        </TimelineItem>
+      {/each}
+    </Timeline>
+  </Card>
+  <Textarea class="mb-4" placeholder="Write a comment" name="notes" id="notes">
+    <div slot="footer" class="flex items-center justify-between">
+      <SubmitButton text="Add Note" />
+      <!-- todo: add support for toolbar buttons -->
+      <!-- <Toolbar embedded>
+        <ToolbarButton name="Attach file"><PaperClipOutline class="w-6 h-6" /></ToolbarButton>
+        <ToolbarButton name="Set location"><MapPinAltSolid class="w-6 h-6" /></ToolbarButton>
+        <ToolbarButton name="Upload image"><ImageOutline class="w-6 h-6" /></ToolbarButton>
+      </Toolbar> -->
+    </div>
+  </Textarea>
+  
+	<!-- <div class="flex flex-col items-start justify-center">
     <label
 			for="notes"
 			use:melt={$root}
@@ -97,7 +116,7 @@
         <SubmitButton text="Add Note" />
       </div>
     </div>
-	</div>
+	</div> -->
 </form>
 
 <style lang="postcss">

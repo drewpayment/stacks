@@ -69,9 +69,9 @@
         <TableBody tableBodyClass="divide-y">
           {#each cycles as cycle (cycle.id)}
             <TableBodyRow>
-              <TableBodyCell>{formatDate(Number(cycle.paymentDate))}</TableBodyCell>
-              <TableBodyCell>{formatDate(Number(cycle.startDate))}</TableBodyCell>
-              <TableBodyCell>{formatDate(Number(cycle.endDate))}</TableBodyCell>
+              <TableBodyCell>{formatDate(cycle.paymentDate)}</TableBodyCell>
+              <TableBodyCell>{formatDate(cycle.startDate)}</TableBodyCell>
+              <TableBodyCell>{formatDate(cycle.endDate)}</TableBodyCell>
               <TableBodyCell>{cycle.paystubCount}</TableBodyCell>
               <TableBodyCell>
                 <Checkbox checked={!!cycle.isClosed} disabled={true} />
