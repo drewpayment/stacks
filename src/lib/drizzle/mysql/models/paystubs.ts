@@ -7,19 +7,38 @@ import { error } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';
 
-export const getPaystubs = async (clientId: string, startDate: number, endDate: number, employeeId = '', campaignId = ''): Promise<PaystubWith[]> => {
+export const getPaystubs = async (
+  clientId: string, 
+  startDate: number, 
+  endDate: number, 
+  employeeId = '', 
+  campaignId = '',
+  filterPayrollCycles = false,
+): Promise<PaystubWith[]> => {
   if (!clientId) {
     return [] as PaystubWith[];
   }
   
   const data = await drizzleClient.query.paystub.findMany({
-    where: employeeId || campaignId
-      ? (ps, { eq, and }) => and(
-          eq(ps.clientId, clientId),
-          employeeId ? eq(ps.employeeId, employeeId) : undefined,
-          campaignId ? eq(ps.campaignId, campaignId) : undefined,
-        )
-      : (ps, { eq, }) => eq(ps.clientId, clientId),
+    where: filterPayrollCycles 
+      ? (employeeId || campaignId)
+        ? (ps, { eq, and, isNull }) => and(
+            eq(ps.clientId, clientId),
+            isNull(ps.payrollCycleId),
+            employeeId ? eq(ps.employeeId, employeeId) : undefined,
+            campaignId ? eq(ps.campaignId, campaignId) : undefined,
+          )
+        : (ps, { eq, and, isNull }) => and(
+            eq(ps.clientId, clientId),
+            isNull(ps.payrollCycleId),
+          )
+      : (employeeId || campaignId)
+        ? (ps, { eq, and }) => and(
+            eq(ps.clientId, clientId),
+            employeeId ? eq(ps.employeeId, employeeId) : undefined,
+            campaignId ? eq(ps.campaignId, campaignId) : undefined,
+          )
+        : (ps, { eq, }) => eq(ps.clientId, clientId),
     with: {
       employee: true,
       campaign: {

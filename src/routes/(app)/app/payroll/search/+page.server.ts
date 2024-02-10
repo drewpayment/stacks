@@ -70,13 +70,14 @@ export const actions = {
     const clientId = profile?.clientId || '';
     const payload = await request.formData();
     const data = Object.fromEntries(payload.entries());
-    const { employeeId: rawEeId, startDate: startDateStr, endDate: endDateStr, campaignId: rawCampaignId } = data;
+    const { employeeId: rawEeId, startDate: startDateStr, endDate: endDateStr, campaignId: rawCampaignId, filterPayrollCycles: rawFilterCycles } = data;
     const startDate = dayjs(startDateStr as string, 'YYYY-MM-DD').unix();
     const endDate = dayjs(endDateStr as string, 'YYYY-MM-DD').unix();
     const employeeId = rawEeId as string;
     const campaignId = rawCampaignId as string;
+    const filterPayrollCycles = (rawFilterCycles as string).trim().toLowerCase() === 'true';
     
-    const paystubs = async () => getPaystubs(clientId, startDate, endDate, employeeId, campaignId);
+    const paystubs = async () => getPaystubs(clientId, startDate, endDate, employeeId, campaignId, filterPayrollCycles);
     
     return { 
       paystubs: await paystubs(),

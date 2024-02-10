@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { PaystubWith } from '$lib/types/paystbus.model';
 	import { formatCurrency, formatDate } from '$lib/utils';
-	import { Breadcrumb, BreadcrumbItem, Card, Label, Select, Input, Table, TableHead, TableHeadCell, TableBody, TableBodyCell, TableBodyRow, Button } from 'flowbite-svelte';
+	import { Breadcrumb, BreadcrumbItem, Card, Label, Select, Input, Table, TableHead, TableHeadCell, TableBody, TableBodyCell, TableBodyRow, Button, Toggle } from 'flowbite-svelte';
   import { ArrowUpRightFromSquareOutline } from 'flowbite-svelte-icons';
 	import type { Snapshot } from './$types.js';
 	import AttachPaystubToCycleModal from '$lib/components/AttachPaystubToCycleModal.svelte';
@@ -15,6 +15,7 @@
   let submitBtn: HTMLButtonElement;
   let selectedEmployee = '';
   let selectedCampaign = '';
+  let filterPayrollCycles = false;
   
   export const snapshot: Snapshot = {
     capture: () => ({
@@ -47,8 +48,10 @@
     </Breadcrumb>
   </div>
   
-  <form action="?/search" method="post" class="grid grid-cols-4 pt-4 gap-2"
-    use:enhance={({ cancel }) => {
+  <form action="?/search" method="post" class="flex flex-col pt-4"
+    use:enhance={({ formData, cancel }) => {
+      const data = Object.fromEntries(formData.entries());
+      console.dir(data);
       
       return ({ result, update }) => {
         if (!result.data) return;
@@ -57,36 +60,45 @@
       }
     }}
   >
-    <Card class="grid grid-cols-2 gap-2 max-w-md col-span-2">
-      <Label class="space-y-2">
-        <span>Start Date</span>
-        <Input type="date" name="startDate" value={startDate} />
-      </Label>
+    <div class="w-full grid grid-cols-4 gap-2">
+      <Card class="grid grid-cols-2 gap-2 max-w-md col-span-2">
+        <Label class="space-y-2">
+          <span>Start Date</span>
+          <Input type="date" name="startDate" value={startDate} />
+        </Label>
+        
+        <Label class="space-y-2">
+          <span>End Date</span>
+          <Input type="date" name="endDate" value={endDate} />
+        </Label>
+      </Card>
       
-      <Label class="space-y-2">
-        <span>End Date</span>
-        <Input type="date" name="endDate" value={endDate} />
-      </Label>
-    </Card>
+      <Card class="w-full max-w-md">
+        <div class="flex flex-col space-y-6">
+          <Label class="space-y-2">
+            <span>Employee</span>
+            <Select name="employeeId" items={employees} bind:value={selectedEmployee} on:change={() => submitBtn.click()} />
+          </Label>
+        </div>
+      </Card>
+      
+      <Card class="w-full max-w-md">
+        <div class="flex flex-col space-y-6">
+          <Label class="space-y-2">
+            <span>Campaign</span>
+            <Select name="campaignId" items={campaigns} bind:value={selectedCampaign} on:change={() => submitBtn.click()} />
+          </Label>
+        </div>
+        <button type="submit" bind:this={submitBtn} class="hidden"></button>
+      </Card>
+    </div>
     
-    <Card class="w-full max-w-md">
-      <div class="flex flex-col space-y-6">
-        <Label class="space-y-2">
-          <span>Employee</span>
-          <Select name="employeeId" items={employees} bind:value={selectedEmployee} on:change={() => submitBtn.click()} />
-        </Label>
-      </div>
-    </Card>
-    
-    <Card class="w-full max-w-md">
-      <div class="flex flex-col space-y-6">
-        <Label class="space-y-2">
-          <span>Campaign</span>
-          <Select name="campaignId" items={campaigns} bind:value={selectedCampaign} on:change={() => submitBtn.click()} />
-        </Label>
-      </div>
-    </Card>
-    <button type="submit" bind:this={submitBtn} class="hidden"></button>
+    <div class="w-full pt-4">
+      <Toggle bind:checked={filterPayrollCycles} value={`${filterPayrollCycles}`} on:change={() => submitBtn.click()}>
+        Hide paystubs attached to payroll cycles
+      </Toggle>
+      <input type="hidden" name="filterPayrollCycles" bind:value={filterPayrollCycles} />
+    </div>
   </form>
   
   <Table class="my-6 space-y-6 rounded-lg">
