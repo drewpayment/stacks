@@ -61,6 +61,13 @@
           </p>
         </TimelineItem>
       {/each}
+      {#if !notes?.length}
+        <TimelineItem date="No notes">
+          <p class="mb-4 text-base text-gray-500 dark:text-gray-400">
+            There are no notes for this employee. Add one belong to get started.
+          </p>
+        </TimelineItem>
+      {/if}
     </Timeline>
   </Card>
   <Textarea class="mb-4" placeholder="Write a comment" name="notes" id="notes">
@@ -74,49 +81,6 @@
       </Toolbar> -->
     </div>
   </Textarea>
-  
-	<!-- <div class="flex flex-col items-start justify-center">
-    <label
-			for="notes"
-			use:melt={$root}
-			class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-50"
-			data-melt-part="root"
-		>
-      <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-50">Notes</h2>
-		</label>
-    
-		<div class="block w-full rounded-md border-1 p-4 5 text-gray-900 dark:text-neutral-50 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-50 focus:ring-2 focus:ring-inset max-h-60 overflow-y-scroll">
-      {#each notes as note, i}
-        <div class="grid grid-cols-10 items-center justify-between gap-1">
-          <div class="flex flex-col col-span-9">
-            <span class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-50">{note.note}</span>
-          </div>
-          <div class="flex flex-col">
-            <span class="text-sm font-medium leading-6 text-gray-400 dark:text-gray-50">{formatDate(note.created)}</span>
-          </div>
-        </div>
-        {#if i !== notes.length - 1}
-          <div use:melt={$horizontal} class="my-3.5 h-[1px] w-full bg-neutral-200" />
-        {/if}
-      {/each}
-    </div>
-    
-    <div use:melt={$horizontal} class="my-3.5 h-[1px] w-full bg-neutral-400" />
-    
-		<textarea
-			name="notes"
-			id="notes"
-			rows="3"
-			class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-50 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-50 focus:ring-2 focus:ring-inset focus:ring-primary-600 dark:focus:ring-primary-200 sm:text-sm sm:leading-6 dark:bg-neutral-700"
-      required
-		></textarea>
-    
-    <div class="flex justify-end w-[100%]">
-      <div class="pt-1">
-        <SubmitButton text="Add Note" />
-      </div>
-    </div>
-	</div> -->
 </form>
 
 <style lang="postcss">
