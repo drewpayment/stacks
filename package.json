@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "NODE_ENV=production vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -24,12 +24,14 @@
 		"test": "vitest run",
 		"coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"docker:build": "docker build --pull --rm -f 'Dockerfile' -t stacks:latest --build-arg ORIGIN=https://stacks.drewpayment.com '.'"
 	},
 	"devDependencies": {
 		"@iconify/svelte": "^3.1.6",
 		"@melt-ui/pp": "^0.1.4",
 		"@sveltejs/adapter-auto": "^3.0.1",
+		"@sveltejs/adapter-node": "^4.0.1",
 		"@sveltejs/kit": "^2.0.6",
 		"@sveltejs/vite-plugin-svelte": "^3.0.1",
 		"@testing-library/jest-dom": "^6.1.6",
@@ -76,7 +78,7 @@
 		"@popperjs/core": "^2.11.8",
 		"@tailwindcss/forms": "^0.5.7",
 		"dayjs": "^1.11.10",
-		"dotenv": "^16.3.1",
+		"dotenv": "^16.4.1",
 		"drizzle-orm": "^0.28.6",
 		"flowbite": "^2.2.1",
 		"flowbite-svelte": "^0.44.21",

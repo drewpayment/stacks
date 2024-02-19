@@ -35,8 +35,8 @@ export const load = async ({ locals, request }) => {
   }
   
   return {
-    campaigns: campaigns(),
-    employees: employees(),
+    campaigns: await campaigns(),
+    employees: await employees(),
   };
 };
 

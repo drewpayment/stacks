@@ -177,7 +177,8 @@
 		<div class="border-b border-gray-900/10 pb-12">
 			<h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-50">Sales Codes</h2>
 			<p class="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-100">
-				Sales codes are used to track sales and commissions.
+				Sales codes are used to track sales and commissions. They are used to import sales data from sales commission reports 
+				<a href="/app/sales/import">here.</a>
 				<br />
 				<span class="text-xs text-gray-400 dark:text-gray-50">*Sales codes are not required.</span>
 			</p>

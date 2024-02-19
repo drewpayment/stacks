@@ -6,7 +6,7 @@ import type { SaleWithEmployee } from '$lib/types/sale.model';
 import { redirect, type Actions, error } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 
-const searchSales = async (clientId: string, startDate: string, endDate: string) => {
+const searchSales = async (clientId: string, startDate: number, endDate: number) => {
   const withStmt = {
     employee: {
       columns: {
@@ -37,15 +37,15 @@ export const load = async ({ locals, request }) => {
   
   const clientId = profile?.clientId as string;
   
-  const startDate = dayjs().subtract(1, 'month').format('YYYY-MM-DD');
-  const endDate = dayjs().format('YYYY-MM-DD');
+  const startDate = dayjs().subtract(1, 'month');
+  const endDate = dayjs();
   
-  const sales = async () => searchSales(clientId, startDate, endDate);
+  const sales = async () => await searchSales(clientId, startDate.unix(), endDate.unix());
   
   return {
     sales: await sales(),
-    startDate,
-    endDate,
+    startDate: startDate.format('YYYY-MM-DD'),
+    endDate: endDate.format('YYYY-MM-DD'),
     campaigns: await getCampaigns(clientId),
     employees: await getEmployees(clientId, true),
   }
@@ -62,11 +62,11 @@ export const actions: Actions = {
     const clientId = profile?.clientId as string;
     const formData = Object.fromEntries(await request.formData());
     
-    const startDate = dayjs(formData.startDate as string, 'YYYY-MM-DD').format('YYYY-MM-DD');
-    const endDate = dayjs(formData.endDate as string, 'YYYY-MM-DD').format('YYYY-MM-DD');
+    const startDate = dayjs(formData.startDate as string, 'YYYY-MM-DD').unix();
+    const endDate = dayjs(formData.endDate as string, 'YYYY-MM-DD').unix();
     
     const sales = async () => {
-      const result = searchSales(clientId, startDate, endDate);
+      const result = await searchSales(clientId, startDate, endDate);
       
       console.log(result);
       

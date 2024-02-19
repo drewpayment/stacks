@@ -130,7 +130,7 @@
 				<button type="submit">Log Out</button>
 			</form>
 		{:else}
-			<NavLi href="/auth/signup">Sign Up</NavLi>
+			<!-- <NavLi href="/auth/signup">Sign Up</NavLi> -->
 			<NavLi href="/auth/login">Login</NavLi>
 		{/if}
 	</NavUl>
