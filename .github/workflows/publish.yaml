@@ -11,19 +11,6 @@ jobs:
     
     env:
       ORIGIN: https://stacks.drewpayment.com
-      ENABLE_DRIZZLE_LOGGER: ${{ secrets.ENABLE_DRIZZLE_LOGGER }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      MYSQL_DB_HOST: aws.connect.psdb.cloud
-      MYSQL_DB_PORT: 3306
-      MYSQL_DB_USER: ${{ secrets.MYSQL_DB_USER }}
-      MYSQL_DB_PASSWORD: ${{ secrets.MYSQL_DB_PASSWORD }}
-      MYSQL_DB_DATABASE: ${{ secrets.MYSQL_DB_DATABASE }}
-      GITHUB_CLIENT_ID: ""
-      GITHUB_CLIENT_SECRET: ""
-      GOOGLE_OAUTH_CLIENT_ID: ""
-      GOOGLE_OAUTH_CLIENT_SECRET: ""
-      GOOGLE_OAUTH_REDIRECT_URI: ""
-      RESEND_API_KEY: ""
 
     steps:
       - name: Checkout code
@@ -41,6 +28,24 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Create env file
+        run: |
+          touch .env
+          echo ORIGIN=https://stacks.drewpayment.com >> .env
+          echo ENABLE_DRIZZLE_LOGGER=${{ secrets.ENABLE_DRIZZLE_LOGGER }}">> .env
+          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
+          echo MYSQL_DB_HOST=${{ secrets.MYSQL_DB_HOST }} >> .env
+          echo MYSQL_DB_PORT=3306 >> .env
+          echo MYSQL_DB_USER=${{ secrets.MYSQL_DB_USER }} >> .env
+          echo MYSQL_DB_PASSWORD=${{ secrets.MYSQL_DB_PASSWORD }} >> .env
+          echo MYSQL_DB_DATABASE=stacks >> .env
+          echo GITHUB_CLIENT_ID= >> .env
+          echo GITHUB_CLIENT_SECRET= >> .env
+          echo GOOGLE_OAUTH_CLIENT_ID= >> .env
+          echo GOOGLE_OAUTH_CLIENT_SECRET= >> .env
+          echo GOOGLE_OAUTH_REDIRECT_URI= >> .env
+          echo RESEND_API_KEY= >> .env
 
       - name: Build and push Docker image for Linux
         uses: docker/build-push-action@v2
