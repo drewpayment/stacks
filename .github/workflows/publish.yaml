@@ -33,7 +33,7 @@ jobs:
         run: |
           touch .env
           echo ORIGIN=https://stacks.drewpayment.com >> .env
-          echo ENABLE_DRIZZLE_LOGGER=${{ secrets.ENABLE_DRIZZLE_LOGGER }}">> .env
+          echo ENABLE_DRIZZLE_LOGGER=${{ secrets.ENABLE_DRIZZLE_LOGGER }} >> .env
           echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
           echo MYSQL_DB_HOST=${{ secrets.MYSQL_DB_HOST }} >> .env
           echo MYSQL_DB_PORT=3306 >> .env
