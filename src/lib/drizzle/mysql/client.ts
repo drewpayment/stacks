@@ -1,6 +1,5 @@
 import { dev } from '$app/environment';
-import {
-    ENABLE_DRIZZLE_LOGGER} from '$env/static/private';
+import { ENABLE_DRIZZLE_LOGGER } from '$env/static/private';
 import { drizzle } from 'drizzle-orm/planetscale-serverless';
 import * as schema from './schema';
 import 'dotenv/config'
