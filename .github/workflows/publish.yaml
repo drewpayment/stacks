@@ -46,6 +46,7 @@ jobs:
           echo GOOGLE_OAUTH_CLIENT_SECRET= >> .env
           echo GOOGLE_OAUTH_REDIRECT_URI= >> .env
           echo RESEND_API_KEY= >> .env
+          cat .env
 
       - name: Build and push Docker image for Linux
         uses: docker/build-push-action@v2
