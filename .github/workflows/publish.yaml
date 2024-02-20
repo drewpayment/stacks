@@ -32,20 +32,20 @@ jobs:
       - name: Create env file
         run: |
           touch .env
-          echo ORIGIN=https://stacks.drewpayment.com >> .env
-          echo ENABLE_DRIZZLE_LOGGER=${{ secrets.ENABLE_DRIZZLE_LOGGER }} >> .env
-          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
-          echo MYSQL_DB_HOST=${{ secrets.MYSQL_DB_HOST }} >> .env
-          echo MYSQL_DB_PORT=3306 >> .env
-          echo MYSQL_DB_USER=${{ secrets.MYSQL_DB_USER }} >> .env
-          echo MYSQL_DB_PASSWORD=${{ secrets.MYSQL_DB_PASSWORD }} >> .env
-          echo MYSQL_DB_DATABASE=stacks >> .env
-          echo GITHUB_CLIENT_ID= >> .env
-          echo GITHUB_CLIENT_SECRET= >> .env
-          echo GOOGLE_OAUTH_CLIENT_ID= >> .env
-          echo GOOGLE_OAUTH_CLIENT_SECRET= >> .env
-          echo GOOGLE_OAUTH_REDIRECT_URI= >> .env
-          echo RESEND_API_KEY= >> .env
+          echo "ORIGIN=https://stacks.drewpayment.com" >> .env
+          echo "ENABLE_DRIZZLE_LOGGER=${{ secrets.ENABLE_DRIZZLE_LOGGER }}" >> .env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "MYSQL_DB_HOST=${{ secrets.MYSQL_DB_HOST }}" >> .env
+          echo "MYSQL_DB_PORT=3306" >> .env
+          echo "MYSQL_DB_USER=${{ secrets.MYSQL_DB_USER }}" >> .env
+          echo "MYSQL_DB_PASSWORD=${{ secrets.MYSQL_DB_PASSWORD }}" >> .env
+          echo "MYSQL_DB_DATABASE=stacks" >> .env
+          echo "GITHUB_CLIENT_ID=" >> .env
+          echo "GITHUB_CLIENT_SECRET=" >> .env
+          echo "GOOGLE_OAUTH_CLIENT_ID=" >> .env
+          echo "GOOGLE_OAUTH_CLIENT_SECRET=" >> .env
+          echo "GOOGLE_OAUTH_REDIRECT_URI=" >> .env
+          echo "RESEND_API_KEY=" >> .env
           cat .env
 
       - name: Build and push Docker image for Linux
