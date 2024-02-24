@@ -55,6 +55,21 @@ const getEmployee = async (employeeId: string, withProfile = true, withCodes = t
   return data as any;
 }
 
+export const getEmployeeByUserId = async (userId: string): Promise<Employee> => {
+  if (!userId) {
+    return null as unknown as Employee;
+  }
+  
+  const data = await db.query.employee.findFirst({
+    with: {
+      employeeProfile: true,
+    },
+    where: (employee, { eq }) => eq(employee.userId, userId),
+  });
+    
+  return data as Employee;
+}
+
 const _createEmployee = async (employeeData: InsertEmployee) => {
   try {
     await db.insert(employee)
