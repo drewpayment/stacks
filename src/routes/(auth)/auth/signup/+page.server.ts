@@ -6,77 +6,78 @@ import { getFeedbackObjects } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
+import type { Actions } from './$types';
 
 const signupUserSchema = z.object({
-	firstName: z.string().optional(),
-	lastName: z.string().optional(),
-	email: z.string().email(),
-	password: z.string().nonempty()
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  email: z.string().email(),
+  password: z.string().min(1)
 });
 
-export const actions = {
-	signupUser: async ({ locals, request, url }) => {
-		const formData = Object.fromEntries(await request.formData());
-		const signupUser = signupUserSchema.safeParse(formData);
+export const actions: Actions = {
+  signupUser: async ({ locals, request, url }) => {
+    const formData = Object.fromEntries(await request.formData());
+    const signupUser = signupUserSchema.safeParse(formData);
 
-		if (!signupUser.success) {
-			const feedbacks = getFeedbackObjects(
-				signupUser.error.issues.map((issue) => {
-					return {
-						type: 'error',
-						path: String(issue.path[0]),
-						title: 'Invalid ' + issue.path[0],
-						message: issue.message
-					};
-				})
-			);
+    if (!signupUser.success) {
+      const feedbacks = getFeedbackObjects(
+        signupUser.error.issues.map((issue) => {
+          return {
+            type: 'error',
+            path: String(issue.path[0]),
+            title: 'Invalid ' + issue.path[0],
+            message: issue.message
+          };
+        })
+      );
 
-			return fail(500, {
-				feedbacks
-			});
-		}
+      return fail(500, {
+        feedbacks
+      });
+    }
 
-		const { firstName, lastName, email, password } = signupUser.data;
+    const { firstName, lastName, email, password } = signupUser.data;
 
-		try {
-			const user = await auth.createUser({
-				key: {
-					providerId: 'email',
-					providerUserId: email,
-					password // this is hashed by Lucia
-				},
-				attributes: {
-					email,
-					email_verified: false,
-				}
-			});
+    try {
+      const user = await auth.createUser({
+        key: {
+          providerId: 'email',
+          providerUserId: email,
+          password // this is hashed by Lucia
+        },
+        attributes: {
+          email,
+          email_verified: false,
+        }
+      });
 
-			// Update user profile data
-			await updateUserProfileData({
-				id: nanoid(),
-				userId: user.userId,
-				firstName,
-				lastName,
-				clientId: 'default',
-				role: 'user',
-			});
+      // Update user profile data
+      await updateUserProfileData({
+        id: nanoid(),
+        userId: user.userId,
+        firstName,
+        lastName,
+        clientId: 'default',
+        role: 'user',
+      });
 
-			const session = await auth.createSession({
-				userId: user.userId,
-				attributes: {},
-			});
+      const session = await auth.createSession({
+        userId: user.userId,
+        attributes: {},
+      });
 
-			// Set session cookie
-			locals.auth.setSession(session);
+      // Set session cookie
+      locals.auth.setSession(session);
 
-			// Send verification email
-			const verificationToken = await generateEmailVerificationToken(user.userId);
+      // Send verification email
+      const verificationToken = await generateEmailVerificationToken(user.userId);
 
-			const sender = 'KitForStartups <justin@updates.okupter.com>';
-			const recipient = firstName ? `${firstName}` : email;
-			const emailHtml = `Hello ${recipient},
+      const sender = 'Stacks <drew@verostack.dev>';
+      const recipient = firstName ? `${firstName}` : email;
+      const emailHtml = `Hello ${recipient},
 			<br><br>
-			Thank you for signing up to KitForStartups! Please click the link below to verify your email address:
+			Thank you for signing up to Stacks! Please click the link below to verify your email address:
 			<br><br>
 			<a href="${url.origin}/app/email-verification/${verificationToken}">Verify Email Address</a>
 			<br>
@@ -86,34 +87,34 @@ export const actions = {
 			<br><br>
 			Thanks,
 			<br>
-			Justin from KitForStartups`;
+			Drew from Stacks`;
 
-			const signupEmail = await sendEmail({
-				from: sender,
-				to: email,
-				subject: 'Verify Your Email Address',
-				html: emailHtml
-			});
+      const signupEmail = await sendEmail({
+        from: sender,
+        to: email,
+        subject: 'Verify Your Email Address',
+        html: emailHtml
+      });
 
-			if (signupEmail[0].type === 'error') {
-				return fail(500, {
-					feedbacks: signupEmail
-				});
-			}
-		} catch (e) {
-			const feedbacks = getFeedbackObjects([
-				{
-					type: 'error',
-					title: 'Unknown error',
-					message: 'An unknown error occurred. Please try again.'
-				}
-			]);
+      if (signupEmail[0].type === 'error') {
+        return fail(500, {
+          feedbacks: signupEmail
+        });
+      }
+    } catch (e) {
+      const feedbacks = getFeedbackObjects([
+        {
+          type: 'error',
+          title: 'Unknown error',
+          message: 'An unknown error occurred. Please try again.'
+        }
+      ]);
 
-			return fail(500, {
-				feedbacks
-			});
-		}
+      return fail(500, {
+        feedbacks
+      });
+    }
 
-		redirect(302, '/app/email-verification');
-	}
+    redirect(302, '/app/email-verification');
+  }
 };
