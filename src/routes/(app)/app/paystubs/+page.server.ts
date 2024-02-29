@@ -19,7 +19,8 @@ export const load = async ({ locals }) => {
   
   const paystubs = async () => {
     const employee = await getEmployeeByUserId(session?.user.userId);
-    return await getPaystubs(clientId, startDate.unix(), endDate.unix(), employee?.id);
+    const stubs = await getPaystubs(clientId, startDate.unix(), endDate.unix(), employee?.id);
+    return stubs.filter(x => !!x.payrollCycleId);
   };
   
   return {

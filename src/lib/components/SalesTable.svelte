@@ -104,7 +104,7 @@
   }
 </script>
 
-<Table striped={true} shadow={true} divClass="bg-background-100 dark:bg-background-300">
+<Table striped={true} shadow={true} divClass="overflow-x-auto bg-background-100 dark:bg-background-300">
   {#if !viewOnly}
     <caption class="p-5 text-left bg-background-100 dark:bg-background-300">
       <div class="flex flex-row gap-6 text-sm justify-between">
