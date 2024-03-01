@@ -58,12 +58,12 @@ jobs:
           push: true
           tags: ghcr.io/drewpayment/stacks:latest
 
-      - name: Build and push Docker image for Apple Silicon
-        uses: docker/build-push-action@v2
-        continue-on-error: true
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/arm64
-          push: true
-          tags: ghcr.io/drewpayment/stacks:latest
+      # - name: Build and push Docker image for Apple Silicon
+      #   uses: docker/build-push-action@v2
+      #   continue-on-error: true
+      #   with:
+      #     context: .
+      #     file: ./Dockerfile
+      #     platforms: linux/arm64
+      #     push: true
+      #     tags: ghcr.io/drewpayment/stacks:latest
