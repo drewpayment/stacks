@@ -57,6 +57,8 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ghcr.io/drewpayment/stacks:latest
+          args: |
+            --build-arg ORIGIN=${{ secrets.ORIGIN }}
 
       # - name: Build and push Docker image for Apple Silicon
       #   uses: docker/build-push-action@v2
