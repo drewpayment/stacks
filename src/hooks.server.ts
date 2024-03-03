@@ -23,7 +23,6 @@ const authHandler: Handle = async ({ event, resolve }) => {
 	}
 
 	if (session) {
-		console.log(session);
 		// If the user is logged in and is trying to access an auth route,
 		// redirect them to the profile page
 		// except if they are trying to logout
@@ -31,7 +30,7 @@ const authHandler: Handle = async ({ event, resolve }) => {
 			authRoutesBase.some((route) => event.url.pathname.startsWith(route)) &&
 			event.url.search !== '?/logout'
 		) {
-			redirect(302, '/app/profile');
+			redirect(302, '/');
 		}
 
 		// If the user is logged in, but their email is not verified

@@ -3,7 +3,7 @@ import { getEmployees } from '$lib/drizzle/mysql/models/employees';
 import { getSales } from '$lib/drizzle/mysql/models/sales';
 import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
 import type { SaleWithEmployee } from '$lib/types/sale.model';
-import { redirect, type Actions, error } from '@sveltejs/kit';
+import { type Actions, error } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 
 const searchSales = async (clientId: string, startDate: number, endDate: number) => {
@@ -32,15 +32,15 @@ export const load = async ({ locals, request }) => {
   const session = await locals.auth.validate();
 	const profile = await getUserProfileData(session?.user.userId);
   
-  if (!session || !profile?.clientId) redirect(302, '/');
-  if (!['org_admin', 'super_admin'].includes(profile?.role)) redirect(302, '/');
+  if (!session || !profile?.clientId) error(401, 'Unauthorized');
+  if (!['org_admin', 'super_admin'].includes(profile?.role)) error(403, 'Unauthorized');
   
   const clientId = profile?.clientId as string;
   
   const startDate = dayjs().subtract(1, 'month');
   const endDate = dayjs();
   
-  const sales = async () => await searchSales(clientId, startDate.unix(), endDate.unix());
+  const sales = async () => searchSales(clientId, startDate.unix(), endDate.unix());
   
   return {
     sales: await sales(),

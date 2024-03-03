@@ -10,6 +10,7 @@
   export let data;
   
   let { campaigns, employees, startDate, endDate, sales: allSales } = data;
+  console.dir(sales);
   
   const usd = new Intl.NumberFormat('en-US', {
     style: 'currency',

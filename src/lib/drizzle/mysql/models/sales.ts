@@ -68,12 +68,12 @@ export const saveSales = async (dtos: InsertSale[]): Promise<SelectSale[]> => {
 export const getSales = async <T = SelectSale>(clientId: string, startDate: number, endDate: number, withStmt: any = undefined): Promise<T[]> => {
   const sales = await drizzleClient.query.sale.findMany({
     with: withStmt || undefined,
-    orderBy: s => desc(s.saleDate),
     where: (sale, { and, eq, gte, lte }) => and(
       eq(sale.clientId, clientId),
       gte(sale.saleDate, startDate),
       lte(sale.saleDate, endDate),
     ),
+    orderBy: s => desc(s.saleDate),
   });
   
   return sales as T[];
