@@ -7,11 +7,9 @@ import type { Actions } from '@sveltejs/kit';
 
 export const actions: Actions = {
   save: async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return { status: 401 };
     
-    if (!session) return { status: 401 };
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     const clientId = profile.clientId;
     
     if (!clientId) return { status: 401 };

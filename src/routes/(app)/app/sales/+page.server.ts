@@ -29,10 +29,9 @@ const searchSales = async (clientId: string, startDate: number, endDate: number)
 }
 
 export const load = async ({ locals, request }) => {
-  const session = await locals.auth.validate();
-	const profile = await getUserProfileData(session?.user.userId);
+	const profile = await getUserProfileData(locals.user!.id);
   
-  if (!session || !profile?.clientId) error(401, 'Unauthorized');
+  if (!locals.user || !profile) error(401, 'Unauthorized');
   if (!['org_admin', 'super_admin'].includes(profile?.role)) error(403, 'Unauthorized');
   
   const clientId = profile?.clientId as string;
@@ -53,10 +52,9 @@ export const load = async ({ locals, request }) => {
 
 export const actions: Actions = {
   search: async ({ locals, request }) => {
-    const session = await locals.auth.validate();
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user!.id);
     
-    if (!session || !profile?.clientId) error(401, 'Unauthorized');
+    if (!locals.user || !profile?.clientId) error(401, 'Unauthorized');
     if (!['org_admin', 'super_admin'].includes(profile?.role)) error(401, 'Unauthorized');
     
     const clientId = profile?.clientId as string;

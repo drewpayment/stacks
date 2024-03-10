@@ -3,13 +3,12 @@ import { attachPayrollCycleToPaystub, getPaystubs, getPaystubsByPayrollCycleId, 
 import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
 import type { SelectPayrollCycle } from '$lib/types/db.model.js';
 import type { CycleAndPaystubs, PaystubWith } from '$lib/types/paystbus.model';
-import type { Actions } from '@sveltejs/kit';
+import { fail, type Actions } from '@sveltejs/kit';
 
 export const load = async ({ locals, params }) => {
-  const session = await locals.auth.validate();
-  if (!session) return { cycleAndPaystubs: null as unknown as CycleAndPaystubs };
+  if (!locals.user) return fail(401, { message: 'Unauthorized' });
   
-  const profile = await getUserProfileData(session?.user.userId);
+  const profile = await getUserProfileData(locals.user.id);
   
   const getData = async (): Promise<CycleAndPaystubs> => {  
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) return {
@@ -40,11 +39,9 @@ export const load = async ({ locals, params }) => {
 
 export const actions: Actions = {
   'attach-payroll-cycle': async ({ request, locals, params }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) return { status: 401 };
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     
     const formData = await request.formData();
     const data = Object.fromEntries(formData) as {
@@ -59,11 +56,9 @@ export const actions: Actions = {
     return result;
   },
   'toggle-payroll-cycle-close': async ({ request, locals, params }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) return { status: 401 };
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     
     const formData = await request.formData();
     const data = Object.fromEntries(formData) as unknown as {

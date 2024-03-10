@@ -1,19 +1,14 @@
-import { createUser, getUserProfileData, getUsers, updateUser } from '$lib/drizzle/mysql/models/users';
+import { createUser, getUserProfileData, getUsers, updateUserAndProfile } from '$lib/drizzle/mysql/models/users';
 import type { InsertUser, InsertUserKey, InsertUserProfile, RoleTypes, User } from '$lib/types/db.model';
+import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 
 
 export const load = async ({locals}) => {
-  const session = await locals.auth.validate();
-  
-  if (!session) {
-    return {
-      status: 401,
-    };
-  }
+  if (!locals.user) fail(401, { message: 'Unauthorized' });
   
   const users = async (): Promise<User[]> => {
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user?.id);
     
     if (!profile) {
       return [];
@@ -25,19 +20,13 @@ export const load = async ({locals}) => {
   }
   
   return {
-    session,
     users: await users(),
   };
 }
 
 export const actions = {
   add: async ({ locals, request }) => {
-    const session = await locals.auth.validate();
-    if (!session) {
-      return {
-        status: 401,
-      };
-    }
+    if (!locals.user) fail(401, { message: 'Unauthorized' });
     
     const payload = await request.formData();
     const data = Object.fromEntries(payload.entries()) as { 
@@ -71,12 +60,7 @@ export const actions = {
     return await createUser(insertUser, insertUserKey, insertUserProfile);
   },
   update: async ({ locals, request }) => {
-    const session = await locals.auth.validate();
-    if (!session) {
-      return {
-        status: 401,
-      };
-    }
+    if (!locals.user) fail(401, { message: 'Unauthorized' });
     
     const payload = await request.formData();
     const data = Object.fromEntries(payload.entries()) as { 
@@ -104,6 +88,6 @@ export const actions = {
       role: data.role as RoleTypes,
     };
     
-    return await updateUser(insertUser, insertUserProfile);
+    return await updateUserAndProfile(insertUser, insertUserProfile);
   }
 }

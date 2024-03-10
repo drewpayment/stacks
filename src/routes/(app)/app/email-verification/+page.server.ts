@@ -6,8 +6,8 @@ import { fail } from '@sveltejs/kit';
 
 export const actions = {
 	resendEmailVerificationLink: async ({ locals, url }) => {
-		const session = await locals.auth.validate();
-		const user = await getUserByEmail(session?.user.email);
+		if (!locals.user) fail(401, { message: 'Unauthorized' });
+		const user = await getUserByEmail(locals.user?.email);
 
 		if (!user) {
 			const feedbacks = getFeedbackObjects([
@@ -23,7 +23,7 @@ export const actions = {
 			});
 		}
 
-		const profile = await getUserProfileData(session?.user.userId);
+		const profile = await getUserProfileData(locals.user?.id);
 
 		try {
 			const verificationToken = await generateEmailVerificationToken(user.id);

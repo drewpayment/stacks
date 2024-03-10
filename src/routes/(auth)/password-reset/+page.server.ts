@@ -53,9 +53,9 @@ export const actions = {
 		try {
 			const resetToken = await generatePasswordResetToken(storedUser.id);
 
-			const sender = 'KitForStartups <justin@updates.okupter.com>';
+			const sender = 'Stacks <drew@verostack.dev>';
 			const recipient = profile?.firstName ? `${profile.firstName}` : storedUser.email;
-			const emailHtml = `Hello ${recipient},<br><br>Here is your password reset link:<br><br><a href="${url.origin}/password-reset/${resetToken}">Reset Password</a><br><br>Thanks,<br>Justin from KitForStartups`;
+			const emailHtml = `Hello ${recipient},<br><br>Here is your password reset link:<br><br><a href="${url.origin}/password-reset/${resetToken}">Reset Password</a><br><br>Thanks,<br>Drew from Stacks`;
 
 			const passwordResetEmail = await sendEmail({
 				from: sender,

@@ -1,12 +1,11 @@
 import { getEmployeeByUserId } from '$lib/drizzle/mysql/models/employees.js';
 import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import { error } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 
 export const load = async ({ locals }) => {
-	const session = await locals.auth.validate();
+	if (!locals.user) return fail(401, { message: 'Unauthorized' });
 	
-	if (!session) error(401, 'No session found. Please log in again.');
-	const userId = session?.user.userId;
+	const userId = locals.user.id;
 	
 	const profile = () => getUserProfileData(userId);
 	const employee = async () => getEmployeeByUserId(userId);

@@ -3,12 +3,12 @@ import { getEmployeeByUserId } from '$lib/drizzle/mysql/models/employees';
 import { getPaystubById } from '$lib/drizzle/mysql/models/paystubs.js';
 import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
 import type { SelectPaystub, SelectUserProfile } from '$lib/types/db.model.js';
-import { error } from '@sveltejs/kit';
-import type { Session } from 'lucia';
+import { error, fail } from '@sveltejs/kit';
 
-const canLoad = async (session: Session, profile: SelectUserProfile, payroll: SelectPaystub): Promise<boolean> => {
+const canLoad = async (locals: App.Locals, profile: SelectUserProfile, payroll: SelectPaystub): Promise<boolean> => {
+  if (!locals.user) return false;
   if (!['super_admin', 'org_admin'].includes(profile.role)) {
-    const ee = await getEmployeeByUserId(session?.user.userId);
+    const ee = await getEmployeeByUserId(locals.user?.id);
     
     if (payroll?.employeeId !== ee?.id) {
       return false;
@@ -19,14 +19,13 @@ const canLoad = async (session: Session, profile: SelectUserProfile, payroll: Se
 }
 
 export const load = async ({ locals, params }) => {
-  const session = await locals.auth.validate();
-  if (!session) error(401, 'Unauthorized');
+  if (!locals.user) return fail(401, { message: 'Unauthorized' });
   
-  const profile = await getUserProfileData(session?.user.userId);
+  const profile = await getUserProfileData(locals.user.id);
   const payrollId = params.id;
   const payroll = await getPaystubById(profile?.clientId as string, payrollId);
   
-  if (await canLoad(session, profile, payroll)) {
+  if (await canLoad(locals, profile, payroll)) {
     return {
       paystub: payroll,
       campaigns: await getCampaigns(profile?.clientId as string),

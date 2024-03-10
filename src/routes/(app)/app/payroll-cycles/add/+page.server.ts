@@ -1,7 +1,7 @@
 import { addPayrollCycle } from '$lib/drizzle/mysql/models/payroll-cycles';
 import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
 import type { InsertPayrollCycle, SelectPayrollCycle } from '$lib/types/db.model';
-import type { Actions } from '@sveltejs/kit';
+import { fail, type Actions } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';
 
@@ -10,12 +10,10 @@ import dayjs from 'dayjs';
 export const actions: Actions = {
   add: async ({ locals, request }) => {
     let dto: InsertPayrollCycle;
-    const session = await locals.auth.validate();
-    
-    if (!session) return { status: 401 };
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
     try {
-      const profile = await getUserProfileData(session?.user.userId);
+      const profile = await getUserProfileData(locals.user.id);
     
       const formData = await request.formData();
       const data = Object.fromEntries(formData);

@@ -1,15 +1,13 @@
 import { getEmployeeByUserId } from '$lib/drizzle/mysql/models/employees';
 import { getPaystubs } from '$lib/drizzle/mysql/models/paystubs.js';
 import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import { error } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 
 export const load = async ({ locals }) => {
-  const session = await locals.auth.validate();
+  if (!locals.user) return fail(401, { message: 'Unauthorized' });
   
-  if (!session) error(401, 'Unauthorized');
-  
-  const profile = await getUserProfileData(session?.user.userId);
+  const profile = await getUserProfileData(locals.user.id);
   
   if (!profile) error(403, 'Forbidden');
   
@@ -18,7 +16,7 @@ export const load = async ({ locals }) => {
   const endDate = dayjs();
   
   const paystubs = async () => {
-    const employee = await getEmployeeByUserId(session?.user.userId);
+    const employee = await getEmployeeByUserId(locals.user?.id as string);
     const stubs = await getPaystubs(clientId, startDate.unix(), endDate.unix(), employee?.id);
     return stubs.filter(x => !!x.payrollCycleId);
   };

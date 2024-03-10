@@ -8,15 +8,13 @@ import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
 import type { Employee, SelectSale, SelectSaleOverride } from '$lib/types/db.model';
 import type { InsertManualOverride } from '$lib/types/override.model.js';
 import { formatDate } from '$lib/utils.js';
-import { error } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 
 
 export const load = async ({ locals }) => {
-  const session = await locals.auth.validate();
+  if (!locals.user) return fail(401, { message: 'Unauthorized' });
   
-  if (!session) error(401, 'Unauthorized');
-  
-  const profile = await getUserProfileData(session?.user.userId);
+  const profile = await getUserProfileData(locals.user.id);
   
   if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
   
@@ -51,11 +49,9 @@ export const load = async ({ locals }) => {
 
 export const actions = {
   'get-sales-by-employee': async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) error(401, 'Unauthorized');
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
     
@@ -69,11 +65,9 @@ export const actions = {
     return { sales, overrides };
   },
   'save-paystub': async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) error(401, 'Unauthorized');
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
     
@@ -139,11 +133,9 @@ export const actions = {
     };
   },
   'add-manual-override': async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) error(401, 'Unauthorized');
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
     

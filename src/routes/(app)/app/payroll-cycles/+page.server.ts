@@ -2,15 +2,14 @@ import { getPayrollCycles } from '$lib/drizzle/mysql/models/payroll-cycles';
 import { numberOfPaystubsByPayrollCycleId } from '$lib/drizzle/mysql/models/paystubs.js';
 import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
 import type { SelectPayrollCycle } from '$lib/types/db.model.js';
+import { fail } from '@sveltejs/kit';
 
 
 export const load = async ({ locals }) => {
-  const session = await locals.auth.validate();
-  
-  if (!session) return { status: 401 };
+  if (!locals.user) return fail(401, { message: 'Unauthorized' });
   
   const payrollCycles = async (): Promise<(SelectPayrollCycle & { paystubCount: number })[]> => {
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user?.id);
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) return [];
     

@@ -1,9 +1,12 @@
-import { auth } from '$lib/lucia/mysql';
 import { getFeedbackObjects } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';
-import { LuciaError } from 'lucia';
 import { z } from 'zod';
 import type { Actions } from './$types';
+import { getUserByEmail } from '$lib/drizzle/mysql/models/users';
+import { Argon2id } from "oslo/password";
+import { lucia } from '$lib/lucia/utils';
+import { drizzleClient } from '$lib/drizzle/mysql/client';
+import { LegacyScrypt } from 'lucia';
 
 const loginUserSchema = z.object({
   email: z.string().email(),
@@ -11,7 +14,7 @@ const loginUserSchema = z.object({
 });
 
 export const actions: Actions = {
-  loginUser: async ({ locals, request }) => {
+  loginUser: async ({ locals, request, cookies }) => {
     const formData = Object.fromEntries(await request.formData());
     const loginUser = loginUserSchema.safeParse(formData);
 
@@ -32,33 +35,35 @@ export const actions: Actions = {
       });
     }
 
-    const { email, password } = loginUser.data;
+    const { email, password: inputPassword } = loginUser.data;
 
     try {
-      const user = await auth.useKey('email', email, password);
-      const session = await auth.createSession({
-        userId: user.userId,
-        attributes: {}
-      });
-
-      // Set session cookie
-      locals.auth.setSession(session);
-    } catch (e) {
-      if (
-        e instanceof LuciaError &&
-        (e.message === 'AUTH_INVALID_KEY_ID' || e.message === 'AUTH_INVALID_PASSWORD')
-      ) {
-        const feedbacks = getFeedbackObjects([
-          {
-            type: 'error',
-            title: 'Login failed',
-            message: 'Incorrect email or password.'
-          }
-        ]);
-
-        return fail(400, { feedbacks });
+      const user = await getUserByEmail(email);
+      const userId = user?.id as string;
+      const hashedPassword = ((await drizzleClient.query.password
+        .findFirst({
+          where: (pw, { eq }) => eq(pw.userId, userId),
+        }))?.hashedPassword) as string;
+      
+      const validPassword = hashedPassword.startsWith('s2') 
+        ? await new LegacyScrypt().verify(hashedPassword, inputPassword)
+        : await new Argon2id().verify(hashedPassword, inputPassword);
+      
+      if (!validPassword) {
+        return fail(400, {
+          message: "Incorrect username or password"
+        });
       }
-
+      
+      const session = await lucia.createSession(userId, {});
+      const sessionCookie = lucia.createSessionCookie(session.id);
+      
+      cookies.set(sessionCookie.name, sessionCookie.value, {
+        path: ".",
+        ...sessionCookie.attributes
+      });
+      
+    } catch (e) {
       const feedbacks = getFeedbackObjects([
         {
           type: 'error',
@@ -76,32 +81,14 @@ export const actions: Actions = {
   },
 
   logout: async ({ cookies, locals }) => {
-    const session = await locals.auth.validate();
-
-    if (!session) {
-      const feedbacks = getFeedbackObjects([
-        {
-          type: 'error',
-          title: 'Unauthorized',
-          message: 'You are not authorized to perform this action.'
-        }
-      ]);
-
-      return fail(401, {
-        feedbacks
-      });
-    }
-
-    // Invalidate session
-    await auth.invalidateSession(session.sessionId);
-
-    // Remove session cookie
-    locals.auth.setSession(null);
-
-    // Remove OAuth cookies
-    /* @migration task: add path argument */ //cookies.delete('github_oauth_state');
-    /* @migration task: add path argument */ //cookies.delete('google_oauth_state');
-
-    redirect(302, '/');
+    if (!locals.user) return fail(401);
+    
+    await lucia.invalidateSession(locals.session!.id);
+    const sessionCookie = lucia.createBlankSessionCookie();
+    cookies.set(sessionCookie.name, sessionCookie.value, {
+			path: ".",
+			...sessionCookie.attributes
+		});
+		redirect(302, "/login");
   }
 };

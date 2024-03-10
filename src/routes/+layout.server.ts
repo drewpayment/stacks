@@ -2,11 +2,10 @@ import { getClients } from '$lib/drizzle/mysql/models/clients';
 import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
 
 export const load = async ({ locals }) => {
-	const session = await locals.auth.validate();
-	const profile = await getUserProfileData(session?.user.userId);
+	const profile = await getUserProfileData(locals.user?.id);
 
 	return {
-		user: session?.user,
+		user: locals?.user,
 		profile,
 		clients: await getClients(),
 	};
