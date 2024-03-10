@@ -1,13 +1,11 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import SelectedClientStore from '$lib/stores/client';
-  import Icon from '@iconify/svelte';
   import { createDialog, melt, createLabel, createSelect } from '@melt-ui/svelte';
 	import { Check, ChevronDown, XSquare } from 'lucide-svelte';
-  import type { Unsubscriber } from 'svelte/store';
   
   const {
-    elements: { trigger: triggerSelect, menu, option, group, groupLabel, label },
+    elements: { trigger: triggerSelect, menu, option },
     states: { selectedLabel, open: openSelect, selected },
     helpers: { isSelected },
   } = createSelect({
@@ -56,14 +54,14 @@
       </div>
       
       <form action="?/add" method="post" class="py-5 px-2"
-        use:enhance={({ formElement, formData, action, cancel, submitter }) => {
+        use:enhance={() => {
           // `formElement` is this `<form>` element
           // `formData` is its `FormData` object that's about to be submitted
           // `action` is the URL to which the form is posted
           // calling `cancel()` will prevent the submission
           // `submitter` is the `HTMLElement` that caused the form to be submitted
       
-          return async ({ result, update }) => {
+          return async ({ result }) => {
             console.log(result);
             // `result` is an `ActionResult` object
             // `update` is a function which triggers the default logic that would be triggered if this callback wasn't set

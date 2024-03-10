@@ -8,6 +8,8 @@
   import type { Unsubscriber } from 'svelte/store';
 	import { createToast } from './Toast.svelte';
 	import UserStore from '$lib/stores/user';
+	import { Button, CloseButton } from 'flowbite-svelte';
+	import { EyeSolid } from 'flowbite-svelte-icons';
   
   export let user: User;
   let origUser: User;
@@ -48,9 +50,16 @@
   const payload: {[key: string]: any} = {};
 </script>
 
-<button use:melt={$trigger} class="rounded-md bg-primary-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 flex justify-around items-center gap-2">
+<span use:melt={$trigger}>
+  <Button class="space-x-2" type="submit" size="sm">
+    <EyeSolid />
+    <span>View</span>
+  </Button>
+</span>
+
+<!-- <button use:melt={$trigger} class="rounded-md bg-primary-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 flex justify-around items-center gap-2">
   <Eye />
-</button>
+</button> -->
 
 <div use:melt={$portalled}>
   {#if $open}
@@ -62,9 +71,11 @@
       p-6 shadow-lg dark:bg-gray-800 dark:text-neutral-50"
 		>
       <div class="flex justify-between">
-        <h3 class="text-2xl font-bold text-neutral-900 dark:text-neutral-50" use:melt={$title}>Edit: {user?.user_profile.firstName} {user?.user_profile.lastName}</h3>
+        <h3 class="text-xl font-bold text-neutral-900 dark:text-neutral-50" use:melt={$title}>
+          Edit: {user?.user_profile.firstName} {user?.user_profile.lastName}
+        </h3>
         <button use:melt={$close}>
-          <XSquare />
+          <CloseButton />
         </button>
       </div>
       
