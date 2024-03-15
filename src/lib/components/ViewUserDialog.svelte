@@ -6,7 +6,7 @@
 	import { Check, ChevronDown } from 'lucide-svelte';
   import { createToast } from './Toast.svelte';
 	import UserStore from '$lib/stores/user';
-	import { Button, CloseButton, Input, Label, Select } from 'flowbite-svelte';
+	import { Button, CloseButton, Input, Label, Select, Modal } from 'flowbite-svelte';
 	import { EnvelopeSolid, EyeSolid } from 'flowbite-svelte-icons';
   
   export let user: User;
@@ -49,14 +49,142 @@
   }
   
   const payload: {[key: string]: any} = {};
+  let defaultModal = false;
+  let saveBtn: HTMLButtonElement;
 </script>
 
-<span use:melt={$trigger}>
-  <Button class="space-x-2" type="submit" size="sm">
+<!-- <span use:melt={$trigger}> -->
+  <Button class="space-x-2" type="submit" size="sm" on:click={() => defaultModal = true}>
     <EyeSolid />
     <span>View</span>
   </Button>
-</span>
+<!-- </span> -->
+
+<Modal title={'Editing: ' + user?.user_profile.firstName + ' ' + user?.user_profile.lastName} bind:open={defaultModal} autoclose={false}>
+  <form action="?/update" method="post" class="py-5 px-2"
+    use:enhance={({ formElement, formData, action, cancel, submitter }) => {
+      // `formElement` is this `<form>` element
+      // `formData` is its `FormData` object that's about to be submitted
+      // `action` is the URL to which the form is posted
+      // calling `cancel()` will prevent the submission
+      // `submitter` is the `HTMLElement` that caused the form to be submitted
+      
+      for (const [key, value] of formData.entries()) {
+        switch (key) {
+          case 'first_name':
+            if (value !== origUser.user_profile.firstName) payload[key] = value;
+            break;
+          case 'last_name':
+            if (value !== origUser.user_profile.lastName) payload[key] = value;
+            break;
+          case 'email':
+            if (value !== origUser.auth_user.email) payload[key] = value;
+            break;
+          default:
+            payload[key] = value; 
+            break;
+        }
+      }
+      
+      console.log(payload)
+      // if the user doesn't change any of the field values, we just don't send the request
+      if (Object.keys(payload).length < 4) cancel();
+  
+      return async ({ result, update }) => {            
+        if (result.data.success) {
+          update();
+          
+          createToast({
+            type: 'success',
+            title: 'User Updated',
+            description: 'The user has been updated successfully.'
+          });
+          
+          // update the user in the store
+          // TODO: I hate everything about this... but it works
+          UserStore.update(users => {
+            const user = users.findIndex(x => x.auth_user.id === payload.user_id &&
+              x.user_profile.id === payload.user_profile_id);
+              
+            if (user > -1) {
+              for (const prop in payload) {
+                if (prop === 'user_id' || prop === 'user_profile_id') continue;
+                if (prop === 'client_id') continue;
+                if (prop === 'email') {
+                  users[user] = {...users[user],
+                    auth_user: {...users[user].auth_user,
+                      email: payload.email,
+                    },
+                  };
+                  continue;
+                }
+                if (prop === 'first_name' || prop === 'last_name') {
+                  users[user] = {...users[user],
+                    user_profile: {...users[user].user_profile,
+                      firstName: payload.first_name,
+                      lastName: payload.last_name,
+                    },
+                  };
+                  continue;
+                }
+              }
+            }
+            
+            return users;
+          });
+          
+          defaultModal = false;
+        }
+        // `result` is an `ActionResult` object
+        // `update` is a function which triggers the default logic that would be triggered if this callback wasn't set
+      };
+    }}
+  >
+    <div class="flex gap-2 mb-2">
+      <div class="space-y-2">
+        <Label for="first_name">First Name</Label>
+        <input type="hidden" name="user_id" value={user.auth_user.id} />
+        <input type="hidden" name="user_profile_id" value={user.user_profile.id} />
+        <Input type="text" name="first_name" id="first_name" value={user.user_profile.firstName} required />
+      </div>
+      
+      <div class="space-y-2">
+        <Label for="last_name">Last Name</Label>
+        <Input type="text" name="last_name" id="last_name" value={user.user_profile.lastName} required />
+      </div>
+    </div>
+    
+    <div class="space-y-2 mb-2">
+      <Label for="email">Email</Label>
+      <Input type="email" name="email" id="email" value={user.auth_user.email} required>
+        <EnvelopeSolid slot="left" class="w-4 h-4" />
+      </Input>
+    </div>
+    
+    <div class="mb-2">
+      <Label>
+        User Type
+        <Select class="mt-2" items={options} bind:value={userRole} placeholder="Choose user type" name="role" required />
+      </Label>
+    </div>
+    
+    <div class="space-y-2 mb-2">
+      <Label>Client</Label>
+      <Input type="text" name="client_id" id="client_id" bind:value={$SelectedClientStore} disabled />
+    </div>
+    
+    <div class="flex justify-between pt-4">      
+      <!-- <button type="submit" class="sr-only" bind:this={saveBtn}>Save</button> -->
+      <Button color="alternative" type="button" on:click={() => defaultModal = false}>Cancel</Button>
+      <Button type="submit">Save</Button>
+    </div>
+  </form>
+  
+  <!-- <svelte:fragment slot="footer">
+    <Button color="alternative">Cancel</Button>
+    <Button type="button" on:click={() => saveBtn.click()}>Save</Button>
+  </svelte:fragment> -->
+</Modal>
 
 <!-- <button use:melt={$trigger} class="rounded-md bg-primary-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 flex justify-around items-center gap-2">
   <Eye />
@@ -80,124 +208,7 @@
         </button>
       </div>
       
-      <form action="?/update" method="post" class="py-5 px-2"
-        use:enhance={({ formElement, formData, action, cancel, submitter }) => {
-          // `formElement` is this `<form>` element
-          // `formData` is its `FormData` object that's about to be submitted
-          // `action` is the URL to which the form is posted
-          // calling `cancel()` will prevent the submission
-          // `submitter` is the `HTMLElement` that caused the form to be submitted
-          
-          for (const [key, value] of formData.entries()) {
-            switch (key) {
-              case 'first_name':
-                if (value !== origUser.user_profile.firstName) payload[key] = value;
-                break;
-              case 'last_name':
-                if (value !== origUser.user_profile.lastName) payload[key] = value;
-                break;
-              case 'email':
-                if (value !== origUser.auth_user.email) payload[key] = value;
-                break;
-              default:
-                payload[key] = value; 
-                break;
-            }
-          }
-          
-          // if the user doesn't change any of the field values, we just don't send the request
-          if (Object.keys(payload).length < 4) cancel();
       
-          return async ({ result, update }) => {            
-            if (result.data.success) {
-              update();
-              
-              createToast({
-                type: 'success',
-                title: 'User Updated',
-                description: 'The user has been updated successfully.'
-              });
-              
-              // update the user in the store
-              // TODO: I hate everything about this... but it works
-              UserStore.update(users => {
-                const user = users.findIndex(x => x.auth_user.id === payload.user_id &&
-                  x.user_profile.id === payload.user_profile_id);
-                  
-                if (user > -1) {
-                  for (const prop in payload) {
-                    if (prop === 'user_id' || prop === 'user_profile_id') continue;
-                    if (prop === 'client_id') continue;
-                    if (prop === 'email') {
-                      users[user] = {...users[user],
-                        auth_user: {...users[user].auth_user,
-                          email: payload.email,
-                        },
-                      };
-                      continue;
-                    }
-                    if (prop === 'first_name' || prop === 'last_name') {
-                      users[user] = {...users[user],
-                        user_profile: {...users[user].user_profile,
-                          firstName: payload.first_name,
-                          lastName: payload.last_name,
-                        },
-                      };
-                      continue;
-                    }
-                  }
-                }
-                
-                return users;
-              });
-              open.set(false);
-            }
-            // `result` is an `ActionResult` object
-            // `update` is a function which triggers the default logic that would be triggered if this callback wasn't set
-          };
-        }}
-      >
-        <div class="flex gap-2 mb-2">
-          <div class="space-y-2">
-            <Label for="first_name">First Name</Label>
-            <input type="hidden" name="user_id" value={user.auth_user.id} />
-            <input type="hidden" name="user_profile_id" value={user.user_profile.id} />
-            <Input type="text" name="first_name" id="first_name" value={user.user_profile.firstName} required />
-          </div>
-          
-          <div class="space-y-2">
-            <Label for="last_name">Last Name</Label>
-            <Input type="text" name="last_name" id="last_name" value={user.user_profile.lastName} required />
-          </div>
-        </div>
-        
-        <div class="space-y-2 mb-2">
-          <Label for="email">Email</Label>
-          <Input type="email" name="email" id="email" value={user.auth_user.email} required>
-            <EnvelopeSolid slot="left" class="w-4 h-4" />
-          </Input>
-        </div>
-        
-        <div class="mb-2">
-          <Label>
-            User Type
-            <Select class="mt-2" items={options} bind:value={userRole} placeholder="Choose user type" name="" required />
-          </Label>
-        </div>
-        
-        <div class="space-y-2 mb-2">
-          <Label>Client</Label>
-          <Input type="text" name="client_id" id="client_id" bind:value={$SelectedClientStore} disabled />
-        </div>
-        
-        <div class="flex justify-between pt-4">
-          <span use:melt={$close}>
-            <Button color="alternative">Cancel</Button>
-          </span>
-          
-          <Button type="submit">Save</Button>
-        </div>
-      </form>
     </div>
   {/if}
 </div>

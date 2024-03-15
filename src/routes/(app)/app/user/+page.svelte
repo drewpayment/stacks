@@ -66,16 +66,5 @@
         </div>
       </div>
     </Card>
-    <!-- <Card title={`${user.user_profile.firstName} ${user.user_profile.lastName}`}>
-      <svelte:fragment slot="description">
-        <div>Email: {user.auth_user.email}</div>
-        <div>Email Verified: {user.auth_user.emailVerified ? 'Verified' : 'Not Verified'}</div>
-        <div>Role: {toProperCase(user.user_profile.role)}</div>
-      </svelte:fragment>
-      
-      <svelte:fragment slot="button">
-        <ViewUserDialog user={user} />
-      </svelte:fragment>
-    </Card> -->
   {/each}
 </div>
