@@ -1,9 +1,17 @@
 import { drizzleClient } from '$lib/drizzle/mysql/client';
 import { emailVerification, passwordResetToken } from '$lib/drizzle/mysql/schema';
 import { eq } from 'drizzle-orm';
-import { generateRandomString, isWithinExpiration } from 'lucia/utils';
+import { isWithinExpirationDate, TimeSpan, createDate } from 'oslo';
+import { generateRandomString, alphabet } from 'oslo/crypto';
 
 const EXPIRES_IN = 1000 * 60 * 60 * 2; // 2 hours
+
+const isWithinExpiration = (expires: number) => {
+	const expiryDate = createDate(new TimeSpan(Number(expires) - EXPIRES_IN / 2, 'h'));
+	return isWithinExpirationDate(expiryDate);
+}
+
+const randString = () => generateRandomString(63, alphabet('a-z', 'A-Z', '0-9'));
 
 const generateEmailVerificationToken = async (userId: string | undefined) => {
 	if (!userId) {
@@ -19,7 +27,7 @@ const generateEmailVerificationToken = async (userId: string | undefined) => {
 		const reusableStoredToken = storedUserTokens.find((token) => {
 			// check if expiration is within 1 hour
 			// and reuse the token if true
-			return isWithinExpiration(Number(token.expires) - EXPIRES_IN / 2);
+			return isWithinExpiration(token.expires);
 		});
 
 		if (reusableStoredToken) {
@@ -27,45 +35,45 @@ const generateEmailVerificationToken = async (userId: string | undefined) => {
 		}
 	}
 
-	const token = generateRandomString(63);
+	const token = randString();
 
 	await drizzleClient.insert(emailVerification).values({
 		id: token,
 		userId: userId,
-		expires: BigInt(new Date().getTime() + EXPIRES_IN)
+		expires: Number(new Date().getTime() + EXPIRES_IN)
 	});
 
 	return token;
 };
 
-const generatePasswordResetToken = async (userId: string) => {
-	const storedUserTokens = await drizzleClient
-		.select()
-		.from(passwordResetToken)
-		.where(eq(passwordResetToken.userId, userId));
+// const generatePasswordResetToken = async (userId: string) => {
+// 	const storedUserTokens = await drizzleClient
+// 		.select()
+// 		.from(passwordResetToken)
+// 		.where(eq(passwordResetToken.userId, userId));
 
-	if (storedUserTokens.length > 0) {
-		const reusableStoredToken = storedUserTokens.find((token) => {
-			// check if expiration is within 1 hour
-			// and reuse the token if true
-			return isWithinExpiration(Number(token.expires) - EXPIRES_IN / 2);
-		});
+// 	if (storedUserTokens.length > 0) {
+// 		const reusableStoredToken = storedUserTokens.find((token) => {
+// 			// check if expiration is within 1 hour
+// 			// and reuse the token if true
+// 			return isWithinExpiration(token.expires);
+// 		});
 
-		if (reusableStoredToken) {
-			return reusableStoredToken.id;
-		}
-	}
+// 		if (reusableStoredToken) {
+// 			return reusableStoredToken.id;
+// 		}
+// 	}
 
-	const token = generateRandomString(63);
+// 	const token = randString();
 
-	await drizzleClient.insert(passwordResetToken).values({
-		id: token,
-		userId,
-		expires: BigInt(new Date().getTime() + EXPIRES_IN)
-	});
+// 	await drizzleClient.insert(passwordResetToken).values({
+// 		id: token,
+// 		userId,
+// 		expires: BigInt(new Date().getTime() + EXPIRES_IN)
+// 	});
 
-	return token;
-};
+// 	return token;
+// };
 
 const validateEmailVerificationToken = async (token: string) => {
 	const storedToken = (
@@ -90,32 +98,32 @@ const validateEmailVerificationToken = async (token: string) => {
 	return storedToken.userId;
 };
 
-const validatePasswordResetToken = async (token: string) => {
-	const storedToken = (
-		await drizzleClient.select().from(passwordResetToken).where(eq(passwordResetToken.id, token))
-	)[0];
+// const validatePasswordResetToken = async (token: string) => {
+// 	const storedToken = (
+// 		await drizzleClient.select().from(passwordResetToken).where(eq(passwordResetToken.id, token))
+// 	)[0];
 
-	if (!storedToken) {
-		throw new Error('Invalid token');
-	}
+// 	if (!storedToken) {
+// 		throw new Error('Invalid token');
+// 	}
 
-	// Delete all tokens for the user
-	await drizzleClient
-		.delete(passwordResetToken)
-		.where(eq(passwordResetToken.userId, storedToken.userId));
+// 	// Delete all tokens for the user
+// 	await drizzleClient
+// 		.delete(passwordResetToken)
+// 		.where(eq(passwordResetToken.userId, storedToken.userId));
 
-	const tokenExpires = Number(storedToken.expires);
+// 	const tokenExpires = Number(storedToken.expires);
 
-	if (!isWithinExpiration(tokenExpires)) {
-		throw new Error('Expired token');
-	}
+// 	if (!isWithinExpiration(tokenExpires)) {
+// 		throw new Error('Expired token');
+// 	}
 
-	return storedToken.userId;
-};
+// 	return storedToken.userId;
+// };
 
 export {
 	generateEmailVerificationToken,
-	generatePasswordResetToken,
+	// generatePasswordResetToken,
 	validateEmailVerificationToken,
-	validatePasswordResetToken
+	// validatePasswordResetToken
 };
