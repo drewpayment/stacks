@@ -1,7 +1,7 @@
-import { getPayrollCycles } from '$lib/drizzle/mysql/models/payroll-cycles';
-import { numberOfPaystubsByPayrollCycleId } from '$lib/drizzle/mysql/models/paystubs.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { SelectPayrollCycle } from '$lib/types/db.model.js';
+import { getPayrollCycles } from '$lib/drizzle/postgres/models/payroll-cycles';
+import { numberOfPaystubsByPayrollCycleId } from '$lib/drizzle/postgres/models/paystubs.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { SelectPayrollCycle } from '$lib/drizzle/postgres/db.model.js';
 import { fail } from '@sveltejs/kit';
 
 

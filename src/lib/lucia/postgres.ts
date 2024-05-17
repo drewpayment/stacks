@@ -1,27 +1,33 @@
-import { dev } from '$app/environment';
 import { connection } from '$lib/drizzle/postgres/client';
 import {
 	adapterOptions,
 	generateUserAttributes,
-	githubAuthOptions,
-	googleAuthOptions
+	type DatabaseUserAttributes
 } from '$lib/lucia/utils';
-import { postgres } from '@lucia-auth/adapter-postgresql';
-import { github, google } from '@lucia-auth/oauth/providers';
-import { lucia } from 'lucia';
-import { sveltekit } from 'lucia/middleware';
+import { Lucia } from 'lucia';
+import { PostgresJsAdapter } from '@lucia-auth/adapter-postgresql';
+// import { github, google } from '@lucia-auth/oauth/providers';
+import type { RequestEvent } from '@sveltejs/kit';
 
-export const auth = lucia({
-	env: dev ? 'DEV' : 'PROD',
-	middleware: sveltekit(),
-	adapter: postgres(connection, adapterOptions),
+const adapter = new PostgresJsAdapter(connection, adapterOptions);
 
+export const lucia = new Lucia(adapter, {
 	getUserAttributes: (data) => {
 		return generateUserAttributes(data);
 	}
 });
 
-export const githubAuth = github(auth, githubAuthOptions);
-export const googleAuth = google(auth, googleAuthOptions);
+export const getSessionId = (event: RequestEvent<Partial<Record<string, string>>, string | null>) => event.cookies.get(lucia.sessionCookieName);
 
-export type Auth = typeof auth;
+declare module "lucia" {
+	interface Register {
+		Lucia: typeof lucia;
+		// DatabaseSessionAttributes: DatabaseSessionAttributes;
+		DatabaseUserAttributes: DatabaseUserAttributes;
+	}
+}
+
+// export const githubAuth = github(lucia, githubAuthOptions);
+// export const googleAuth = google(lucia, googleAuthOptions);
+
+export type Auth = typeof lucia;

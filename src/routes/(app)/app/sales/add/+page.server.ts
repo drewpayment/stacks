@@ -1,8 +1,8 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns';
-import { getEmployees } from '$lib/drizzle/mysql/models/employees.js';
-import { saveSale, toClientDto, toInsertSale } from '$lib/drizzle/mysql/models/sales';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { SaleDto } from '$lib/types/db.model.js';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns';
+import { getEmployees } from '$lib/drizzle/postgres/models/employees.js';
+import { saveSale, toClientDto, toInsertSale } from '$lib/drizzle/postgres/models/sales';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { SaleDto } from '$lib/drizzle/postgres/db.model.js';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 
 

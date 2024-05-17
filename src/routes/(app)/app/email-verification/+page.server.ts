@@ -1,5 +1,5 @@
-import { generateEmailVerificationToken } from '$lib/drizzle/mysql/models/tokens';
-import { getUserByEmail, getUserProfileData } from '$lib/drizzle/mysql/models/users';
+import { generateEmailVerificationToken } from '$lib/drizzle/postgres/models/tokens';
+import { getUserByEmail, getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import { sendEmail } from '$lib/emails/send';
 import { getFeedbackObjects } from '$lib/utils';
 import { fail } from '@sveltejs/kit';

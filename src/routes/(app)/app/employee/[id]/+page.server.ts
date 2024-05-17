@@ -1,8 +1,8 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns.js';
-import { addEmployeeNote, getEmployee, getEmployees, upsertEmployeeCodes } from '$lib/drizzle/mysql/models/employees';
-import { saveOverridingEmployee } from '$lib/drizzle/mysql/models/overrides.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users.js';
-import type { EmployeeWithNotes, SelectOverridingEmployee } from '$lib/types/db.model';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns.js';
+import { addEmployeeNote, getEmployee, getEmployees, upsertEmployeeCodes } from '$lib/drizzle/postgres/models/employees';
+import { saveOverridingEmployee } from '$lib/drizzle/postgres/models/overrides.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users.js';
+import type { EmployeeWithNotes, SelectOverridingEmployee } from '$lib/drizzle/postgres/db.model';
 import { error, fail } from '@sveltejs/kit';
 
 export const load = async ({ locals, params }) => {

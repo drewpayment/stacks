@@ -1,6 +1,6 @@
-import { addCampaign } from '$lib/drizzle/mysql/models/campaigns';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { InsertCampaign } from '$lib/types/db.model';
+import { addCampaign } from '$lib/drizzle/postgres/models/campaigns';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { InsertCampaign } from '$lib/drizzle/postgres/db.model';
 import type { Actions } from '@sveltejs/kit';
 
 

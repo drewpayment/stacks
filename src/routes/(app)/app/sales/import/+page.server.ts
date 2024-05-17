@@ -1,9 +1,9 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns';
-import { getEmployees } from '$lib/drizzle/mysql/models/employees';
-import { processImport, saveSales } from '$lib/drizzle/mysql/models/sales.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { InsertSale } from '$lib/types/db.model.js';
-import type { ImportRow } from '$lib/types/sale.model.js';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns';
+import { getEmployees } from '$lib/drizzle/postgres/models/employees';
+import { processImport, saveSales } from '$lib/drizzle/postgres/models/sales.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { InsertSale } from '$lib/drizzle/postgres/db.model.js';
+import type { ImportRow } from '$lib/drizzle/postgres/types/sale.model.js';
 import { fail, redirect, type Actions, error } from '@sveltejs/kit';
 import { read, utils, writeFile } from 'xlsx';
 

@@ -1,5 +1,5 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 
 
 export const load = async ({ locals, params }) => {  

@@ -1,5 +1,5 @@
-import { getClients } from '$lib/drizzle/mysql/models/clients';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
+import { getClients } from '$lib/drizzle/postgres/models/clients';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 
 export const load = async ({ locals }) => {
 	const profile = await getUserProfileData(locals.user?.id);

@@ -1,8 +1,8 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns';
-import { getEmployees } from '$lib/drizzle/mysql/models/employees';
-import { getPayrollCycles } from '$lib/drizzle/mysql/models/payroll-cycles';
-import { attachPayrollCycleToPaystub, getPaystubs } from '$lib/drizzle/mysql/models/paystubs.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns';
+import { getEmployees } from '$lib/drizzle/postgres/models/employees';
+import { getPayrollCycles } from '$lib/drizzle/postgres/models/payroll-cycles';
+import { attachPayrollCycleToPaystub, getPaystubs } from '$lib/drizzle/postgres/models/paystubs.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import { formatDate } from '$lib/utils';
 import { error, fail } from '@sveltejs/kit';
 import dayjs from 'dayjs';

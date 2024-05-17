@@ -5,7 +5,6 @@ import {
 	GOOGLE_OAUTH_CLIENT_SECRET,
 	GOOGLE_OAUTH_REDIRECT_URI
 } from '$env/static/private';
-import { PlanetScaleAdapter } from '@lucia-auth/adapter-mysql';
 import { connect } from '@planetscale/database';
 import { Lucia } from 'lucia';
 import 'dotenv/config'
@@ -22,30 +21,18 @@ const adapterOptions = {
 	session: 'user_session'
 };
 
-const adapter = new PlanetScaleAdapter(connection, {
-	user: 'auth_user',
-	session: 'user_session',
-});
+// const adapter = new PlanetScaleAdapter(connection, {
+// 	user: 'auth_user',
+// 	session: 'user_session',
+// });
 
-export const lucia = new Lucia(adapter, {
-	getUserAttributes: (data) => {
-		return generateUserAttributes(data);
-	},
-})
+// export const lucia = new Lucia(adapter, {
+// 	getUserAttributes: (data) => {
+// 		return generateUserAttributes(data);
+// 	},
+// })
 
-export const getSessionId = (event: RequestEvent<Partial<Record<string, string>>, string | null>) => event.cookies.get(lucia.sessionCookieName);
 
-declare module "lucia" {
-	interface Register {
-		Lucia: typeof lucia;
-		DatabaseSessionAttributes: DatabaseSessionAttributes;
-		DatabaseUserAttributes: DatabaseUserAttributes;
-	}
-}
-
-export interface DatabaseSessionAttributes {
-	
-}
 export interface DatabaseUserAttributes {
 	email: string;
 	email_verified: boolean;

@@ -1,17 +1,15 @@
-import { generateEmailVerificationToken } from '$lib/drizzle/mysql/models/tokens';
-import { insertUserProfileData } from '$lib/drizzle/mysql/models/users';
+import { generateEmailVerificationToken } from '$lib/drizzle/postgres/models/tokens';
+import { createUser } from '$lib/drizzle/postgres/models/users';
 import { sendEmail } from '$lib/emails/send';
-import { auth } from '$lib/lucia/mysql';
 import { getFeedbackObjects } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
 import type { Actions } from './$types';
-import { drizzleClient } from '$lib/drizzle/mysql/client';
-import { password, user } from '$lib/drizzle/mysql/schema';
 import { Argon2id } from 'oslo/password';
-import type { SelectUser } from '$lib/types/db.model';
-import { lucia } from '$lib/lucia/utils';
+import type { InsertUser, InsertUserKey, InsertUserProfile } from '$lib/drizzle/postgres/db.model';
+import { lucia } from '$lib/lucia/postgres';
+
 
 const signupUserSchema = z.object({
   firstName: z.string().optional(),
@@ -43,38 +41,45 @@ export const actions: Actions = {
     }
 
     const { firstName, lastName, email, password: inputPassword } = signupUser.data;
-
-    try {
-      const createdUser = await drizzleClient.transaction<SelectUser>(async tx => {
-        const userId = nanoid();
+    
+    try {      
+      const insertUser = {
+        id: nanoid(),
+        email,
+      } as InsertUser;
         
-        const dto: SelectUser = {
-          id: userId, 
-          email,
-          emailVerified: false,
-          githubUsername: null,
-        };
-        
-        await drizzleClient.insert(user)
-          .values(dto);
-          
-        const hashedPassword = await new Argon2id().hash(inputPassword);
-          
-        await drizzleClient.insert(password).values({ id: nanoid(), userId, hashedPassword, });
-        
-        await insertUserProfileData({
-          id: nanoid(),
-          userId,
-          firstName, 
-          lastName, 
-          clientId: 'default',
-          role: 'user',
-        });
-        
-        return dto;
-      });
+      const hashedPassword = await new Argon2id().hash(inputPassword);
       
-      const session = await lucia.createSession(createdUser.id, {});
+      const insertUserKey = {
+        id: nanoid(),
+        userId: insertUser.id,
+        hashedPassword,
+      } as InsertUserKey;
+      
+      const insertUserProfile = {
+        id: nanoid(),
+        userId: insertUser.id,
+        firstName,
+        lastName,
+        clientId: 'default',
+        role: 'user',
+      } as InsertUserProfile;
+        
+      const result = await createUser(insertUser, insertUserKey, insertUserProfile);
+      
+      if (!result.success) {
+        return fail(500, {
+          feedbacks: [
+            {
+              type: 'error',
+              title: 'Error creating user',
+              message: 'An error occurred while creating your account. Please try again.'
+            }
+          ]
+        });
+      }
+      
+      const session = await lucia.createSession(insertUser.id, {});
       const sessionCookie = lucia.createSessionCookie(session.id);
 
       // Set session cookie
@@ -84,7 +89,7 @@ export const actions: Actions = {
       });
 
       // Send verification email
-      const verificationToken = await generateEmailVerificationToken(createdUser.id);
+      const verificationToken = await generateEmailVerificationToken(insertUser.id);
 
       const sender = 'Stacks <drew@verostack.dev>';
       const recipient = firstName ? `${firstName}` : email;

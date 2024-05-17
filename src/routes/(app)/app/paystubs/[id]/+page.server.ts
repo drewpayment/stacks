@@ -1,8 +1,8 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns';
-import { getEmployeeByUserId } from '$lib/drizzle/mysql/models/employees';
-import { getPaystubById } from '$lib/drizzle/mysql/models/paystubs.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { SelectPaystub, SelectUserProfile } from '$lib/types/db.model.js';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns';
+import { getEmployeeByUserId } from '$lib/drizzle/postgres/models/employees';
+import { getPaystubById } from '$lib/drizzle/postgres/models/paystubs.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { SelectPaystub, SelectUserProfile } from '$lib/drizzle/postgres/db.model.js';
 import { error, fail } from '@sveltejs/kit';
 import type { Session } from 'lucia';
 

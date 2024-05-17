@@ -1,8 +1,8 @@
-import { validateEmailVerificationToken } from '$lib/drizzle/mysql/models/tokens';
-import { getUserById, updateUser } from '$lib/drizzle/mysql/models/users';
-import { auth } from '$lib/lucia/mysql';
+import { validateEmailVerificationToken } from '$lib/drizzle/postgres/models/tokens';
+import { getUserById, updateUser } from '$lib/drizzle/postgres/models/users';
+import { lucia } from '$lib/lucia/postgres.js';
 import { fail } from '@sveltejs/kit';
-import type { User } from 'lucia';
+import { type User } from 'lucia';
 
 export const GET = async ({ params, locals, cookies }) => {
 	const { token } = params;
@@ -12,7 +12,7 @@ export const GET = async ({ params, locals, cookies }) => {
 		
 		const user = await getUserById(userId);
 
-		await auth.invalidateUserSessions(userId);
+		await lucia.invalidateUserSessions(userId);
 		
 		const updateResult = await updateUser({
 			id: userId, 
@@ -20,10 +20,10 @@ export const GET = async ({ params, locals, cookies }) => {
 			emailVerified: true,
 		});
 		
-		if (!updateResult?.status) fail(400, { message: 'Invalid email verification link' });
+		if (!updateResult) fail(400, { message: 'Invalid email verification link' });
 
-		const session = await auth.createSession(user.id, {});
-		const sessionCookie = auth.createSessionCookie(session.id);
+		const session = await lucia.createSession(user.id, {});
+		const sessionCookie = lucia.createSessionCookie(session.id);
 		cookies.set(sessionCookie.name, sessionCookie.value, {
 			path: '.',
 			...sessionCookie.attributes,

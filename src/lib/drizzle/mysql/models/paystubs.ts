@@ -1,8 +1,8 @@
 import { eq, or } from 'drizzle-orm';
 import { drizzleClient } from '../client';
 import { paystub } from '../schema';
-import type { PaystubWith } from '$lib/types/paystbus.model';
-import type { InsertPaystub, } from '$lib/types/db.model';
+import type { PaystubWith } from '$lib/drizzle/mysql/types/paystbus.model';
+import type { InsertPaystub, } from '$lib/drizzle/mysql/db.model';
 import { error } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';

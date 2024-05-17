@@ -1,4 +1,4 @@
-import { getClients, createClient } from '$lib/drizzle/mysql/models/clients';
+import { getClients, createClient } from '$lib/drizzle/postgres/models/clients';
 import { fail, json } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 

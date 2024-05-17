@@ -8,7 +8,7 @@
 
 <div class="flex flex-col gap-2">
 	{#if data.user}
-		<h4>Welcome, {data?.profile.firstName} {data?.profile.lastName}.</h4>
+		<h4>Welcome, {data?.profile?.firstName} {data?.profile?.lastName}.</h4>
 	{/if}
 
 	<div

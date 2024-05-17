@@ -1,5 +1,5 @@
-import { getEmployeeByUserId } from '$lib/drizzle/mysql/models/employees.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
+import { getEmployeeByUserId } from '$lib/drizzle/postgres/models/employees.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import { error, fail } from '@sveltejs/kit';
 
 export const load = async ({ locals }) => {

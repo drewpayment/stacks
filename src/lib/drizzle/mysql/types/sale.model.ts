@@ -1,4 +1,4 @@
-import type { InsertSale, SelectCampaign, SelectEmployee, SelectSale } from './db.model';
+import type { InsertSale, SelectCampaign, SelectEmployee, SelectSale } from '../db.model';
 
 
 export type SaleWithEmployee = SelectSale & { employee: SelectEmployee, campaign: SelectCampaign };

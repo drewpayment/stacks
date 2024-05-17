@@ -2,11 +2,11 @@ import { getFeedbackObjects } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { Actions } from './$types';
-import { getUserByEmail } from '$lib/drizzle/mysql/models/users';
+import { getUserByEmail } from '$lib/drizzle/postgres/models/users';
 import { Argon2id } from "oslo/password";
-import { lucia } from '$lib/lucia/utils';
-import { drizzleClient } from '$lib/drizzle/mysql/client';
+import { drizzleClient } from '$lib/drizzle/postgres/client';
 import { LegacyScrypt } from 'lucia';
+import { lucia } from '$lib/lucia/postgres';
 
 const loginUserSchema = z.object({
   email: z.string().email(),
@@ -40,10 +40,22 @@ export const actions: Actions = {
     try {
       const user = await getUserByEmail(email);
       const userId = user?.id as string;
-      const hashedPassword = ((await drizzleClient.query.password
+      
+      const userKey = await drizzleClient.query.userKey
         .findFirst({
-          where: (pw, { eq }) => eq(pw.userId, userId),
-        }))?.hashedPassword) as string;
+          where: (uk, { eq }) => eq(uk.userId, userId),
+          columns: {
+            hashedPassword: true,
+          },
+        });
+        
+      if (!userKey) {
+        return fail(400, {
+          message: "Incorrect username or password"
+        });
+      }
+      
+      const hashedPassword = userKey?.hashedPassword as string;
       
       const validPassword = hashedPassword.startsWith('s2') 
         ? await new LegacyScrypt().verify(hashedPassword, inputPassword)

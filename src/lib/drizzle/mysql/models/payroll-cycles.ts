@@ -1,4 +1,4 @@
-import type { InsertPayrollCycle, SelectPayrollCycle } from '$lib/types/db.model';
+import type { InsertPayrollCycle, SelectPayrollCycle } from '$lib/drizzle/mysql/db.model';
 import { eq } from 'drizzle-orm';
 import { drizzleClient } from '../client';
 import { payrollCycle } from '../schema';

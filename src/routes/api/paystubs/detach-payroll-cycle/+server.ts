@@ -1,6 +1,6 @@
 import { detachPayrollCycleFromPaystub } from '$lib/drizzle/mysql/models/paystubs.js';
 import { getUserProfileData } from '$lib/drizzle/mysql/models/users.js';
-import type { SelectPaystub } from '$lib/types/db.model.js';
+import type { SelectPaystub } from '$lib/drizzle/mysql/db.model.js';
 
 
 /**

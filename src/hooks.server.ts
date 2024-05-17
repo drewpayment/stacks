@@ -1,7 +1,8 @@
 import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import { getSessionId, lucia } from '$lib/lucia/utils';
+import { getSessionId, lucia } from '$lib/lucia/postgres';
 import { redirect, type Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
+import type { Session, User } from 'lucia';
 
 const protectedRoutesBase = '/app';
 const emailVerificationPath = '/app/email-verification';
@@ -12,8 +13,8 @@ const authRoutesBase = ['/auth', '/oauth'];
 const authHandler: Handle = async ({ event, resolve }) => {
 	const sessionId = getSessionId(event);
 	if (!sessionId) {
-		event.locals.user = null;
-		event.locals.session = null;
+		event.locals.user = null as unknown as User;
+		event.locals.session = null as unknown as Session;
 		return resolve(event);
 	}
 	
@@ -33,8 +34,8 @@ const authHandler: Handle = async ({ event, resolve }) => {
 			...sessionCookie.attributes
 		});
 	}
-	event.locals.user = user;
-	event.locals.session = session;
+	event.locals.user = user as User;
+	event.locals.session = session as Session;
 	// return resolve(event);
 	// const session = await event.locals.auth.validate();
 

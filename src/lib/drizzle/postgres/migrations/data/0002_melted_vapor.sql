@@ -1,0 +1,24 @@
+ALTER TABLE "campaigns" ALTER COLUMN "created" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "campaigns" ALTER COLUMN "updated" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "client" ALTER COLUMN "created" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "client" ALTER COLUMN "updated" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "client" ALTER COLUMN "deleted" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "email_verification" ALTER COLUMN "expires" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "expense_item" ALTER COLUMN "date_incurred" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "expense_report" ALTER COLUMN "submission_date" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "expense_report" ALTER COLUMN "approval_date" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "expense_report" ALTER COLUMN "created" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "expense_report" ALTER COLUMN "updated" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "expense_report" ALTER COLUMN "deleted" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "password_reset_token" ALTER COLUMN "id" SET DATA TYPE text;--> statement-breakpoint
+ALTER TABLE "password_reset_token" ALTER COLUMN "expires" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "payroll_cycle" ALTER COLUMN "created" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "payroll_cycle" ALTER COLUMN "updated" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "payroll_cycle" ALTER COLUMN "deleted" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "paystub" ALTER COLUMN "created" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "paystub" ALTER COLUMN "updated" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "paystub" ALTER COLUMN "deleted" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "sale" ALTER COLUMN "sale_date" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "sale" ALTER COLUMN "created" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "sale" ALTER COLUMN "updated" SET DATA TYPE timestamp;--> statement-breakpoint
+ALTER TABLE "sale" ALTER COLUMN "deleted" SET DATA TYPE timestamp;

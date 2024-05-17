@@ -1,6 +1,6 @@
 import { drizzleClient } from '$lib/drizzle/mysql/client';
 import { user, userKey, userProfile } from '$lib/drizzle/mysql/schema';
-import type { InsertUser, InsertUserKey, InsertUserProfile, SelectUser, User, UserProfile } from '$lib/types/db.model';
+import type { InsertUser, InsertUserKey, InsertUserProfile, SelectUser, User, UserProfile } from '$lib/drizzle/mysql/db.model';
 import { fail } from '@sveltejs/kit';
 import { eq, ne, and } from 'drizzle-orm';
 

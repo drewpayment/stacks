@@ -1,5 +1,5 @@
 import { drizzleClient } from '$lib/drizzle/mysql/client';
-import type { InsertCampaign, SelectCampaign } from '$lib/types/db.model';
+import type { InsertCampaign, SelectCampaign } from '$lib/drizzle/mysql/db.model';
 import { eq } from 'drizzle-orm';
 import { campaigns } from '../schema';
 import { nanoid } from 'nanoid';

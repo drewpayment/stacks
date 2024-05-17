@@ -1,6 +1,6 @@
-import { addPayrollCycle } from '$lib/drizzle/mysql/models/payroll-cycles';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { InsertPayrollCycle, SelectPayrollCycle } from '$lib/types/db.model';
+import { addPayrollCycle } from '$lib/drizzle/postgres/models/payroll-cycles';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { InsertPayrollCycle, SelectPayrollCycle } from '$lib/drizzle/postgres/db.model';
 import { fail, type Actions } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';

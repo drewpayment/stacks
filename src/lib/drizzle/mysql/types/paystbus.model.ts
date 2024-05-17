@@ -1,4 +1,4 @@
-import type { SelectCampaign, SelectClient, SelectEmployee, SelectEmployeeProfile, SelectPayrollCycle, SelectPaystub, SelectSale } from './db.model';
+import type { SelectCampaign, SelectClient, SelectEmployee, SelectEmployeeProfile, SelectPayrollCycle, SelectPaystub, SelectSale } from '../db.model';
 
 export type PaystubWith = (SelectPaystub & {
   employee: SelectEmployee & {

@@ -1,6 +1,6 @@
-import { createEmployee, getEmployees } from '$lib/drizzle/mysql/models/employees';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { Employee, InsertEmployee, InsertEmployeeProfile } from '$lib/types/db.model';
+import { createEmployee, getEmployees } from '$lib/drizzle/postgres/models/employees';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { Employee, InsertEmployee, InsertEmployeeProfile } from '$lib/drizzle/postgres/db.model';
 import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 

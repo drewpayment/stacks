@@ -1,8 +1,8 @@
-import { getPayrollCycle, togglePayrollCycleClose } from '$lib/drizzle/mysql/models/payroll-cycles.js';
-import { attachPayrollCycleToPaystub, getPaystubs, getPaystubsByPayrollCycleId, getPaystubsWoPayrollCycle } from '$lib/drizzle/mysql/models/paystubs.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { SelectPayrollCycle } from '$lib/types/db.model.js';
-import type { CycleAndPaystubs, PaystubWith } from '$lib/types/paystbus.model';
+import { getPayrollCycle, togglePayrollCycleClose } from '$lib/drizzle/postgres/models/payroll-cycles.js';
+import { attachPayrollCycleToPaystub, getPaystubs, getPaystubsByPayrollCycleId, getPaystubsWoPayrollCycle } from '$lib/drizzle/postgres/models/paystubs.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { SelectPayrollCycle } from '$lib/drizzle/postgres/db.model.js';
+import type { CycleAndPaystubs, PaystubWith } from '$lib/drizzle/postgres/types/paystbus.model';
 import { fail, type Actions } from '@sveltejs/kit';
 
 export const load = async ({ locals, params }) => {

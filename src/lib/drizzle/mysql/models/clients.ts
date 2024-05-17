@@ -1,6 +1,6 @@
 import { drizzleClient as db, drizzleClient } from '$lib/drizzle/mysql/client';
 import { client } from '$lib/drizzle/mysql/schema';
-import type { SelectClient } from '$lib/types/db.model';
+import type { SelectClient } from '$lib/drizzle/mysql/db.model';
 
 
 const getClients = async (): Promise<SelectClient[]> => {

@@ -1,5 +1,5 @@
-import { createUser, getUserProfileData, getUsers, updateUserAndProfile } from '$lib/drizzle/mysql/models/users';
-import type { InsertUser, InsertUserKey, InsertUserProfile, RoleTypes, User } from '$lib/types/db.model';
+import { createUser, getUserProfileData, getUsers, updateUserAndProfile } from '$lib/drizzle/postgres/models/users';
+import type { InsertUser, InsertUserKey, InsertUserProfile, RoleTypes, User } from '$lib/drizzle/postgres/db.model';
 import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 
@@ -40,7 +40,6 @@ export const actions = {
     const insertUser: InsertUser = {
       id: nanoid(),
       email: data.email,
-      emailVerified: false,
     };
     
     const insertUserKey: InsertUserKey = {
@@ -76,7 +75,6 @@ export const actions = {
     const insertUser: InsertUser = {
       id: data.user_id,
       email: data.email,
-      emailVerified: false,
     };
     
     const insertUserProfile: InsertUserProfile = {

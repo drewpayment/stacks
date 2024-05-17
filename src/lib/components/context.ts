@@ -1,6 +1,6 @@
 import { writable, type Writable } from 'svelte/store'
 import { getContext, setContext } from 'svelte'
-import type { SelectSaleOverride } from '$lib/types/db.model';
+import type { SelectSaleOverride } from '$lib/drizzle/mysql/db.model';
 
 export type Context<T> = Writable<T>;
 export type EmployeeOptions = { name: string, value: string };
