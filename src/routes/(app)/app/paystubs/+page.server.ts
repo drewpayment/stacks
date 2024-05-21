@@ -1,6 +1,7 @@
 import { getEmployeeByUserId } from '$lib/drizzle/postgres/models/employees';
 import { getPaystubs } from '$lib/drizzle/postgres/models/paystubs.js';
 import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { PaystubWith } from '$lib/drizzle/postgres/types/paystbus.model';
 import { error, fail } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 
@@ -17,6 +18,9 @@ export const load = async ({ locals }) => {
   
   const paystubs = async () => {
     const employee = await getEmployeeByUserId(locals.user?.id as string);
+    
+    if (!employee) return [] as PaystubWith[];
+    
     const stubs = await getPaystubs(clientId, startDate.unix(), endDate.unix(), employee?.id);
     return stubs.filter(x => !!x.payrollCycleId);
   };

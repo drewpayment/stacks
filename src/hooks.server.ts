@@ -1,4 +1,4 @@
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import { getSessionId, lucia } from '$lib/lucia/postgres';
 import { redirect, type Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
