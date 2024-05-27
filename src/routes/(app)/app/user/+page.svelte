@@ -7,8 +7,9 @@
 	import { AddressCardSolid, DotsHorizontalOutline } from 'flowbite-svelte-icons';
 
   export let data;
+  const { users, client } = data;
   
-  if (data.users) UserStore.set(data.users);
+  if (users) UserStore.set(users);
 </script>
 
 <div class="pb-4">
@@ -22,7 +23,7 @@
   <h4 class="text-text-900">Users</h4>
 </div>
 
-<AddUserDialog />
+<AddUserDialog client={client} />
 
 <div class="flex flex-row justify-start gap-2 py-3">
   {#each $UserStore as user}

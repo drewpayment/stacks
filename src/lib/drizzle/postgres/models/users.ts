@@ -1,7 +1,8 @@
 import { drizzleClient } from '$lib/drizzle/postgres/client';
 import { user, userKey, userProfile } from '$lib/drizzle/postgres/schema';
 import type { InsertUser, InsertUserKey, InsertUserProfile, SelectUser, User, UserProfile } from '$lib/drizzle/mysql/db.model';
-import { and, eq, ne } from 'drizzle-orm';
+import { and, asc, eq, ne } from 'drizzle-orm';
+import type { SelectClient } from '../db.model';
 
 export const getUserByEmail = async (email: string | undefined) => {
 	if (!email) {
@@ -40,14 +41,23 @@ export const updateUserAttributes = async (userId: string, attributes: Partial<S
  * @param userId 
  * @returns Promise<UserProfile>
  */
-export const getUserProfileData = async (userId: string | undefined): Promise<UserProfile> => {
+export const getUserProfileData = async (userId: string | undefined): Promise<UserProfile & { client: SelectClient }> => {
 	if (!userId) {
-		return null as unknown as UserProfile;
+		return null as unknown as UserProfile & { client: SelectClient };
 	}
 
-	const data = await drizzleClient.select().from(userProfile).where(eq(userProfile.userId, userId));
+	const data = await drizzleClient.query.userProfile
+		.findFirst({
+			where: eq(userProfile.userId, userId),
+			with: {
+				client: true,
+			},
+		}) as UserProfile & { client: SelectClient };
+		
+	return data;
+	// const data = await drizzleClient.select().from(userProfile).where(eq(userProfile.userId, userId));
 
-	return data[0] as UserProfile;
+	// return data[0] as UserProfile;
 };
 
 /**

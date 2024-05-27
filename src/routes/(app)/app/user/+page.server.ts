@@ -1,5 +1,5 @@
 import { createUser, getUserProfileData, getUsers, updateUserAndProfile } from '$lib/drizzle/postgres/models/users';
-import type { InsertUser, InsertUserKey, InsertUserProfile, RoleTypes, User } from '$lib/drizzle/postgres/db.model';
+import type { InsertUser, InsertUserKey, InsertUserProfile, RoleTypes, SelectClient, User } from '$lib/drizzle/postgres/db.model';
 import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 
@@ -7,20 +7,20 @@ import { nanoid } from 'nanoid';
 export const load = async ({locals}) => {
   if (!locals.user) fail(401, { message: 'Unauthorized' });
   
+  const profile = await getUserProfileData(locals.user?.id);
+  
+  if (!profile) {
+    return fail(401, { message: 'Unauthorized' });
+  }
+  
   const users = async (): Promise<User[]> => {
-    const profile = await getUserProfileData(locals.user?.id);
-    
-    if (!profile) {
-      return [];
-    }
-    
     const users = await getUsers(profile?.clientId as string);
-    
     return users;
   }
   
   return {
     users: await users(),
+    client: profile?.client as SelectClient,
   };
 }
 

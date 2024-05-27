@@ -1,8 +1,9 @@
 import { drizzleClient } from '$lib/drizzle/postgres/client';
-import type { InsertCampaign, SelectCampaign } from '$lib/drizzle/mysql/db.model';
+import type { InsertCampaign, SelectCampaign } from '$lib/drizzle/postgres/db.model';
 import { eq } from 'drizzle-orm';
 import { campaigns } from '../schema';
 import { nanoid } from 'nanoid';
+import dayjs from 'dayjs';
 
 const getCampaign = async (clientId: string, campaignId: string): Promise<SelectCampaign | null> => {
   if (!clientId || !campaignId) {
@@ -34,7 +35,7 @@ const getCampaigns = async (clientId: string): Promise<SelectCampaign[]> => {
 
 const updateCampaign = async (campaign: InsertCampaign): Promise<SelectCampaign | null> => {
   if (!campaign) return null;
-  const updated = Date.now() as any;
+  const updated = dayjs().toDate();
   
   try {
     const current = await getCampaign(campaign.clientId, campaign.id);
@@ -68,7 +69,7 @@ const updateCampaign = async (campaign: InsertCampaign): Promise<SelectCampaign 
 
 const addCampaign = async (campaign: InsertCampaign): Promise<SelectCampaign | null> => {
   if (!campaign) return null;
-  const updated = Date.now() as any;
+  const updated = dayjs().toDate();
   
   const dto = {
     id: nanoid(),

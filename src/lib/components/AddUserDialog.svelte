@@ -1,5 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
+	import type { SelectClient } from '$lib/drizzle/postgres/db.model';
   import SelectedClientStore from '$lib/stores/client';
   import { createDialog, melt, createLabel, createSelect } from '@melt-ui/svelte';
 	import { Check, ChevronDown, XSquare } from 'lucide-svelte';
@@ -31,9 +32,13 @@
     { label: 'Manager', value: 'manager' },
     { label: 'User', value: 'user' },
   ];
+  
+  export let client: SelectClient | undefined;
 </script>
 
-<button use:melt={$trigger} class="rounded-md bg-primary-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 flex justify-around items-center gap-2">
+<button use:melt={$trigger} class="rounded-md bg-primary-600 px-3.5 py-2.5 text-sm 
+font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 
+focus-visible:outline-offset-2 focus-visible:outline-primary-600 flex justify-around items-center gap-2">
   <span>Add User</span>
 </button>
 
@@ -151,15 +156,15 @@
           </div>
           
           <div class="flex flex-col items-start justify-center pb-2">
-            <label for="client_id"
+            <!-- <label for="client_id"
               use:melt={$root}
               class="mb-0.5 font-medium text-neutral-900"
               data-melt-part="root"
-            >Client</label>
+            >Client</label> -->
             <input type="text" name="client_id" id="client_id" readonly
               placeholder={$SelectedClientStore}
               value={$SelectedClientStore}
-              class="h-10 w-[240px] rounded-md px-3 py-2 text-neutral-700" />
+              class="hidden" />
           </div>
         </div>
         

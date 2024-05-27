@@ -22,7 +22,7 @@ export const userProfile = pgTable('user_profile', {
 	// From Google
 	firstName: varchar('first_name', { length: 255 }),
 	lastName: varchar('last_name', { length: 255 }),
-	picture: varchar('picture', { length: 1024 })
+	picture: varchar('picture', { length: 1024 }),
 });
 
 export const userProfileRelations = relations(userProfile, ({ one }) => ({
@@ -30,6 +30,11 @@ export const userProfileRelations = relations(userProfile, ({ one }) => ({
 		fields: [userProfile.userId],
 		references: [user.id],
 		relationName: 'user_profile_user_fk',
+	}),
+	client: one(client, {
+		fields: [userProfile.clientId],
+		references: [client.id],
+		relationName: 'user_profile_client_fk',
 	}),
 }));
 
