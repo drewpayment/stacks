@@ -1,26 +1,25 @@
-import { createUser, getUserProfileData, getUsers, updateUserAndProfile } from '$lib/drizzle/postgres/models/users';
+import { createUser, getUsers, updateUserAndProfile } from '$lib/drizzle/postgres/models/users';
 import type { InsertUser, InsertUserKey, InsertUserProfile, RoleTypes, SelectClient, User } from '$lib/drizzle/postgres/db.model';
 import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
+import { Argon2id } from 'oslo/password';
 
 
 export const load = async ({locals}) => {
   if (!locals.user) fail(401, { message: 'Unauthorized' });
   
-  const profile = await getUserProfileData(locals.user?.id);
-  
-  if (!profile) {
+  if (!locals.user.profile) {
     return fail(401, { message: 'Unauthorized' });
   }
   
   const users = async (): Promise<User[]> => {
-    const users = await getUsers(profile?.clientId as string);
+    const users = await getUsers(locals.user.profile?.clientId as string);
     return users;
   }
   
   return {
     users: await users(),
-    client: profile?.client as SelectClient,
+    client: locals.user.profile?.client as SelectClient,
   };
 }
 
@@ -42,9 +41,17 @@ export const actions = {
       email: data.email,
     };
     
+    // generate a random password string for the temporary password
+    const randomPasswordCharacters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const randomPassword = Array(10).fill('').map(() =>  { 
+      return randomPasswordCharacters[Math.floor(Math.random() * randomPasswordCharacters.length)]; 
+    }).join('');
+    const hashedPassword = await new Argon2id().hash(randomPassword);
+    
     const insertUserKey: InsertUserKey = {
       id: `email:${data.email}`,
       userId: insertUser.id,
+      hashedPassword,
     }
     
     const insertUserProfile: InsertUserProfile = {
@@ -56,7 +63,13 @@ export const actions = {
       role: data.role as RoleTypes,
     };
     
-    return await createUser(insertUser, insertUserKey, insertUserProfile);
+    try {
+      await createUser(insertUser, insertUserKey, insertUserProfile);
+    } catch (err) {
+      return fail(500, { message: 'Error creating user', error: err });
+    }
+    
+    return randomPassword;
   },
   update: async ({ locals, request }) => {
     if (!locals.user) fail(401, { message: 'Unauthorized' });

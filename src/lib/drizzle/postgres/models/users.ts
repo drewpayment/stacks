@@ -1,8 +1,9 @@
 import { drizzleClient } from '$lib/drizzle/postgres/client';
-import { user, userKey, userProfile } from '$lib/drizzle/postgres/schema';
+import { user, userClient, userKey, userProfile } from '$lib/drizzle/postgres/schema';
 import type { InsertUser, InsertUserKey, InsertUserProfile, SelectUser, User, UserProfile } from '$lib/drizzle/mysql/db.model';
-import { and, asc, eq, ne } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import type { SelectClient } from '../db.model';
+import { nanoid } from 'nanoid';
 
 export const getUserByEmail = async (email: string | undefined) => {
 	if (!email) {
@@ -103,10 +104,15 @@ export const createUser = async (userData: InsertUser, userKeyData: InsertUserKe
 	if (userData.id !== (profileData.userId as unknown as string)) profileData.userId = userData.id;
 	
 	try {
-		await drizzleClient.transaction(async (tx) => {
+		await drizzleClient.transaction(async (tx) => {			
 			await tx.insert(user).values(userData);
 			await tx.insert(userKey).values(userKeyData);
 			await tx.insert(userProfile).values(profileData);
+			await tx.insert(userClient).values({
+				id: nanoid(),
+				userId: userData.id,
+				clientId: profileData.clientId as string,
+			});
 		});
 	} catch (err) {
 		console.error(err);

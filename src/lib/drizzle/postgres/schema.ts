@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { bigint, boolean, decimal, foreignKey, pgEnum, pgTable, primaryKey, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { bigint, boolean, decimal, foreignKey, pgEnum, pgTable, primaryKey, text, timestamp, unique, varchar } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('auth_user', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -8,6 +8,31 @@ export const user = pgTable('auth_user', {
 });
 
 export const userRoleEnum = pgEnum('user_role', ['user', 'supervisor', 'admin', 'org_admin', 'super_admin']);
+
+export const userClient = pgTable('user_client', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	userId: varchar('user_id', { length: 255 })
+		.notNull()
+		.references(() => user.id),
+	clientId: varchar('client_id', { length: 255 })
+		.notNull()
+		.references(() => client.id),
+}, (table) => ({
+	unique: [table.userId, table.clientId],
+}));
+
+export const userClientRelations = relations(userClient, ({ one }) => ({
+	user: one(user, {
+		fields: [userClient.userId],
+		references: [user.id],
+		relationName: 'user_client_user_fk',
+	}),
+	client: one(client, {
+		fields: [userClient.clientId],
+		references: [client.id],
+		relationName: 'user_client_client_fk',
+	}),
+}));
 
 export const userProfile = pgTable('user_profile', {
 	id: varchar('id', { length: 255 }).primaryKey(),

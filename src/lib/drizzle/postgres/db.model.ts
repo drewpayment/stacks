@@ -15,8 +15,9 @@ export type SelectUserProfile = typeof userProfile.$inferSelect;
 
 export type RoleTypes = "user" | "supervisor" | "admin" | "org_admin" | "super_admin" | undefined;
 
-export type UserProfile = SelectUserProfile;
+export type UserProfile = SelectUserProfile & { client: SelectClient };
 export type User = { auth_user: SelectUser, user_profile: SelectUserProfile };
+export type CurrentUser = import('lucia').User & { profile: UserProfile & { client: SelectClient } };
 
 export type SelectClient = typeof client.$inferSelect;
 

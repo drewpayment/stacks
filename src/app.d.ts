@@ -1,24 +1,12 @@
 /// <reference types="lucia" />
 
-declare global {
-	// namespace Lucia {
-	// 	type Auth = import('$lib/lucia/mysql').Auth;
-	// 	type DatabaseUserAttributes = {
-	// 		email: string;
-	// 		email_verified: boolean;
-	// 		github_username?: string;
-	// 	};
-	// 	type DatabaseUserProfileAttributes = {
-	// 		client_id: string;
-	// 		role: string;
-	// 	};
-	// 	type DatabaseSessionAttributes = object;
-	// }
+import type { CurrentUser } from '$lib/drizzle/postgres/db.model';
 
+declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user: import('lucia').User;
+			user: CurrentUser;
 			session: import('lucia').Session;
 		}
 		// interface PageData {}

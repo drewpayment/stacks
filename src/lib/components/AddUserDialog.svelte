@@ -1,41 +1,134 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
 	import type { SelectClient } from '$lib/drizzle/postgres/db.model';
-  import SelectedClientStore from '$lib/stores/client';
-  import { createDialog, melt, createLabel, createSelect } from '@melt-ui/svelte';
-	import { Check, ChevronDown, XSquare } from 'lucide-svelte';
-  
-  const {
-    elements: { trigger: triggerSelect, menu, option },
-    states: { selectedLabel, open: openSelect, selected },
-    helpers: { isSelected },
-  } = createSelect({
-    forceVisible: true,
-    positioning: {
-      placement: 'bottom',
-      fitViewport: true,
-      sameWidth: true,
-    },
-  });
-  
-  const {
-		elements: { trigger, overlay, content, title, close, portalled },
-		states: { open }
-	} = createDialog();
-  
-  const {
-    elements: { root, },
-  } = createLabel();
-  
+  import { Button, Helper, Input, Label, Modal, Select } from 'flowbite-svelte';
+  import { CopySolid } from 'flowbite-svelte-icons';
+	  
   const options = [
-    { label: 'Admin', value: 'admin' },
-    { label: 'Manager', value: 'manager' },
-    { label: 'User', value: 'user' },
+    { name: 'User', value: 'user' },
+    { name: 'Manager', value: 'manager' },
+    { name: 'Admin', value: 'admin' },
   ];
   
   export let client: SelectClient | undefined;
+  
+  let open = false;
+  export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'xs';
+  let showRoleHelperText = false;
+  let temporaryPassword = '';
+  let showTemporaryPassword = false;
+  let copyTempPasswordColor: any = undefined;
+  
+  const copyTemporaryPassword = async () => {
+    if (!navigator.clipboard) {
+      console.error('Clipboard API not supported.');
+      return;
+    }
+    
+    try {
+      navigator.clipboard.writeText(temporaryPassword)
+        .then(() => copyTempPasswordColor = 'green');
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  }
+  
+  const handleClose = () => {
+    open = false;
+    showRoleHelperText = false;
+    temporaryPassword = '';
+    showTemporaryPassword = false;
+    copyTempPasswordColor = undefined;
+  }
+  
+  setTimeout(() => {
+    temporaryPassword = 'test_password';
+    showTemporaryPassword = true;
+  }, 500)
 </script>
 
+<div class="p-2">
+	<Button type="button" size="sm" on:click={() => open = true}>Add User</Button>
+</div>
+<Modal bind:open bind:size={size} autoclose={false} class="w-full">
+  <form action="?/add" method="post" class="flex flex-col"
+    use:enhance={({ formData, cancel }) => {
+      
+      return ({ result, update }) => {
+        if (result.status != 200) return;
+        
+        update();
+        temporaryPassword = result.data;
+        showTemporaryPassword = true;
+      };
+    }}
+  >
+    <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
+      Add User
+    </h3>
+    
+    {#if showTemporaryPassword}
+    <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+      Your temporary password is below. Please change it as soon as possible.
+    </p>
+    <div class="flex flex-col space-y-6">
+      <div>
+        <Label class="space-y-2" color={copyTempPasswordColor}>
+          Temporary Password
+        </Label>
+        <Input type="text" value={temporaryPassword} color={copyTempPasswordColor} disabled />
+      </div>
+      
+      <div class="flex justify-between mb-2">
+        <Button type="button" color="alternative" on:click={handleClose}>Close</Button>
+        <Button type="button" on:click={copyTemporaryPassword}>
+          Copy <CopySolid class="w-4 h-4 ms-2" />
+        </Button>
+      </div>
+    </div>
+    {:else}
+    <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+      Please fill out the form below to add a new user.
+    </p>
+    <div class="flex flex-col space-y-6">
+      <Label class="space-y-2">
+        <span>First Name</span>
+        <Input type="text" name="first_name" required />
+      </Label>
+      
+      <Label class="space-y-2">
+        <span>Last Name</span>
+        <Input type="text" name="last_name" required />
+      </Label>
+      
+      <Label class="space-y-2">
+        <span>Email Address</span>
+        <Input type="email" name="email" required />
+      </Label>
+      
+      <Label class="space-y-2">
+        <span>User Role</span>
+        <Select items={options} placeholder="Select Role" name="role" required 
+          on:change={(e) => showRoleHelperText = e.target?.value == 'admin'} />
+        {#if showRoleHelperText}
+          <Helper class="text-sm mt-2">
+            Admins have full rights to make changes to the entire organization. This should rarely be used.
+          </Helper>
+        {/if}
+      </Label>
+      
+      <input type="hidden" name="client_id" value={client?.id} required />
+      
+      <div class="flex justify-between mb-2">
+        <Button type="button" color="alternative" on:click={() => open = false}>Cancel</Button>
+        <Button type="submit">Save</Button>
+      </div>
+    </div>
+    {/if}
+  </form>
+</Modal>
+
+<!--
 <button use:melt={$trigger} class="rounded-md bg-primary-600 px-3.5 py-2.5 text-sm 
 font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 
 focus-visible:outline-offset-2 focus-visible:outline-primary-600 flex justify-around items-center gap-2">
@@ -52,7 +145,7 @@ focus-visible:outline-offset-2 focus-visible:outline-primary-600 flex justify-ar
       p-6 shadow-lg"
 		>
       <div class="flex justify-between">
-        <h3 use:melt={$title}>Add User</h3>
+        <h3 use:melt={$title} class="text-neutral-900 dark:text-neutral-50">Add User</h3>
         <button use:melt={$close}>
           <XSquare />
         </button>
@@ -156,11 +249,6 @@ focus-visible:outline-offset-2 focus-visible:outline-primary-600 flex justify-ar
           </div>
           
           <div class="flex flex-col items-start justify-center pb-2">
-            <!-- <label for="client_id"
-              use:melt={$root}
-              class="mb-0.5 font-medium text-neutral-900"
-              data-melt-part="root"
-            >Client</label> -->
             <input type="text" name="client_id" id="client_id" readonly
               placeholder={$SelectedClientStore}
               value={$SelectedClientStore}
@@ -191,4 +279,4 @@ focus-visible:outline-offset-2 focus-visible:outline-primary-600 flex justify-ar
     translate: 0 calc(-50% + 1px);
     color: theme(colors.magnum.500);
   }
-</style>
+</style>-->

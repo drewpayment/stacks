@@ -1,3 +1,4 @@
+import type { CurrentUser, SelectUserProfile, UserProfile } from '$lib/drizzle/postgres/db.model';
 import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import { getSessionId, lucia } from '$lib/lucia/postgres';
 import { redirect, type Handle } from '@sveltejs/kit';
@@ -13,7 +14,7 @@ const authRoutesBase = ['/auth', '/oauth'];
 const authHandler: Handle = async ({ event, resolve }) => {
 	const sessionId = getSessionId(event);
 	if (!sessionId) {
-		event.locals.user = null as unknown as User;
+		event.locals.user = null as unknown as CurrentUser;
 		event.locals.session = null as unknown as Session;
 		return resolve(event);
 	}
@@ -34,7 +35,18 @@ const authHandler: Handle = async ({ event, resolve }) => {
 			...sessionCookie.attributes
 		});
 	}
-	event.locals.user = user as User;
+	
+	if (user && user.id) {
+		const profile = await getUserProfileData(user.id) as unknown as UserProfile;
+		
+		event.locals.user = {
+			...user as User,
+			profile,
+		};
+	} else {
+		event.locals.user = null as unknown as CurrentUser;
+	}
+	
 	event.locals.session = session as Session;
 	// return resolve(event);
 	// const session = await event.locals.auth.validate();

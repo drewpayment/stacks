@@ -1,15 +1,17 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import SelectedClientStore from '$lib/stores/client';
-	import type { User } from '$lib/types/db.model';
+	import type { User } from '$lib/drizzle/postgres/db.model';
   import { createDialog, melt, createLabel, createSelect } from '@melt-ui/svelte';
 	import { Check, ChevronDown } from 'lucide-svelte';
   import { createToast } from './Toast.svelte';
 	import UserStore from '$lib/stores/user';
 	import { Button, CloseButton, Input, Label, Select, Modal } from 'flowbite-svelte';
 	import { EnvelopeSolid, EyeSolid } from 'flowbite-svelte-icons';
+	import type { SelectClient } from '$lib/drizzle/postgres/db.model';
   
   export let user: User;
+  export let client: SelectClient;
   let origUser: User;
   
   const {
@@ -86,7 +88,6 @@
         }
       }
       
-      console.log(payload)
       // if the user doesn't change any of the field values, we just don't send the request
       if (Object.keys(payload).length < 4) cancel();
   
@@ -170,7 +171,8 @@
     
     <div class="space-y-2 mb-2">
       <Label>Client</Label>
-      <Input type="text" name="client_id" id="client_id" bind:value={$SelectedClientStore} disabled />
+      <Input type="hidden" name="client_id" id="client_id" bind:value={$SelectedClientStore} required />
+      <Input type="text" name="client_name" id="client_name" value={client.name} disabled />
     </div>
     
     <div class="flex justify-between pt-4">      
