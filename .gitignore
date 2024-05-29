@@ -11,3 +11,7 @@ vite.config.ts.timestamp-*
 
 src/lib/drizzle/turso/data
 coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

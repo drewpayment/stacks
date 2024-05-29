@@ -14,6 +14,13 @@ const authRoutesBase = ['/auth', '/oauth'];
 const authHandler: Handle = async ({ event, resolve }) => {
 	const sessionId = getSessionId(event);
 	if (!sessionId) {
+		// If the user is not logged in and is trying to access a protected route,
+		// redirect them to the login page
+		if (event.url.pathname.startsWith(protectedRoutesBase) ||
+			event.url.pathname.startsWith(superAdminRoutesBase)) {
+			redirect(302, '/auth/login');
+		}
+		
 		event.locals.user = null as unknown as CurrentUser;
 		event.locals.session = null as unknown as Session;
 		return resolve(event);

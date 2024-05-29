@@ -26,7 +26,7 @@
 		</Breadcrumb>
 	</div>	
 	
-	<h4>Manage Clients</h4>
+	<h4 class="page-title">Manage Clients</h4>
 
 	<div use:melt={$root} class="relative mt-8 mb-28 w-[18rem] max-w-full sm:w-[25rem]">
 		<div class="flex items-center justify-between">
@@ -38,7 +38,7 @@
 				class="relative h-6 w-6 place-items-center rounded-md bg-white text-sm
         text-neutral-800 shadow hover:opacity-75 data-[disabled]:cursor-not-allowed
         data-[disabled]:opacity-75"
-				aria-label="Toggle"
+				aria-label="Add client toggle"
 			>
 				<div class="abs-center">
 					{#if $open}
