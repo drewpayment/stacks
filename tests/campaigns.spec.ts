@@ -45,4 +45,13 @@ test.describe('Admin campaign management', () => {
     await expect(page.locator('tbody')).toContainText('This is an updated description! # ' + randomNumber);
   });
   
-})
+  test('Disable a campaign', async ({ page }) => {
+    await page.goto('/app/campaigns');
+    await page.getByRole('row', { name: 'TEST CAMPAIGN https://' }).getByRole('button').click();
+    await page.getByRole('menuitem', { name: 'Disable' }).nth(1).click();
+  
+    // confirm that the campaign is no longer visible in the list of campaigns
+    await expect(page.locator('tbody')).not.toContainText('TEST CAMPAIGN');
+  });
+  
+});

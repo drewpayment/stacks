@@ -1,6 +1,6 @@
 import { drizzleClient } from '$lib/drizzle/postgres/client';
 import type { InsertCampaign, SelectCampaign } from '$lib/drizzle/postgres/db.model';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { campaigns } from '../schema';
 import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';
@@ -91,6 +91,18 @@ const addCampaign = async (campaign: InsertCampaign): Promise<SelectCampaign | n
   }
   
   return dto as SelectCampaign;
+}
+
+export const disableCampaign = async (clientId: string, campaignId: string): Promise<boolean> => {
+   try {
+    await drizzleClient.update(campaigns)
+      .set({ active: false })
+      .where(and(eq(campaigns.clientId, clientId), eq(campaigns.id, campaignId)));
+    return true;
+  } catch (ex) {
+    console.error(ex);
+    return false;
+  }
 }
 
 export { getCampaign, getCampaigns, updateCampaign, addCampaign };
