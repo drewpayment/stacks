@@ -1,10 +1,10 @@
-import type { InsertSale, SaleDto, SelectSale } from '$lib/drizzle/mysql/db.model';
+import type { InsertSale, SaleDto, SelectSale } from '$lib/drizzle/postgres/db.model';
 import { nanoid } from 'nanoid';
 import { drizzleClient } from '../client';
 import { sale } from '../schema';
 import dayjs from 'dayjs';
 import { desc, inArray } from 'drizzle-orm';
-import type { ImportRow } from '$lib/drizzle/mysql/types/sale.model';
+import type { ImportRow } from '$lib/drizzle/postgres/types/sale.model';
 import { getEmployeeIdByCampaignSalesCode } from './employees';
 import { error } from '@sveltejs/kit';
 
@@ -12,7 +12,7 @@ export const toInsertSale = (data: any): InsertSale => ({
   id: data.id || nanoid(),
   clientId: data.client_id,
   campaignId: data.campaign_id,
-  saleDate: dayjs(data.sale_date).unix(),
+  saleDate: dayjs(data.sale_date).toDate(),
   saleAmount: data.sale_amount,
   statusDescription: data.status_description,
   isComplete: data.is_complete,
@@ -29,9 +29,9 @@ export const toClientDto = (data: InsertSale | SelectSale): SaleDto => ({
   client_id: data.clientId,
   campaign_id: data.campaignId,
   sale_date: data.saleDate as unknown as number,
-  sale_amount: data.saleAmount as number,
-  status_description: data.statusDescription,
-  is_complete: data.isComplete == 1,
+  sale_amount: data.saleAmount != null ? Number(data.saleAmount) : 0,
+  status_description: data.statusDescription as string,
+  is_complete: !!data.isComplete,
   employee_id: data.employeeId,
   created: Number(data.created),
   updated: Number(data.updated),
@@ -68,10 +68,9 @@ export const saveSales = async (dtos: InsertSale[]): Promise<SelectSale[]> => {
 export const getSales = async <T = SelectSale>(clientId: string, startDate: number, endDate: number, withStmt: any = undefined): Promise<T[]> => {
   const sales = await drizzleClient.query.sale.findMany({
     with: withStmt || undefined,
-    where: (sale, { and, eq, gte, lte }) => and(
+    where: (sale, { and, eq, between }) => and(
       eq(sale.clientId, clientId),
-      gte(sale.saleDate, startDate),
-      lte(sale.saleDate, endDate),
+      between(sale.saleDate, dayjs(startDate).toDate(), dayjs(endDate).toDate()),
     ),
     orderBy: s => desc(s.saleDate),
   });
@@ -86,7 +85,7 @@ export const getUnallocatedSalesByEmployee = async (clientId: string, campaignId
       eq(sale.campaignId, campaignId),
       eq(sale.employeeId, employeeId),
       eq(sale.paystubId, ''),
-      eq(sale.isComplete, 0),
+      eq(sale.isComplete, false),
     ),
     orderBy: (s, { desc, asc }) => [
       asc(s.statusDescription),
@@ -159,7 +158,7 @@ export const updateSelectedSalesToPaystub = async (sales: SelectSale[], paystubI
   
   try {
     await drizzleClient.update(sale)
-      .set({ paystubId, isComplete: 1, })
+      .set({ paystubId, isComplete: true, })
       .where(inArray(sale.id, sales.map(s => s.id)));
   } catch (ex) {
     console.error(ex);
