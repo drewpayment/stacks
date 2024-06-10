@@ -2,14 +2,16 @@
 	import { Breadcrumb, BreadcrumbItem, Button, GradientButton, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
   import { ArrowRightOutline, CheckCircleOutline, PlusOutline, RedoOutline, ThumbsUpSolid } from 'flowbite-svelte-icons';
 	import { enhance } from '$app/forms';
-	import type { SelectPayrollCycle } from '$lib/types/db.model';
 	import { createToast } from '$lib/components/Toast.svelte';
 	import { writable } from 'svelte/store';
-	import type { PaystubWith } from '$lib/types/paystbus.model';
 	import { formatCurrency, formatDate } from '$lib/utils';
+	import type { PaystubWith } from '$lib/drizzle/postgres/types/paystbus.model';
+	import type { SelectPayrollCycle } from '$lib/drizzle/postgres/db.model';
   
   export let data;
-  let { cycleAndPaystubs: { paystubs, cycle } } = data;
+  const { cycleAndPaystubs } = data;
+  let { paystubs, cycle } = cycleAndPaystubs!;
+  
   const paystubs$ = writable(paystubs);
   let isEditing = true;
   

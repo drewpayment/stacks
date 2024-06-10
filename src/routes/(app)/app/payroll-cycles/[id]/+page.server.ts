@@ -8,7 +8,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 export const load = async ({ locals, params }) => {
   if (!locals.user) return fail(401, { message: 'Unauthorized' });
   
-  const profile = await getUserProfileData(locals.user.id);
+  const profile = locals.user.profile;
   
   const getData = async (): Promise<CycleAndPaystubs> => {  
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) return {

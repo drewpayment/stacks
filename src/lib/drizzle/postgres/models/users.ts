@@ -10,9 +10,11 @@ export const getUserByEmail = async (email: string | undefined) => {
 		return undefined;
 	}
 
-	const data = await drizzleClient.select().from(user).where(eq(user.email, email));
+	const data = await drizzleClient.query.user.findFirst({
+		where: eq(user.email, email),
+	});
 
-	return data[0];
+	return data;
 };
 
 export const updateUserProfileData = async (profileData: typeof userProfile.$inferInsert) => {

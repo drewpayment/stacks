@@ -65,6 +65,7 @@ export const saveSales = async (dtos: InsertSale[]): Promise<SelectSale[]> => {
   return dtos as SelectSale[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getSales = async <T = SelectSale>(clientId: string, startDate: number, endDate: number, withStmt: any = undefined): Promise<T[]> => {
   const sales = await drizzleClient.query.sale.findMany({
     with: withStmt || undefined,
@@ -128,8 +129,10 @@ export const processImport = async (client_id: string, campaign_id: string, rows
     for (const p in r) {
       const fixedP = p.toLowerCase().trim();
       if (fixedP !== p) {
-        r[fixedP] = r[p];
-        delete r[p];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (r as any)[fixedP] = (r as any)[p];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delete (r as any)[p];
       }
     }
     const isComplete = r.status_description.toLowerCase().trim().includes('accepted');

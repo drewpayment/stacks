@@ -24,8 +24,8 @@ export const actions: Actions = {
         paymentDate: dayjs(data.payDate as any, 'YYYY-MM-DD').unix() as any,
         clientId: profile?.clientId,
         id: nanoid(),
-        created: dayjs().unix() as any,
-        updated: dayjs().unix() as any,
+        created: dayjs() as any,
+        updated: dayjs() as any,
       } as InsertPayrollCycle;
       
       await addPayrollCycle(dto);
@@ -34,6 +34,6 @@ export const actions: Actions = {
       return null;
     }
     
-    return dto;
+    return structuredClone(dto);
   },
 };

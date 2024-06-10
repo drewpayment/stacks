@@ -115,7 +115,7 @@ export const getPaystubsWoPayrollCycle = async (clientId: string, startDate: num
         with: {
           employee: true,
         },
-        where: (s, { and, gte, lte }) => and(
+        where: (s, { and, gte, lte, between }) => and(
           gte(s.saleDate, startDate as any),
           lte(s.saleDate, endDate as any),
         ),
