@@ -9,21 +9,18 @@ const getEmployees = async (clientId: string, isCommissionable = false): Promise
   if (!clientId) {
     return [] as Employee[];
   }
-  
-  const andQuery = (employee: any, { eq, and }: { eq: any, and: any }) => isCommissionable ? and(
-    eq(employee.clientId, clientId),
-    eq(employee.isCommissionable, 1),
-  ) : eq(employee.clientId, clientId);
-  
+
   try {
-    return await db.query.employee.findMany({ 
+    return await db.query.employee.findMany({
       with: {
         employeeProfile: true,
         employeeCodes: {
           where: (code, { eq }) => eq(code.isActive, true),
         },
       },
-      where: andQuery,
+      where: (employee, { eq, and }) => isCommissionable
+        ? and(eq(employee.clientId, clientId), eq(employee.isCommissionable, true))
+        : eq(employee.clientId, clientId),
     }) as Employee[];
   } catch (ex) {
     console.error(ex);
@@ -35,7 +32,7 @@ const getEmployee = async (employeeId: string, withProfile = true, withCodes = t
   if (!employeeId) {
     return null as unknown as Employee;
   }
-  
+
   const data = await db.query.employee.findFirst({
     with: {
       employeeProfile: withProfile as any,
@@ -51,7 +48,7 @@ const getEmployee = async (employeeId: string, withProfile = true, withCodes = t
     },
     where: (employee, { eq }) => eq(employee.id, employeeId),
   });
-    
+
   return data as any;
 }
 
@@ -59,14 +56,14 @@ export const getEmployeeByUserId = async (userId: string): Promise<Employee> => 
   if (!userId) {
     return null as unknown as Employee;
   }
-  
+
   const data = await db.query.employee.findFirst({
     with: {
       employeeProfile: true,
     },
     where: (employee, { eq }) => eq(employee.userId, userId),
   });
-    
+
   return data as Employee;
 }
 
@@ -82,25 +79,25 @@ const _createEmployee = async (employeeData: InsertEmployee) => {
     console.error(err);
     return { success: false, };
   }
-  
+
   return { success: true, };
 }
 
 const createEmployee = async (employeeData: InsertEmployee, employeeProfileData: InsertEmployeeProfile) => {
-  const employeeResult = await _createEmployee({...employeeData, isCommissionable: true,});
-  
+  const employeeResult = await _createEmployee({ ...employeeData, isCommissionable: true, });
+
   if (!employeeResult.success) {
     return employeeResult;
   }
-  
+
   try {
     await db.insert(employeeProfile)
-      .values({...employeeProfileData});
+      .values({ ...employeeProfileData });
   } catch (err) {
     console.error(err);
     return { success: false, };
   }
-  
+
   return { success: true, };
 }
 
@@ -116,7 +113,7 @@ const updateEmployee = async (employeeData: InsertEmployee) => {
     console.error(err);
     return { success: false, };
   }
-  
+
   return { success: true, };
 }
 
@@ -131,31 +128,31 @@ const deleteEmployee = async (employeeId: string) => {
     console.error(err);
     return { success: false, };
   }
-  
+
   return { success: true, };
 }
 
 const addEmployeeNote = async (employeeId: string, note: string) => {
-  
+
   const dto = {
     id: nanoid(),
     employeeId,
     note,
     created: Date.now() as any,
   } as InsertEmployeeNotes;
-  
+
   try {
     await db.insert(employeeNotes).values(dto);
   } catch (err) {
     console.error(err);
     return { success: false, };
   }
-  
+
 }
 
 export const getEmployeeIdByCampaignSalesCode = async (campaignId: string, salesCode: string): Promise<string> => {
   if (!salesCode) return '';
-  
+
   try {
     // const ee = await db.query.employee.findFirst({
     //   with: {
@@ -167,7 +164,7 @@ export const getEmployeeIdByCampaignSalesCode = async (campaignId: string, sales
     //     },
     //   },
     // });
-    
+
     const res = (await db.select({ id: employee.id, })
       .from(employee)
       .innerJoin(employeeCodes, eq(employee.id, employeeCodes.employeeId))
@@ -176,9 +173,9 @@ export const getEmployeeIdByCampaignSalesCode = async (campaignId: string, sales
         eq(employeeCodes.employeeCode, salesCode),
       ))
       .execute());
-      
+
     // const employeeId = res[0]?.id || '';
-    
+
     return res[0]?.id || '';
   } catch (ex) {
     console.error(ex);
@@ -188,9 +185,9 @@ export const getEmployeeIdByCampaignSalesCode = async (campaignId: string, sales
 
 export const upsertEmployeeCodes = async (dtos: { employeeId: string, employeeCode: string, campaignId: string, isActive: boolean }[]) => {
   if (!dtos || dtos.length < 1) return;
-  
+
   const results: SelectEmployeeCode[] = [];
-  
+
   dtos.forEach(async dto => {
     const curr = await db.query.employeeCodes.findFirst({
       where: (code, { eq }) => and(
@@ -198,7 +195,7 @@ export const upsertEmployeeCodes = async (dtos: { employeeId: string, employeeCo
         eq(code.campaignId, dto.campaignId),
       ),
     }) as SelectEmployeeCode;
-    
+
     try {
       if (curr && curr.employeeCode !== dto.employeeCode) {
         await db.update(employeeCodes)
@@ -210,13 +207,13 @@ export const upsertEmployeeCodes = async (dtos: { employeeId: string, employeeCo
             eq(employeeCodes.employeeId, curr.employeeId),
             eq(employeeCodes.campaignId, curr.campaignId),
           ));
-          
+
         results.push({
           ...dto,
         } as SelectEmployeeCode);
       } else if (!curr) {
         const insertId = nanoid();
-        
+
         await db.insert(employeeCodes)
           .values({
             id: insertId,
@@ -227,7 +224,7 @@ export const upsertEmployeeCodes = async (dtos: { employeeId: string, employeeCo
             created: Date.now() as any,
             updated: Date.now() as any,
           } as InsertEmployeeCode);
-          
+
         results.push({
           ...dto,
           // id: insertId, // TODO: Not sure if this is going to break functionality with employee codes...
@@ -238,10 +235,11 @@ export const upsertEmployeeCodes = async (dtos: { employeeId: string, employeeCo
       error(500, { message: 'Error upserting employee codes' });
     }
   });
-  
+
   return results;
 }
 
-export { getEmployees, getEmployee, createEmployee, updateEmployee, deleteEmployee,
+export {
+  getEmployees, getEmployee, createEmployee, updateEmployee, deleteEmployee,
   addEmployeeNote,
 };

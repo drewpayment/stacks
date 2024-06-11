@@ -8,7 +8,7 @@ import { fail, redirect, type Actions } from '@sveltejs/kit';
 
 export const load = async ({ locals, request }) => {
 	if (!locals.user) return fail(401, { message: 'Unauthorized' });
-	const profile = await getUserProfileData(locals.user.id);
+	const profile = locals.user.profile;
   
   if (!profile?.clientId) redirect(302, '/');
   if (!['org_admin', 'super_admin'].includes(profile?.role)) redirect(302, '/');

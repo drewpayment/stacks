@@ -52,8 +52,8 @@ export const getPaystubs = async (
           employee: true,
         },
         where: (s, { and, gte, lte }) => and(
-          gte(s.saleDate, startDate as any),
-          lte(s.saleDate, endDate as any),
+          gte(s.saleDate, dayjs(startDate).toDate()),
+          lte(s.saleDate, dayjs(endDate).toDate()),
         ),
         orderBy: (s, { desc }) => [desc(s.saleDate)],
       },
@@ -115,9 +115,9 @@ export const getPaystubsWoPayrollCycle = async (clientId: string, startDate: num
         with: {
           employee: true,
         },
-        where: (s, { and, gte, lte, between }) => and(
-          gte(s.saleDate, startDate as any),
-          lte(s.saleDate, endDate as any),
+        where: (s, { and, gte, lte, }) => and(
+          gte(s.saleDate, dayjs(startDate).toDate()),
+          lte(s.saleDate, dayjs(endDate).toDate()),
         ),
         orderBy: (s, { desc }) => [desc(s.saleDate)],
       },
