@@ -72,8 +72,6 @@ const _createEmployee = async (employeeData: InsertEmployee) => {
     await db.insert(employee)
       .values({
         ...employeeData,
-        created: Date.now() as any,
-        updated: Date.now() as any,
       });
   } catch (err) {
     console.error(err);

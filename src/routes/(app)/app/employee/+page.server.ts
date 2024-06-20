@@ -3,6 +3,7 @@ import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import type { Employee, InsertEmployee, InsertEmployeeProfile } from '$lib/drizzle/postgres/db.model';
 import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
+import dayjs from 'dayjs';
 
 
 export const load = async ({locals}) => {
@@ -25,18 +26,20 @@ export const actions = {
   add: async ({ locals, request }) => {
     if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    const profile = await getUserProfileData(locals.user.id);
+    const profile = locals.user.profile;
     
     const payload = await request.formData();
     const data = Object.fromEntries(payload.entries());
+    const now = dayjs().toDate();
+    
     const insertEmployee: InsertEmployee = {
       id: nanoid(),
       firstName: data.first_name as string,
       lastName: data.last_name as string,
       clientId: profile.clientId as string,
       userId: data.user_id as string,
-      created: Date.now() as any,
-      updated: Date.now() as any,
+      created: now,
+      updated: now,
     };
     
     const insertEmployeeProfile: InsertEmployeeProfile = {

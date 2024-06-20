@@ -18,10 +18,12 @@ export const load = async ({ locals, params }) => {
     return getCampaigns(clientId as string)
   };
   
-  const allEmployees = async () => (await getEmployees(clientId)).map(ee => ({
-    name: `${ee.firstName} ${ee.lastName}`,
-    value: ee.id,
-  }));
+  const allEmployees = async () => (await getEmployees(clientId))
+    .filter(ee => ee.id !== id)
+    .map(ee => ({
+      name: `${ee.firstName} ${ee.lastName}`,
+      value: ee.id,
+    }));
   
   const employee = async () => (await getEmployee(id)) as unknown as (EmployeeWithNotes & { overrideTo: SelectOverridingEmployee });
   

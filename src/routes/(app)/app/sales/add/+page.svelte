@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import CurrencyInput from '$lib/components/CurrencyInput.svelte';
 	import { createToast } from '$lib/components/Toast.svelte';
+	import dayjs from 'dayjs';
 	import { Breadcrumb, BreadcrumbItem, Button, Input, Label, Select } from 'flowbite-svelte';
 
   export let data;
@@ -55,7 +56,7 @@
     <div class="mb-6">
       <Label class="block mb-2">Sale Date</Label>
       <Input let:props>
-        <input type="date" name="sale_date" id="sale_date" {...props} value={Date.now()} required />
+        <input type="date" name="sale_date" id="sale_date" {...props} value={dayjs().format('YYYY-MM-DD')} required />
       </Input>
     </div>
     

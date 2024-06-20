@@ -114,9 +114,9 @@ export const employee = pgTable('employee', {
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
 	isCommissionable: boolean('is_commissionable').notNull().default(false),
-	created: bigint('created', { mode: 'number' }).notNull(),
-	updated: bigint('updated', { mode: 'number' }).notNull(),
-	deleted: bigint('deleted', { mode: 'number' }),
+	created: timestamp('created').notNull(),
+	updated: timestamp('updated').notNull(),
+	deleted: timestamp('deleted'),
 });
 
 export const employeeProfile = pgTable('employee_profile', {
@@ -140,7 +140,7 @@ export const employeeNotes = pgTable('employee_notes', {
 		.notNull()
 		.references(() => employee.id),
 	note: text('note').notNull(),
-	created: bigint('created', { mode: 'number' }).notNull(),
+	created: timestamp('created').notNull(),
 })
 
 export const employeeNotesRelations = relations(employeeNotes, ({ one }) => ({
@@ -236,9 +236,9 @@ export const payrollCycle = pgTable('payroll_cycle', {
 	clientId: varchar('client_id', { length: 255 })
 		.notNull()
 		.references(() => client.id),
-	startDate: bigint('start_date', { mode: 'number' }).notNull(),
-	endDate: bigint('end_date', { mode: 'number' }).notNull(),
-	paymentDate: bigint('payment_date', { mode: 'number' }).notNull(),
+	startDate: timestamp('start_date').notNull(),
+	endDate: timestamp('end_date').notNull(),
+	paymentDate: timestamp('payment_date').notNull(),
 	created: timestamp('created').notNull(),
 	updated: timestamp('updated').notNull(),
 	deleted: timestamp('deleted'),

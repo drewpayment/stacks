@@ -58,8 +58,8 @@ export interface SaleDto {
   status_description: string;
   is_complete: boolean;
   employee_id: string;
-  created: number;
-  updated: number;
+  created: Date;
+  updated: Date;
   customer_first_name: string;
   customer_last_name: string;
   customer_address: string;

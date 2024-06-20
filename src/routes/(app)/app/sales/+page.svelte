@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Breadcrumb, BreadcrumbItem, Button, Datepicker, Label, Select, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { PenIcon, PlusIcon } from 'lucide-svelte';
-  import { formatDate } from '$lib/utils';
+  import { formatDate, toDateString } from '$lib/utils';
   import dayjs from 'dayjs';
 	import { CloseSolid } from 'flowbite-svelte-icons';
 	import { enhance } from '$app/forms';
@@ -211,13 +211,13 @@
         <TableBody tableBodyClass="divide-y">
           {#each sales as sale (sale.id)}
             <TableBodyRow>
-              <TableBodyCell>{formatDate(sale.saleDate * 1000)}</TableBodyCell>
+              <TableBodyCell>{toDateString(sale.saleDate)}</TableBodyCell>
               <TableBodyCell>{sale.employee?.firstName} {sale.employee?.lastName}</TableBodyCell>
               <TableBodyCell>{sale.campaign.name}</TableBodyCell>
               <TableBodyCell>{sale.customerFirstName} {sale.customerLastName}</TableBodyCell>
               <TableBodyCell>{sale.customerAddress}</TableBodyCell>
-              <TableBodyCell>{sale.statusDescription}</TableBodyCell>
-              <TableBodyCell>{usd.format(sale.saleAmount)}</TableBodyCell>
+              <TableBodyCell tdClass="capitalize">{sale.statusDescription}</TableBodyCell>
+              <TableBodyCell>{usd.format(Number(sale.saleAmount))}</TableBodyCell>
               <TableBodyCell>
                 <Button href={`/app/sales/${sale.id}`} class="!p-2">
                   <span class="sr-only">Edit</span>

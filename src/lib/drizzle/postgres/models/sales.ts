@@ -20,8 +20,8 @@ export const toInsertSale = (data: any): InsertSale => ({
   customerFirstName: data.customer_first_name,
   customerLastName: data.customer_last_name,
   customerAddress: data.customer_address,
-  created: data.created || Date.now(),
-  updated: data.updated || Date.now(),
+  created: dayjs(data.created).toDate(),
+  updated: dayjs(data.updated).toDate(),
 } as InsertSale);
 
 export const toClientDto = (data: InsertSale | SelectSale): SaleDto => ({
@@ -33,8 +33,8 @@ export const toClientDto = (data: InsertSale | SelectSale): SaleDto => ({
   status_description: data.statusDescription as string,
   is_complete: !!data.isComplete,
   employee_id: data.employeeId,
-  created: Number(data.created),
-  updated: Number(data.updated),
+  created: data.created,
+  updated: data.updated,
   customer_first_name: data.customerFirstName,
   customer_last_name: data.customerLastName,
   customer_address: data.customerAddress,
@@ -42,6 +42,8 @@ export const toClientDto = (data: InsertSale | SelectSale): SaleDto => ({
 
 export const saveSale = async (dto: InsertSale): Promise<SelectSale> => {
   dto.id = nanoid();
+  
+  if (!dto.paystubId) dto.paystubId = null;
   
   try {
     await drizzleClient.insert(sale).values({...dto});
@@ -66,12 +68,13 @@ export const saveSales = async (dtos: InsertSale[]): Promise<SelectSale[]> => {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getSales = async <T = SelectSale>(clientId: string, startDate: number, endDate: number, withStmt: any = undefined): Promise<T[]> => {
+export const getSales = async <T = SelectSale>(clientId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs, withStmt: any = undefined): Promise<T[]> => {
   const sales = await drizzleClient.query.sale.findMany({
     with: withStmt || undefined,
-    where: (sale, { and, eq, between }) => and(
+    where: (sale, { and, eq, lte, gte }) => and(
       eq(sale.clientId, clientId),
-      between(sale.saleDate, dayjs(startDate).toDate(), dayjs(endDate).toDate()),
+      lte(sale.saleDate, endDate.toDate()),
+      gte(sale.saleDate, startDate.toDate()),
     ),
     orderBy: s => desc(s.saleDate),
   });

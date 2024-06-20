@@ -29,6 +29,13 @@
       "when": 1715913900030,
       "tag": "0003_futuristic_satana",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1718853292101,
+      "tag": "0004_zippy_skin",
+      "breakpoints": true
     }
   ]
 }
