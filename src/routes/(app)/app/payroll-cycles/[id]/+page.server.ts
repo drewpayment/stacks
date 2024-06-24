@@ -23,7 +23,7 @@ export const load = async ({ locals, params }) => {
       paystubs: [] as PaystubWith[],
     }
     
-    const unattachedPaystubs = await getPaystubsWoPayrollCycle(profile?.clientId, cycle?.startDate as any, cycle?.endDate as any);
+    const unattachedPaystubs = await getPaystubsWoPayrollCycle(profile?.clientId, cycle?.startDate, cycle?.endDate);
     // const paystubs = await getPaystubs(profile?.clientId, cycle?.startDate as any, cycle?.endDate as any);
     const relatedPaystubs = await getPaystubsByPayrollCycleId(profile?.clientId, cycle.id);
     

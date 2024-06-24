@@ -84,11 +84,12 @@ export const getSales = async <T = SelectSale>(clientId: string, startDate: dayj
 
 export const getUnallocatedSalesByEmployee = async (clientId: string, campaignId: string, employeeId: string): Promise<SelectSale[]> => {
   const sales = await drizzleClient.query.sale.findMany({
-    where: (sale, { and, eq,  }) => and(
+    where: (sale, { and, eq, isNull }) => and(
       eq(sale.clientId, clientId),
       eq(sale.campaignId, campaignId),
       eq(sale.employeeId, employeeId),
-      eq(sale.paystubId, ''),
+      isNull(sale.paystubId),
+      // eq(sale.paystubId, ''),
       eq(sale.isComplete, false),
     ),
     orderBy: (s, { desc, asc }) => [

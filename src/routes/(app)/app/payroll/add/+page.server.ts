@@ -13,8 +13,7 @@ import { error, fail } from '@sveltejs/kit';
 
 export const load = async ({ locals }) => {
   if (!locals.user) return fail(401, { message: 'Unauthorized' });
-  
-  const profile = await getUserProfileData(locals.user.id);
+  const profile = locals.user.profile;
   
   if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
   
@@ -50,8 +49,7 @@ export const load = async ({ locals }) => {
 export const actions = {
   'get-sales-by-employee': async ({ locals, request }) => {
     if (!locals.user) return fail(401, { message: 'Unauthorized' });
-    
-    const profile = await getUserProfileData(locals.user.id);
+    const profile = locals.user.profile;
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
     
@@ -66,8 +64,7 @@ export const actions = {
   },
   'save-paystub': async ({ locals, request }) => {
     if (!locals.user) return fail(401, { message: 'Unauthorized' });
-    
-    const profile = await getUserProfileData(locals.user.id);
+    const profile = locals.user.profile;
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
     

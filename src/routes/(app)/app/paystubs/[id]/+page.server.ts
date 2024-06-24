@@ -21,8 +21,8 @@ const canLoad = async (locals: App.Locals, profile: SelectUserProfile, payroll: 
 
 export const load = async ({ locals, params }) => {
   if (!locals.user) return fail(401, { message: 'Unauthorized' });
+  const profile = locals.user.profile;
   
-  const profile = await getUserProfileData(locals.user.id);
   const payrollId = params.id;
   const payroll = await getPaystubById(profile?.clientId as string, payrollId);
   

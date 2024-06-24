@@ -17,15 +17,16 @@ export const actions: Actions = {
     
       const formData = await request.formData();
       const data = Object.fromEntries(formData);
+      const today = dayjs().toDate();
       
       dto = {
-        startDate: dayjs(data.startDate as any, 'YYYY-MM-DD').unix() as any,
-        endDate: dayjs(data.endDate as any, 'YYYY-MM-DD').unix() as any,
-        paymentDate: dayjs(data.payDate as any, 'YYYY-MM-DD').unix() as any,
+        startDate: dayjs(data.startDate as any, 'YYYY-MM-DD').toDate(),
+        endDate: dayjs(data.endDate as any, 'YYYY-MM-DD').toDate(),
+        paymentDate: dayjs(data.payDate as any, 'YYYY-MM-DD').toDate(),
         clientId: profile?.clientId,
         id: nanoid(),
-        created: dayjs() as any,
-        updated: dayjs() as any,
+        created: today,
+        updated: today,
       } as InsertPayrollCycle;
       
       await addPayrollCycle(dto);

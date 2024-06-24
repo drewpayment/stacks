@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { SaleTableInputData } from '$lib/types/sale-table-input-data.model';
-	import type { SaleWithEmployee } from '$lib/types/sale.model';
-	import { formatDate } from '$lib/utils';
+	import type { SaleTableInputData } from '$lib/drizzle/postgres/types/sale-table-input-data.model';
+	import type { SaleWithEmployee } from '$lib/drizzle/postgres/types/sale.model';
+	import { toHumanDate } from '$lib/utils';
 	import dayjs from 'dayjs';
 	import { TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Table, Checkbox } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
@@ -59,11 +59,11 @@
           <TableBodyCell>
             <Checkbox on:change={e => handleCheckboxChange(e)} value={sale.id} checked={sale.checked}></Checkbox>
           </TableBodyCell>
-          <TableBodyCell>{formatDate(sale.saleDate * 1000)}</TableBodyCell>
+          <TableBodyCell>{toHumanDate(sale.saleDate)}</TableBodyCell>
           <TableBodyCell>{sale.customerFirstName} {sale.customerLastName}</TableBodyCell>
           <TableBodyCell>{sale.customerAddress}</TableBodyCell>
-          <TableBodyCell>{sale.statusDescription}</TableBodyCell>
-          <TableBodyCell>{usd.format(sale.saleAmount)}</TableBodyCell>
+          <TableBodyCell tdClass="capitalize">{sale.statusDescription}</TableBodyCell>
+          <TableBodyCell>{usd.format(Number(sale.saleAmount))}</TableBodyCell>
         </TableBodyRow>
       {/each}
     </TableBody>

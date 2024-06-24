@@ -94,7 +94,7 @@ export const getPaystubById = async (clientId: string, paystubId: string): Promi
   }
 }
 
-export const getPaystubsWoPayrollCycle = async (clientId: string, startDate: number, endDate: number): Promise<PaystubWith[]> => {
+export const getPaystubsWoPayrollCycle = async (clientId: string, startDate: Date, endDate: Date): Promise<PaystubWith[]> => {
   if (!clientId) {
     return [] as PaystubWith[];
   }
@@ -116,8 +116,8 @@ export const getPaystubsWoPayrollCycle = async (clientId: string, startDate: num
           employee: true,
         },
         where: (s, { and, gte, lte, }) => and(
-          gte(s.saleDate, dayjs(startDate).toDate()),
-          lte(s.saleDate, dayjs(endDate).toDate()),
+          gte(s.saleDate, startDate),
+          lte(s.saleDate, endDate),
         ),
         orderBy: (s, { desc }) => [desc(s.saleDate)],
       },

@@ -66,6 +66,8 @@ const formatDate = (date: any, format = 'MMMM D, YYYY') => {
 
 export const toDateString = (date: Date): string => dayjs(date).format('YYYY-MM-DD');
 
+export const toHumanDate = (date: Date): string => dayjs(date).format('MMMM D, YYYY');
+
 const formatCurrency = (amount: any) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
 export { getFeedbackObjectByPath, getFeedbackObjects, type Feedback, toProperCase, formatDate, formatCurrency };
