@@ -108,8 +108,8 @@ export const actions = {
     const getSaleAmount = (sale: SelectSale) => {
       const saleDesc = sale.statusDescription.toLowerCase().trim();
       if (saleDesc === 'pending') return 0;
-      if (saleDesc === 'rejected') return sale.saleAmount;
-      if (saleDesc === 'approved') return sale.saleAmount;
+      if (saleDesc === 'rejected') return Number(sale.saleAmount);
+      if (saleDesc === 'approved') return Number(sale.saleAmount);
       return 0;
     }
     
@@ -117,12 +117,14 @@ export const actions = {
     pendingPaystub.grossPay += selectedSales.reduce((acc, curr) => acc + getSaleAmount(curr), 0);
     pendingPaystub.netPay = pendingPaystub.grossPay;
     
+    // save the paystub
+    const paystubSaved = await insertPaystub(pendingPaystub);
+    
+    if (!paystubSaved) return error(400, 'Could not save paystub! Please try again.');
+    
     // update selected sales with paystub id
     const updated = await updateSelectedSalesToPaystub(selectedSales, pendingPaystub.id);
     if (!updated) error(500, 'Error updating sales');
-    
-    // save the paystub
-    const paystubSaved = await insertPaystub(pendingPaystub);
     
     // test data
     return {
