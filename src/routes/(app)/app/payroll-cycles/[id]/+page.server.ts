@@ -58,7 +58,7 @@ export const actions: Actions = {
   'toggle-payroll-cycle-close': async ({ request, locals, params }) => {
     if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    const profile = await getUserProfileData(locals.user.id);
+    const profile = locals.user.profile;
     
     const formData = await request.formData();
     const data = Object.fromEntries(formData) as unknown as {
@@ -68,7 +68,10 @@ export const actions: Actions = {
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) return { status: 403 };
     
-    const result = await togglePayrollCycleClose(data.id, data.isClosed);
+    // let's toggle the value we are going to save 
+    const isClosed = !(data.isClosed === 'true');
+    
+    const result = await togglePayrollCycleClose(data.id, isClosed);
     
     return result ? { status: 200 } : { status: 400 };
   },

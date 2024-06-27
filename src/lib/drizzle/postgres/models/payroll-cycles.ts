@@ -45,13 +45,13 @@ export const addPayrollCycle = async (dto: InsertPayrollCycle): Promise<SelectPa
   return {...dto} as SelectPayrollCycle;
 }
 
-export const togglePayrollCycleClose = async (id: string, isClosed: string): Promise<boolean> => {
+export const togglePayrollCycleClose = async (id: string, isClosed: boolean): Promise<boolean> => {
   if (!id) return false;
   
   try {
     await drizzleClient.update(payrollCycle)
       .set({
-        isClosed: (isClosed === 'true'),
+        isClosed: Boolean(isClosed),
       })
       .where(eq(payrollCycle.id, id));
   } catch (ex) {
