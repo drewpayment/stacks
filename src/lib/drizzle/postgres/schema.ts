@@ -245,6 +245,10 @@ export const payrollCycle = pgTable('payroll_cycle', {
 	isClosed: boolean('is_closed').notNull().default(false),
 });
 
+export const payrollCycleRelations = relations(payrollCycle, ({ many }) => ({
+	paystubs: many(paystub),
+}));
+
 export const paystub = pgTable('paystub', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	employeeId: varchar('employee_id', { length: 255 })

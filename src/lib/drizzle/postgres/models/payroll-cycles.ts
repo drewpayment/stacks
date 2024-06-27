@@ -21,6 +21,20 @@ export const getPayrollCycles = async (clientId: string, showIsClosed = true): P
   return data || [];
 }
 
+export const getLastPayrollCycle = async (clientId: string): Promise<SelectPayrollCycle | null> => {
+  if (!clientId) return null;
+  
+  const data = await drizzleClient.query.payrollCycle.findFirst({
+    where: (pc, { eq }) => eq(pc.clientId, clientId),
+    orderBy: (pc, { desc }) => [desc(pc.startDate)],
+    with: {
+      paystubs: true,
+    },
+  });
+  
+  return data || null;
+}
+
 export const getPayrollCycle = async (id: string): Promise<SelectPayrollCycle> => {
   if (!id) return null as unknown as SelectPayrollCycle;
   
