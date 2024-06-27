@@ -24,7 +24,7 @@
 		class="flex flex-col gap-2 mt-4 px-4 py-6 bg-secondary-100 border-secondary-100
 		dark:bg-background-300 border dark:border-background-300 rounded-md shadow-md"
 	>
-		{#if user}
+		{#if user && ['org_admin', 'super_admin'].includes(user.profile.role)}
 			<Card size="sm">
 				<div class="mb-4 text-xl font-medium text-gray-400 dark:text-gray-500">Latest Payroll</div>
 				<h5 class="mb-4 text-2xl font-medium text-gray-600 dark:text-gray-50">{ toHumanDate(cycle.paymentDate) }</h5>
