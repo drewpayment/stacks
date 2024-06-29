@@ -1,4 +1,4 @@
-import type { InsertPayrollCycle, SelectPayrollCycle } from '$lib/drizzle/postgres/db.model';
+import type { InsertPayrollCycle, SelectPayrollCycle, SelectPaystub } from '$lib/drizzle/postgres/db.model';
 import { eq } from 'drizzle-orm';
 import { drizzleClient } from '../client';
 import { payrollCycle } from '../schema';
@@ -21,14 +21,20 @@ export const getPayrollCycles = async (clientId: string, showIsClosed = true): P
   return data || [];
 }
 
-export const getLastPayrollCycle = async (clientId: string): Promise<SelectPayrollCycle | null> => {
+export const getLastPayrollCycle = async (clientId: string): Promise<SelectPayrollCycle & { paystubs: SelectPaystub[] } | null> => {
   if (!clientId) return null;
   
   const data = await drizzleClient.query.payrollCycle.findFirst({
     where: (pc, { eq }) => eq(pc.clientId, clientId),
     orderBy: (pc, { desc }) => [desc(pc.startDate)],
     with: {
-      paystubs: true,
+      paystubs: {
+        with: {
+          employee: true,
+        },
+        orderBy: (ps, { asc, desc }) => [desc(ps.netPay)],
+        limit: 5,
+      },
     },
   });
   
