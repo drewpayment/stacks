@@ -11,10 +11,11 @@
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Dropdown, DropdownItem, DropdownDivider, Button } from 'flowbite-svelte';
 	import { page } from '$app/stores';
 	import { ChevronRightSolid, PlusSolid } from 'flowbite-svelte-icons';
-	import { setEmployeeOptions, setManualOverrides, setSelectedEmployee } from '$lib/components/context.js';
+	import { setEmployeeOptions, setManualOverrides, setSelectedCampaign, setSelectedEmployee } from '$lib/components/context.js';
 	$: activeUrl = $page.url.pathname;
 	export let data;
 	
+	setSelectedCampaign('');
 	setSelectedEmployee('');
 	setEmployeeOptions([]);
 	setManualOverrides([]);

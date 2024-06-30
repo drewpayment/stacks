@@ -31,3 +31,12 @@ export const setManualOverrides = (overrides: SelectSaleOverride[]) => {
 export const getManualOverrides = () => {
   return getContext<Context<SelectSaleOverride[]>>('pendingOverrides');
 }
+
+export const setSelectedCampaign = (campaign: string) => {
+  const camp = writable<string>(campaign);
+  setContext('selectedCampaign', camp);
+}
+
+export const getSelectedCampaign = () => {
+  return getContext<Context<string>>('selectedCampaign');
+}

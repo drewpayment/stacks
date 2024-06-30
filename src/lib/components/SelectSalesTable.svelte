@@ -3,8 +3,10 @@
 	import type { SaleWithEmployee } from '$lib/drizzle/postgres/types/sale.model';
 	import { toHumanDate } from '$lib/utils';
 	import dayjs from 'dayjs';
-	import { TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Table, Checkbox } from 'flowbite-svelte';
+	import { TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Table, Checkbox, Button } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { getSelectedCampaign, getSelectedEmployee } from './context';
+	import { get } from 'svelte/store';
   const dispatch = createEventDispatcher();
 	  
   export let data: SaleTableInputData;
@@ -13,6 +15,11 @@
     style: 'currency',
     currency: 'USD',
   });
+  
+  const selectedEmployeeContext = getSelectedEmployee();
+  const employeeId = get(selectedEmployeeContext);
+  const selectedCampaignContext = getSelectedCampaign();
+  const campaignId = get(selectedCampaignContext);
   
   const startDate = dayjs(data.startDate).format('YYYY-MM-DD');
   const endDate = dayjs(data.endDate).format('YYYY-MM-DD');
@@ -40,7 +47,12 @@
 </script>
 
 <div class="mb-6">
-  <h5 class="mb-2">Pending Sales</h5>
+  <div class="flex justify-between">
+    <h5 class="mb-2">Pending Sales</h5>
+    <div class="p-2">
+      <Button href={'/app/sales/add?employee=' + (employeeId || '') + '&campaign=' + (campaignId || '')} size="sm">Create Sales</Button>
+    </div>
+  </div>
   <Table striped={true} shadow={true} divClass="bg-background-100 dark:bg-background-300 max-h-80 overflow-y-auto">
     <TableHead class="text-sm text-background-800 font-semibold">
       <TableHeadCell>

@@ -6,14 +6,16 @@ import type { SaleDto } from '$lib/drizzle/postgres/db.model.js';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 
 
-export const load = async ({ locals, request }) => {
+export const load = async ({ locals, request, url }) => {
 	if (!locals.user) return fail(401, { message: 'Unauthorized' });
 	const profile = locals.user.profile;
   
   if (!profile?.clientId) redirect(302, '/');
   if (!['org_admin', 'super_admin'].includes(profile?.role)) redirect(302, '/');
   
-  const clientId = profile.clientId
+  const clientId = profile.clientId;
+  const employeeId = url.searchParams.get('employee');
+  const campaignId = url.searchParams.get('campaign');
   
   const campaigns = async () => {
     const campaigns = await getCampaigns(clientId);
@@ -36,6 +38,8 @@ export const load = async ({ locals, request }) => {
 	return {
 		campaigns: await campaigns(),
     employees: await employees(),
+    employeeId,
+    campaignId,
 	};
 };
 
