@@ -7,7 +7,7 @@
   import type { ImportSalesResult } from '$lib/types/sale.model';
 	import type { ActionResult } from '@sveltejs/kit';
 	import type { InsertSale } from '$lib/types/db.model';
-	import { formatCurrency, formatDate } from '$lib/utils';
+	import { formatCurrency, formatDate } from '$lib/utils/utils';
 
   export let data: PageData;
   const { campaigns, employees } = data;

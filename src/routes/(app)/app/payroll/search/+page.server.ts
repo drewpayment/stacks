@@ -3,7 +3,7 @@ import { getEmployees } from '$lib/drizzle/postgres/models/employees';
 import { getPayrollCycles } from '$lib/drizzle/postgres/models/payroll-cycles';
 import { attachPayrollCycleToPaystub, getPaystubs } from '$lib/drizzle/postgres/models/paystubs.js';
 import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
-import { formatDate } from '$lib/utils';
+import { formatDate } from '$lib/utils/utils';
 import { error, fail } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 

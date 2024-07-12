@@ -1,4 +1,4 @@
-import { getFeedbackObjects } from '$lib/utils';
+import { getFeedbackObjects } from '$lib/utils/utils';
 import { fail, redirect } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { Actions } from './$types';

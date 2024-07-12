@@ -1,7 +1,7 @@
 import { generateEmailVerificationToken } from '$lib/drizzle/postgres/models/tokens';
 import { getUserByEmail, getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import { sendEmail } from '$lib/emails/send';
-import { getFeedbackObjects } from '$lib/utils';
+import { getFeedbackObjects } from '$lib/utils/utils';
 import { fail } from '@sveltejs/kit';
 
 export const actions = {

@@ -2,6 +2,7 @@ import type { InsertPayrollCycle, SelectPayrollCycle, SelectPaystub } from '$lib
 import { eq } from 'drizzle-orm';
 import { drizzleClient } from '../client';
 import { payrollCycle } from '../schema';
+import dayjs from 'dayjs';
 
 export const getPayrollCycles = async (clientId: string, showIsClosed = true): Promise<SelectPayrollCycle[]> => {
   if (!clientId) {
@@ -25,7 +26,10 @@ export const getLastPayrollCycle = async (clientId: string): Promise<SelectPayro
   if (!clientId) return null;
   
   const data = await drizzleClient.query.payrollCycle.findFirst({
-    where: (pc, { eq }) => eq(pc.clientId, clientId),
+    where: (pc, { eq, and, lte }) => and(
+      eq(pc.clientId, clientId),
+      lte(pc.paymentDate, dayjs().toDate()),
+    ),
     orderBy: (pc, { desc }) => [desc(pc.startDate)],
     with: {
       paystubs: {

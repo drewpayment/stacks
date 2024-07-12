@@ -1,21 +1,19 @@
 <script lang="ts">
 	import AddUserDialog from '$lib/components/AddUserDialog.svelte';
-	import { toProperCase } from '$lib/utils';
 	import ViewUserDialog from '$lib/components/ViewUserDialog.svelte';
-	import UserStore from '$lib/stores/user.js';
+	import UserStore from '$lib/stores/user';
 	import {
 		Avatar,
 		Badge,
 		Breadcrumb,
 		BreadcrumbItem,
-		Button,
 		Card,
 		Dropdown,
 		DropdownItem,
 		Indicator
 	} from 'flowbite-svelte';
 	import { AddressCardSolid, DotsHorizontalOutline } from 'flowbite-svelte-icons';
-	import { writable } from 'svelte/store';
+	import { enhance } from '$app/forms';
 
 	export let data;
 	const { users, client } = data;
@@ -43,7 +41,16 @@
 				{#if !user.auth_user.emailVerified}
 					<DotsHorizontalOutline class="absolute" />
 					<Dropdown class="w-36">
-						<DropdownItem>Verify Email</DropdownItem>
+						<DropdownItem on:click={(e) => console.log(e)} type="submit">Verify Email</DropdownItem>
+						<form action="?/sendPasswordResetLink" method="post" use:enhance={() => {
+							return ({ result, update }) => {
+								console.log(result);
+							}
+						}}>
+							<input type="hidden" name="email" value={user.auth_user.email} />
+							<input type="hidden" name="userId" value={user.auth_user.id} />
+							<DropdownItem on:click={(e) => console.log(e)} type="submit">Reset Password</DropdownItem>
+						</form>
 					</Dropdown>
 				{/if}
 			</div>

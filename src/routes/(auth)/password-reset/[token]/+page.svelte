@@ -3,7 +3,7 @@
 	import InlineFormNotice from '$lib/components/InlineFormNotice.svelte';
 	import SubmitButton from '$lib/components/SubmitButton.svelte';
 	import { createToast } from '$lib/components/Toast.svelte';
-	import { getFeedbackObjectByPath } from '$lib/utils';
+	import { getFeedbackObjectByPath } from '$lib/utils/utils';
 	import type { SubmitFunction } from '@sveltejs/kit';
 
 	export let form;

@@ -3,7 +3,12 @@ import type { InsertUser, InsertUserKey, InsertUserProfile, RoleTypes, SelectCli
 import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import { Argon2id } from 'oslo/password';
+import { z } from 'zod';
+import { AuthUtils } from '$lib/utils/auth.js';
 
+const passwordResetSchema = z.object({
+	email: z.string().email()
+});
 
 export const load = async ({locals}) => {
   if (!locals.user) fail(401, { message: 'Unauthorized' });
@@ -100,5 +105,12 @@ export const actions = {
     };
     
     return await updateUserAndProfile(insertUser, insertUserProfile);
-  }
+  },
+  sendPasswordResetLink: async ({ request, url }) => {
+		const formData = Object.fromEntries(await request.formData());
+
+		const { userId, email } = formData as any;
+		
+    return AuthUtils.sendPasswordResetLink(url.origin, email, userId);
+	}
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { SaleTableInputData } from '$lib/drizzle/postgres/types/sale-table-input-data.model';
 	import type { SaleWithEmployee } from '$lib/drizzle/postgres/types/sale.model';
-	import { toHumanDate } from '$lib/utils';
+	import { toHumanDate } from '$lib/utils/utils';
 	import dayjs from 'dayjs';
 	import { TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Table, Checkbox, Button } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';

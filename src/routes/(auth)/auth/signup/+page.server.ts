@@ -1,7 +1,7 @@
 import { generateEmailVerificationToken } from '$lib/drizzle/postgres/models/tokens';
 import { createUser } from '$lib/drizzle/postgres/models/users';
 import { sendEmail } from '$lib/emails/send';
-import { getFeedbackObjects } from '$lib/utils';
+import { getFeedbackObjects } from '$lib/utils/utils';
 import { fail, redirect } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { SelectPayrollCycle, SelectPaystub } from '$lib/drizzle/postgres/db.model.js';
-	import { formatCurrency, toHumanDate } from '$lib/utils';
+	import type { SelectEmployee, SelectPayrollCycle, SelectPaystub } from '$lib/drizzle/postgres/db.model';
+	import { formatCurrency, toHumanDate } from '$lib/utils/utils';
 	import { Button, Card } from 'flowbite-svelte';
 	import { CheckCircleSolid } from 'flowbite-svelte-icons';
 

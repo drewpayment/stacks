@@ -1,9 +1,8 @@
-import { updatePassword } from '$lib/drizzle/mysql/models/passwords.js';
-import { validatePasswordResetToken } from '$lib/drizzle/mysql/models/tokens';
-import { getUserById, updateUserAttributes } from '$lib/drizzle/mysql/models/users.js';
-import { auth } from '$lib/lucia/mysql';
-import { lucia } from '$lib/lucia/utils';
-import { getFeedbackObjects } from '$lib/utils';
+import { updatePassword } from '$lib/drizzle/postgres/models/passwords.js';
+import { validatePasswordResetToken } from '$lib/drizzle/postgres/models/tokens';
+import { getUserById, updateUserAttributes } from '$lib/drizzle/postgres/models/users.js';
+import { lucia } from '$lib/lucia/postgres';
+import { getFeedbackObjects } from '$lib/utils/utils';
 import { fail, redirect } from '@sveltejs/kit';
 import type { User } from 'lucia';
 import { z } from 'zod';

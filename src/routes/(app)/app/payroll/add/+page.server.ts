@@ -7,7 +7,7 @@ import { getUnallocatedSalesByEmployee, saveSales, updateSelectedSalesToPaystub 
 import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import type { Employee, SelectSale, SelectSaleOverride } from '$lib/drizzle/postgres/db.model';
 import type { InsertManualOverride } from '$lib/drizzle/types/override.model.js';
-import { formatDate } from '$lib/utils.js';
+import { formatDate } from '$lib/utils/utils.js';
 import { error, fail } from '@sveltejs/kit';
 
 

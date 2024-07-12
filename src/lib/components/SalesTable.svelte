@@ -3,7 +3,7 @@
 	import type { SelectCampaign, SelectEmployee } from '$lib/types/db.model';
 	import type { SaleTableInputData } from '$lib/types/sale-table-input-data.model';
 	import type { SaleWithEmployee } from '$lib/types/sale.model';
-	import { formatDate } from '$lib/utils';
+	import { formatDate } from '$lib/utils/utils';
 	import dayjs from 'dayjs';
 	import { Label, Button, Select, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Table } from 'flowbite-svelte';
 	import { CloseSolid } from 'flowbite-svelte-icons';

@@ -4,7 +4,7 @@
 	import { enhance } from '$app/forms';
 	import { createToast } from '$lib/components/Toast.svelte';
 	import { writable } from 'svelte/store';
-	import { formatCurrency, formatDate } from '$lib/utils';
+	import { formatCurrency, formatDate } from '$lib/utils/utils';
 	import type { PaystubWith } from '$lib/drizzle/postgres/types/paystbus.model';
 	import type { SelectPayrollCycle } from '$lib/drizzle/postgres/db.model';
   

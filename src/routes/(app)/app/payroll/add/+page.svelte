@@ -16,6 +16,8 @@
   const employeeContext = getEmployeeOptions();
   employeeContext.set(employees);
   const manualOverrides = getManualOverrides();
+  
+  //TODO: Need to finish passing emplid and campaignid to the add sales page
   const campaignContext = getSelectedCampaign();
   
   let submitBtn: HTMLButtonElement;
@@ -105,7 +107,7 @@
           if (result.data) {
             salesTableData = {
               ...salesTableData,
-              sales: [...result.data.sales],
+              sales: [...result.data.sales,],
             };
             
             overrideTableData = {

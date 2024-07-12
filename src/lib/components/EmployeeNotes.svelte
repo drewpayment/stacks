@@ -6,7 +6,7 @@
 	import { enhance } from '$app/forms';
 	import { createToast } from './Toast.svelte';
 	import { Card, Textarea, Timeline, TimelineItem, Toolbar, ToolbarButton } from 'flowbite-svelte';
-	import { formatDate } from '$lib/utils';
+	import { formatDate } from '$lib/utils/utils';
 	import { ImageOutline, MapPinAltSolid, PaperClipOutline } from 'flowbite-svelte-icons';
   
   export let employeeId: string;
