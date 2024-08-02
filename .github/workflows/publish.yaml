@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
-      ORIGIN: https://stacks.drewpayment.com
+      ORIGIN: https://stacks.hoyt.services
 
     steps:
       - name: Checkout code
