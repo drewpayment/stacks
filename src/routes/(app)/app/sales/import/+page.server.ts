@@ -1,17 +1,17 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns';
-import { getEmployees } from '$lib/drizzle/mysql/models/employees';
-import { processImport, saveSales } from '$lib/drizzle/mysql/models/sales.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { InsertSale } from '$lib/types/db.model.js';
-import type { ImportRow } from '$lib/types/sale.model.js';
-import { redirect, type Actions, error } from '@sveltejs/kit';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns';
+import { getEmployees } from '$lib/drizzle/postgres/models/employees';
+import { processImport, saveSales } from '$lib/drizzle/postgres/models/sales.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { InsertSale } from '$lib/drizzle/postgres/db.model.js';
+import type { ImportRow } from '$lib/drizzle/postgres/types/sale.model.js';
+import { fail, redirect, type Actions, error } from '@sveltejs/kit';
 import { read, utils, writeFile } from 'xlsx';
 
 export const load = async ({ locals, request }) => {
-  const session = await locals.auth.validate();
-	const profile = await getUserProfileData(session?.user.userId);
+  if (!locals.user) return fail(401, { message: 'Unauthorized' });
+	const profile = await getUserProfileData(locals.user.id);
   
-  if (!session || !profile?.clientId) redirect(302, '/');
+  if (!profile?.clientId) redirect(302, '/');
   if (!['org_admin', 'super_admin'].includes(profile?.role)) redirect(302, '/');
   
   const clientId = profile.clientId
@@ -52,11 +52,9 @@ const importHeaders = {
 
 export const actions: Actions = {
   import: async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) error(401, { message: 'Unauthorized' });
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     
     if (!profile?.clientId) error(401, { message: 'Unauthorized' });
     if (!['org_admin', 'super_admin'].includes(profile?.role)) error(401, { message: 'Unauthorized' });

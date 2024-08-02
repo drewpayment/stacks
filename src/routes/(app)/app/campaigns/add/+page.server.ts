@@ -1,17 +1,15 @@
-import { addCampaign } from '$lib/drizzle/mysql/models/campaigns';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { InsertCampaign } from '$lib/types/db.model';
+import { addCampaign } from '$lib/drizzle/postgres/models/campaigns';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { InsertCampaign } from '$lib/drizzle/postgres/db.model';
 import type { Actions } from '@sveltejs/kit';
 
 
 
 export const actions: Actions = {
   save: async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return { status: 401 };
     
-    if (!session) return { status: 401 };
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     const clientId = profile.clientId;
     
     if (!clientId) return { status: 401 };

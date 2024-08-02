@@ -1,16 +1,24 @@
 import { relations } from 'drizzle-orm';
-import { bigint, boolean, double, mysqlEnum, mysqlTable, text, tinyint, unique, varchar } from 'drizzle-orm/mysql-core';
+import { bigint, boolean, datetime, double, int, mysqlEnum, mysqlTable, primaryKey, text, tinyint, unique, varchar } from 'drizzle-orm/mysql-core';
 
-const user = mysqlTable('auth_user', {
+export const user = mysqlTable('auth_user', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	email: varchar('email', { length: 255 }).unique().notNull(),
 	emailVerified: boolean('email_verified').default(false).notNull(),
 
 	// From GitHub
-	githubUsername: varchar('github_username', { length: 255 }).unique()
+	githubUsername: varchar('github_username', { length: 255 }).unique(),
 });
 
-const userProfile = mysqlTable('user_profile', {
+export const userSession = mysqlTable('user_session', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	userId: varchar('user_id', { length: 255 })
+		.notNull()
+		.references(() => user.id),
+	expiresAt: datetime('expires_at').notNull(),
+});
+
+export const userProfile = mysqlTable('user_profile', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	userId: varchar('user_id', { length: 255 })
 		.unique()
@@ -29,7 +37,33 @@ const userProfile = mysqlTable('user_profile', {
 	picture: varchar('picture', { length: 1024 })
 });
 
-const employee = mysqlTable('employee', {
+export const password = mysqlTable('password', {
+	id: int('id').autoincrement().primaryKey(),
+	hashedPassword: varchar('hashed_password', { length: 255 }).notNull(),
+	userId: varchar('user_id', { length: 255 })
+		.notNull()
+		.references(() => user.id),
+});
+
+export const passwordResetToken = mysqlTable('password_reset_token', {
+	id: int('id').autoincrement().primaryKey(),
+	userId: varchar('user_id', { length: 255 })
+		.notNull()
+		.references(() => user.id),
+	expires: bigint('expires', { mode: 'number' }).notNull()
+});
+
+export const oauthAccount = mysqlTable('oauth_account', {
+	providerId: varchar('provider_id', { length: 255 }).notNull(),
+	providerUserId: varchar('provider_user_id', { length: 255 }).notNull(),
+	userId: varchar('user_id', { length: 255 })
+		.notNull()
+		.references(() => user.id),
+}, (table) => ({
+	pk: primaryKey(table.providerId, table.providerUserId),
+}));
+
+export const employee = mysqlTable('employee', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	userId: varchar('user_id', { length: 255 })
 		.unique()
@@ -45,7 +79,7 @@ const employee = mysqlTable('employee', {
 	isCommissionable: tinyint('is_commissionable').notNull().default(0),
 });
 
-const overridingEmployee = mysqlTable('overriding_employee', {
+export const overridingEmployee = mysqlTable('overriding_employee', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	employeeId: varchar('employee_id', { length: 255 })
 		.notNull()
@@ -56,7 +90,7 @@ const overridingEmployee = mysqlTable('overriding_employee', {
 	overrideAmount: double('override_amount').notNull().default(0),
 });
 
-const employeeRelations = relations(employee, ({ many, one }) => ({
+export const employeeRelations = relations(employee, ({ many, one }) => ({
 	employeeProfile: one(employeeProfile, {
 		fields: [employee.id],
 		references: [employeeProfile.employeeId],
@@ -69,7 +103,7 @@ const employeeRelations = relations(employee, ({ many, one }) => ({
 	}),
 }));
 
-const employeeProfile = mysqlTable('employee_profile', {
+export const employeeProfile = mysqlTable('employee_profile', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	employeeId: varchar('employee_id', { length: 255 })
 		.unique()
@@ -85,7 +119,7 @@ const employeeProfile = mysqlTable('employee_profile', {
 	email: varchar('email', { length: 255 }).notNull(),
 });
 
-const employeeNotes = mysqlTable('employee_notes', {
+export const employeeNotes = mysqlTable('employee_notes', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	employeeId: varchar('employee_id', { length: 255 })
 		.notNull()
@@ -94,14 +128,14 @@ const employeeNotes = mysqlTable('employee_notes', {
 	created: bigint('created', { mode: 'number' }).notNull(),
 })
 
-const employeeNotesRelations = relations(employeeNotes, ({ one }) => ({
+export const employeeNotesRelations = relations(employeeNotes, ({ one }) => ({
 	employee: one(employee, {
 		fields: [employeeNotes.employeeId],
 		references: [employee.id],
 	}),
 }));
 
-const employeeCodes = mysqlTable('employee_codes', {
+export const employeeCodes = mysqlTable('employee_codes', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	employeeId: varchar('employee_id', { length: 255 })
 		.notNull()
@@ -116,14 +150,14 @@ const employeeCodes = mysqlTable('employee_codes', {
 	unq: unique().on(t.employeeId, t.employeeCode),
 }));
 
-const employeeCodesRelations = relations(employeeCodes, ({ one }) => ({
+export const employeeCodesRelations = relations(employeeCodes, ({ one }) => ({
 	employee: one(employee, {
 		fields: [employeeCodes.employeeId],
 		references: [employee.id],
 	}),
 }));
 
-const emailVerification = mysqlTable('email_verification', {
+export const emailVerification = mysqlTable('email_verification', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	userId: varchar('user_id', { length: 255 })
 		.notNull()
@@ -131,15 +165,7 @@ const emailVerification = mysqlTable('email_verification', {
 	expires: bigint('expires', { mode: 'number' }).notNull()
 });
 
-const passwordResetToken = mysqlTable('password_reset_token', {
-	id: varchar('id', { length: 255 }).primaryKey(),
-	userId: varchar('user_id', { length: 255 })
-		.notNull()
-		.references(() => user.id),
-	expires: bigint('expires', { mode: 'number' }).notNull()
-});
-
-const userKey = mysqlTable('user_key', {
+export const userKey = mysqlTable('user_key', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	userId: varchar('user_id', { length: 255 })
 		.notNull()
@@ -147,7 +173,7 @@ const userKey = mysqlTable('user_key', {
 	hashedPassword: varchar('hashed_password', { length: 255 })
 });
 
-const client = mysqlTable('client', {
+export const client = mysqlTable('client', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	name: varchar('name', { length: 255 }).notNull(),
 	contactUserId: varchar('contact_user_id', { length: 255 })
@@ -157,16 +183,7 @@ const client = mysqlTable('client', {
 	deleted: bigint('deleted', { mode: 'number' }),
 });
 
-const userSession = mysqlTable('user_session', {
-	id: varchar('id', { length: 255 }).primaryKey(),
-	userId: varchar('user_id', { length: 255 })
-		.notNull()
-		.references(() => user.id),
-	activeExpires: bigint('active_expires', { mode: 'number' }).notNull(),
-	idleExpires: bigint('idle_expires', { mode: 'number' }).notNull()
-});
-
-const campaigns = mysqlTable('campaigns', {
+export const campaigns = mysqlTable('campaigns', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	clientId: varchar('client_id', { length: 255 })
 		.notNull()
@@ -179,7 +196,7 @@ const campaigns = mysqlTable('campaigns', {
 	updated: bigint('updated', { mode: 'number' }).notNull(),
 });
 
-const payrollCycle = mysqlTable('payroll_cycle', {
+export const payrollCycle = mysqlTable('payroll_cycle', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	clientId: varchar('client_id', { length: 255 })
 		.notNull()
@@ -193,7 +210,7 @@ const payrollCycle = mysqlTable('payroll_cycle', {
 	isClosed: tinyint('is_closed').notNull().default(0),
 });
 
-const paystub = mysqlTable('paystub', {
+export const paystub = mysqlTable('paystub', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	employeeId: varchar('employee_id', { length: 255 })
 		.notNull()
@@ -219,7 +236,7 @@ const paystub = mysqlTable('paystub', {
 	deleted: bigint('deleted', { mode: 'number' }),
 });
 
-const paystubRelations = relations(paystub, ({ one, many }) => ({
+export const paystubRelations = relations(paystub, ({ one, many }) => ({
 	employee: one(employee, {
 		fields: [paystub.employeeId],
 		references: [employee.id],
@@ -240,7 +257,7 @@ const paystubRelations = relations(paystub, ({ one, many }) => ({
 	overrides: many(saleOverride),
 }));
 
-const sale = mysqlTable('sale', {
+export const sale = mysqlTable('sale', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	employeeId: varchar('employee_id', { length: 255 })
 		.notNull()
@@ -266,7 +283,7 @@ const sale = mysqlTable('sale', {
 	deleted: bigint('deleted', { mode: 'number' }),
 });
 
-const saleRelations = relations(sale, ({ one }) => ({
+export const saleRelations = relations(sale, ({ one }) => ({
 	paystub: one(paystub, {
 		fields: [sale.paystubId],
 		references: [paystub.id],
@@ -281,7 +298,7 @@ const saleRelations = relations(sale, ({ one }) => ({
 	}),
 }));
 
-const saleOverride = mysqlTable('sale_override', {
+export const saleOverride = mysqlTable('sale_override', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	clientId: varchar('client_id', { length: 255 })
 		.notNull()
@@ -299,7 +316,7 @@ const saleOverride = mysqlTable('sale_override', {
 		.references(() => paystub.id),
 });
 
-const saleOverrideRelations = relations(saleOverride, ({ one }) => ({
+export const saleOverrideRelations = relations(saleOverride, ({ one }) => ({
 	paystub: one(paystub, {
 		fields: [saleOverride.paidOnPaystubId],
 		references: [paystub.id],
@@ -310,7 +327,7 @@ const saleOverrideRelations = relations(saleOverride, ({ one }) => ({
 	}),
 }));
 
-const expenseReport = mysqlTable('expense_report', {
+export const expenseReport = mysqlTable('expense_report', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	employeeId: varchar('employee_id', { length: 255 })
 		.notNull()
@@ -331,7 +348,7 @@ const expenseReport = mysqlTable('expense_report', {
 	deleted: bigint('deleted', { mode: 'number' }),
 });
 
-const expenseItem = mysqlTable('expense_item', {
+export const expenseItem = mysqlTable('expense_item', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	clientId: varchar('client_id', { length: 255 })
 		.notNull()
@@ -344,11 +361,4 @@ const expenseItem = mysqlTable('expense_item', {
 	dateIncurred: bigint('date_incurred', { mode: 'number' }).notNull(),
 	receiptUrl: varchar('receipt_url', { length: 1024 }),
 });
-
-export {
-	emailVerification, passwordResetToken, user, userKey, userProfile, client, userSession,
-	employee, employeeProfile, employeeCodes, employeeRelations, employeeCodesRelations,
-	employeeNotes, employeeNotesRelations, campaigns, payrollCycle, paystub, sale, saleOverride,
-	saleOverrideRelations, expenseReport, expenseItem, paystubRelations, saleRelations, overridingEmployee, 
-};
 

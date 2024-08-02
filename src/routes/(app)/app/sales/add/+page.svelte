@@ -1,11 +1,15 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { browser } from '$app/environment';
+  import { enhance } from '$app/forms';
 	import CurrencyInput from '$lib/components/CurrencyInput.svelte';
 	import { createToast } from '$lib/components/Toast.svelte';
+	import dayjs from 'dayjs';
 	import { Breadcrumb, BreadcrumbItem, Button, Input, Label, Select } from 'flowbite-svelte';
 
   export let data;
-  const { campaigns } = data;
+  const { campaigns, employees, employeeId } = data;
+  
+  let addMore = false;
 </script>
 
 <div class="container max-w-3xl p-4">
@@ -27,11 +31,7 @@
   </div>
   
   <form method="post" class="grid grid-cols-2 gap-4"
-    use:enhance={({ formElement, formData, action, cancel, submitter }) => {
-      
-      // console.log(Object.fromEntries(formData.entries()));
-      // cancel();
-        
+    use:enhance={({ formElement, formData, action, cancel, submitter }) => {        
       return async ({ result, update }) => {
         if (result.status != 200) return;
         
@@ -41,13 +41,19 @@
           type: 'success',
         });
         
-        update();
+        if (!employeeId) return;
+        
+        if (addMore) {
+          update();
+        } else {
+          if (browser) window.history.back();
+        }
       }
     }}
   >
     <div class="mb-6">
       <Label class="block mb-2">Employee</Label>
-      <Select name="employee_id" id="employee_id" items={data?.employees} required />
+      <Select name="employee_id" id="employee_id" items={employees} value={employeeId} required />
     </div>
     
     <div class="mb-6">&nbsp;</div>
@@ -55,7 +61,7 @@
     <div class="mb-6">
       <Label class="block mb-2">Sale Date</Label>
       <Input let:props>
-        <input type="date" name="sale_date" id="sale_date" {...props} value={Date.now()} required />
+        <input type="date" name="sale_date" id="sale_date" {...props} value={dayjs().format('YYYY-MM-DD')} required />
       </Input>
     </div>
     
@@ -99,8 +105,12 @@
       </Select>
     </div>
     
-    <div class="flex justify-end col-span-2">
-      <Button type="submit" color="green">Add Sale</Button>
+    <div class="flex justify-end col-span-2 gap-2">
+      <Button type="button" color="none" on:click={() => window?.history.back()}>Cancel</Button>
+      <Button type="submit" color={employeeId ? 'primary' : 'green'} on:click={() => addMore = false}>Save</Button>
+      {#if !!employeeId}
+        <Button type="submit" color="green" on:click={() => addMore = true}>Save & Add More</Button>
+      {/if}
     </div>
   </form>
 </div>

@@ -1,10 +1,10 @@
-import type { InsertSale, SaleDto, SelectSale } from '$lib/types/db.model';
+import type { InsertSale, SaleDto, SelectSale } from '$lib/drizzle/mysql/db.model';
 import { nanoid } from 'nanoid';
 import { drizzleClient } from '../client';
 import { sale } from '../schema';
 import dayjs from 'dayjs';
 import { desc, inArray } from 'drizzle-orm';
-import type { ImportRow } from '$lib/types/sale.model';
+import type { ImportRow } from '$lib/drizzle/mysql/types/sale.model';
 import { getEmployeeIdByCampaignSalesCode } from './employees';
 import { error } from '@sveltejs/kit';
 
@@ -68,12 +68,12 @@ export const saveSales = async (dtos: InsertSale[]): Promise<SelectSale[]> => {
 export const getSales = async <T = SelectSale>(clientId: string, startDate: number, endDate: number, withStmt: any = undefined): Promise<T[]> => {
   const sales = await drizzleClient.query.sale.findMany({
     with: withStmt || undefined,
-    orderBy: s => desc(s.saleDate),
     where: (sale, { and, eq, gte, lte }) => and(
       eq(sale.clientId, clientId),
       gte(sale.saleDate, startDate),
       lte(sale.saleDate, endDate),
     ),
+    orderBy: s => desc(s.saleDate),
   });
   
   return sales as T[];

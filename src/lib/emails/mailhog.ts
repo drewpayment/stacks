@@ -1,4 +1,4 @@
-import { getFeedbackObjects } from '$lib/utils';
+import { getFeedbackObjects } from '$lib/utils/utils';
 import { SMTPClient } from 'emailjs';
 
 const client = new SMTPClient({

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Feedback } from '$lib/utils';
+	import type { Feedback } from '$lib/utils/utils';
 
 	export let feedback: Feedback | undefined;
 </script>

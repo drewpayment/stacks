@@ -1,26 +1,21 @@
-FROM node:20-slim AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+# Build with:   docker build -t IMAGE_NAME .
+# Run with:     docker run -p 3000:3000 --rm --name IMAGE_NAME IMAGE_NAME
+
+FROM node:20-slim AS builder
+WORKDIR /staging
+COPY . /staging/
+RUN corepack enable && \
+  pnpm install --frozen-lockfile && \
+  pnpm build && \
+  pnpm prune --prod
+
+FROM node:20-slim
 ARG ORIGIN=http://localhost:3000
 ENV ORIGIN=$ORIGIN
-RUN corepack enable
-
-# install dependencies 
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-# RUN npm install -g pnpm
-
-FROM base AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
-
-FROM base AS build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-COPY . .
-RUN pnpm build
-
-FROM base 
-COPY --from=prod-deps /app/node_modules /app/node_modules
-COPY --from=build /app .
+COPY --from=builder /staging/package.json /staging/pnpm-lock.yaml  /app/
+COPY --from=builder /staging/node_modules /app/node_modules
+COPY --from=builder /staging/build /app/build
 
 EXPOSE 3000
-CMD ["node", "-r", "dotenv/config", "./build"]
+CMD ["node", "-r", "dotenv/config", "/app/build/index.js"]

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { SelectEmployee, SelectSale, SelectSaleOverride } from '$lib/types/db.model';
-	import { formatDate } from '$lib/utils';
+	import { formatDate } from '$lib/utils/utils';
 	import { TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Table, Checkbox, Button } from 'flowbite-svelte';
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import AddOverrideModal from './AddOverrideModal.svelte';

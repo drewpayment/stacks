@@ -2,10 +2,10 @@
 	import { enhance } from '$app/forms';
 	import SelectSaleOverridesTable from '$lib/components/SelectSaleOverridesTable.svelte';
 	import SelectSalesTable from '$lib/components/SelectSalesTable.svelte';
-	import { getEmployeeOptions, getManualOverrides, getSelectedEmployee, setEmployeeOptions, setSelectedEmployee } from '$lib/components/context.js';
-	import type { SelectEmployee, SelectSale, SelectSaleOverride } from '$lib/types/db.model';
-	import type { OverrideTableInputData } from '$lib/types/override-table-input-data.model.js';
-	import type { SaleTableInputData } from '$lib/types/sale-table-input-data.model';
+	import { getEmployeeOptions, getManualOverrides, getSelectedCampaign, getSelectedEmployee, setEmployeeOptions, setSelectedEmployee } from '$lib/components/context.js';
+	import type { OverrideTableInputData } from '$lib/drizzle/postgres/types/override-table-input-data.model.js';
+	import type { SaleTableInputData } from '$lib/drizzle/postgres/types/sale-table-input-data.model.js';
+	import type { SelectSale, SelectSaleOverride } from '$lib/drizzle/postgres/db.model.js';
 	import { Breadcrumb, BreadcrumbItem, Button, Card, Helper, Label, Select } from 'flowbite-svelte';
 	import { ArrowRightOutline } from 'flowbite-svelte-icons';
   
@@ -16,6 +16,9 @@
   const employeeContext = getEmployeeOptions();
   employeeContext.set(employees);
   const manualOverrides = getManualOverrides();
+  
+  //TODO: Need to finish passing emplid and campaignid to the add sales page
+  const campaignContext = getSelectedCampaign();
   
   let submitBtn: HTMLButtonElement;
   let selectedSales: SelectSale[] = [];
@@ -34,6 +37,29 @@
     overrides: [],
   } as OverrideTableInputData;
   
+  export const snapshot = {
+    capture: () => {
+      return {
+        selectedSales,
+        selectedSaleOverrides,
+        selectedEmployee,
+        selectedCampaign,
+        selectedCycle,
+        salesTableData,
+        overrideTableData,
+      };
+    },
+    restore: (snapshot) => {
+      selectedEmployee = snapshot.selectedEmployee;
+      selectedCampaign = snapshot.selectedCampaign;
+      selectedCycle = snapshot.selectedCycle;
+      salesTableData = snapshot.salesTableData;
+      overrideTableData = snapshot.overrideTableData;
+      selectedSales = snapshot.selectedSales;
+      selectedSaleOverrides = snapshot.selectedSaleOverrides;
+    },
+  }
+  
   const handleSaleSelected = (e: CustomEvent<SelectSale[]>) => {
     const sales = e.detail;
     selectedSales = [...sales];
@@ -43,6 +69,11 @@
     const overrides = e.detail;
     selectedSaleOverrides = [...overrides];
   };
+  
+  const handleCampaignSelected = (e: any) => {
+    selectedCampaign = e.target?.value;
+    campaignContext.set(selectedCampaign);
+  }
   
   const handleEmployeeSelect = (e: any) => {
     selectedEmployeeContext.set(e.target.value);
@@ -76,7 +107,7 @@
           if (result.data) {
             salesTableData = {
               ...salesTableData,
-              sales: [...result.data.sales],
+              sales: [...result.data.sales,],
             };
             
             overrideTableData = {
@@ -100,7 +131,7 @@
         <div class="flex flex-col space-y-6">
           <Label class="space-y-2">
             <span>Campaign</span>
-            <Select placeholder="Select Campaign" name="campaignId" items={campaigns} bind:value={selectedCampaign} on:change={() => submitBtn.click()} required />
+            <Select placeholder="Select Campaign" name="campaignId" items={campaigns} bind:value={selectedCampaign} on:change={handleCampaignSelected} required />
           </Label>
         </div>
       </Card>

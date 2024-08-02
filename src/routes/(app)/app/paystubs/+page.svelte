@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatCurrency, formatDate } from '$lib/utils.js';
+	import { formatCurrency, formatDate } from '$lib/utils/utils';
 	import { Breadcrumb, BreadcrumbItem, Button, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { ArrowUpRightFromSquareOutline } from 'flowbite-svelte-icons';
 

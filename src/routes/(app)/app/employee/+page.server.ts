@@ -1,16 +1,16 @@
-import { createEmployee, getEmployees } from '$lib/drizzle/mysql/models/employees';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { Employee, InsertEmployee, InsertEmployeeProfile } from '$lib/types/db.model';
+import { createEmployee, getEmployees } from '$lib/drizzle/postgres/models/employees';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { Employee, InsertEmployee, InsertEmployeeProfile } from '$lib/drizzle/postgres/db.model';
+import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
+import dayjs from 'dayjs';
 
 
 export const load = async ({locals}) => {
-  const session = await locals.auth.validate();
-  
-  if (!session) return { status: 401 };
+  if (!locals.user) return fail(401, { message: 'Unauthorized' });
   
   const employees = async (): Promise<Employee[]> => {
-    const up = await getUserProfileData(session?.user.userId);
+    const up = await getUserProfileData(locals.user?.id);
     
     if (!up) return [];
     
@@ -18,29 +18,28 @@ export const load = async ({locals}) => {
   }
   
   return {
-    session,
     employees: await employees(),
   };
 }
 
 export const actions = {
   add: async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) return { status: 401 };
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = locals.user.profile;
     
     const payload = await request.formData();
     const data = Object.fromEntries(payload.entries());
+    const now = dayjs().toDate();
+    
     const insertEmployee: InsertEmployee = {
       id: nanoid(),
       firstName: data.first_name as string,
       lastName: data.last_name as string,
       clientId: profile.clientId as string,
       userId: data.user_id as string,
-      created: Date.now() as any,
-      updated: Date.now() as any,
+      created: now,
+      updated: now,
     };
     
     const insertEmployeeProfile: InsertEmployeeProfile = {

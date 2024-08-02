@@ -1,7 +1,7 @@
-import { generatePasswordResetToken } from '$lib/drizzle/mysql/models/tokens';
-import { getUserByEmail, getUserProfileData } from '$lib/drizzle/mysql/models/users';
+import { generatePasswordResetToken } from '$lib/drizzle/postgres/models/tokens';
+import { getUserByEmail, getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import { sendEmail } from '$lib/emails/send';
-import { getFeedbackObjects } from '$lib/utils';
+import { getFeedbackObjects } from '$lib/utils/utils';
 import { fail } from '@sveltejs/kit';
 import { z } from 'zod';
 
@@ -53,9 +53,9 @@ export const actions = {
 		try {
 			const resetToken = await generatePasswordResetToken(storedUser.id);
 
-			const sender = 'KitForStartups <justin@updates.okupter.com>';
+			const sender = 'Stacks <drew@verostack.dev>';
 			const recipient = profile?.firstName ? `${profile.firstName}` : storedUser.email;
-			const emailHtml = `Hello ${recipient},<br><br>Here is your password reset link:<br><br><a href="${url.origin}/password-reset/${resetToken}">Reset Password</a><br><br>Thanks,<br>Justin from KitForStartups`;
+			const emailHtml = `Hello ${recipient},<br><br>Here is your password reset link:<br><br><a href="${url.origin}/password-reset/${resetToken}">Reset Password</a><br><br>Thanks,<br>Drew from Stacks`;
 
 			const passwordResetEmail = await sendEmail({
 				from: sender,

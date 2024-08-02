@@ -1,19 +1,21 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns';
-import { getEmployees } from '$lib/drizzle/mysql/models/employees.js';
-import { saveSale, toClientDto, toInsertSale } from '$lib/drizzle/mysql/models/sales';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { SaleDto } from '$lib/types/db.model.js';
-import { redirect, type Actions } from '@sveltejs/kit';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns';
+import { getEmployees } from '$lib/drizzle/postgres/models/employees.js';
+import { saveSale, toClientDto, toInsertSale } from '$lib/drizzle/postgres/models/sales';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { SaleDto } from '$lib/drizzle/postgres/db.model.js';
+import { fail, redirect, type Actions } from '@sveltejs/kit';
 
 
-export const load = async ({ locals, request }) => {
-	const session = await locals.auth.validate();
-	const profile = await getUserProfileData(session?.user.userId);
+export const load = async ({ locals, request, url }) => {
+	if (!locals.user) return fail(401, { message: 'Unauthorized' });
+	const profile = locals.user.profile;
   
-  if (!session || !profile?.clientId) redirect(302, '/');
+  if (!profile?.clientId) redirect(302, '/');
   if (!['org_admin', 'super_admin'].includes(profile?.role)) redirect(302, '/');
   
-  const clientId = profile.clientId
+  const clientId = profile.clientId;
+  const employeeId = url.searchParams.get('employee');
+  const campaignId = url.searchParams.get('campaign');
   
   const campaigns = async () => {
     const campaigns = await getCampaigns(clientId);
@@ -36,6 +38,8 @@ export const load = async ({ locals, request }) => {
 	return {
 		campaigns: await campaigns(),
     employees: await employees(),
+    employeeId,
+    campaignId,
 	};
 };
 
@@ -45,11 +49,9 @@ const cleanCurrency = (value: string | null | undefined): number => {
 
 export const actions: Actions = {
   default: async ({ request, locals }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) return { status: 401 };
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     
     if (!profile?.clientId) return { status: 401 };
     if (!['org_admin', 'super_admin'].includes(profile?.role)) return { status: 401 };

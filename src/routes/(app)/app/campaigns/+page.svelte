@@ -1,36 +1,43 @@
 <script lang="ts">
 	import { createDropdownMenu, melt } from '@melt-ui/svelte';
-	import type { SelectCampaign } from '$lib/types/db.model.js';
+	import type { SelectCampaign } from '$lib/drizzle/postgres/db.model';
 	import { writable } from 'svelte/store';
 	import { fly } from 'svelte/transition';
-	import { goto } from '$app/navigation'
+	import { goto } from '$app/navigation';
 	import { Breadcrumb, BreadcrumbItem } from 'flowbite-svelte';
-	
+	import { enhance } from '$app/forms';
+
 	export let data;
+
+	let disableCampaignBtn: HTMLButtonElement;
 
 	// const campaigns = data.campaigns?.map((campaign) => ({
 	// 	...campaign,
 	// 	created: Number(campaign.created),
 	// 	updated: Number(campaign.updated)
 	// }));
-  const { campaigns: rawCampaigns } = data;
-  const allCampaigns = (rawCampaigns || []) as unknown as SelectCampaign[];
-  
-  const campaigns = writable(allCampaigns);
-  
-  const searchOnBlur = (event: any) => {
-    const value = event.target.value;
-    
-    campaigns.set(allCampaigns.filter((campaign: any) => campaign.name.toLowerCase().includes(value.toLowerCase())));
-  }
-  
-  const {
-    elements: { menu, item, trigger, arrow },
-    states: { open, },
-  } = createDropdownMenu({
-    // forceVisible: true, 
-    // loop: true,
-  })
+	const { campaigns: rawCampaigns } = data;
+	const allCampaigns = (rawCampaigns || []) as unknown as SelectCampaign[];
+
+	const campaigns = writable(allCampaigns);
+
+	const searchOnBlur = (event: any) => {
+		const value = event.target.value;
+
+		campaigns.set(
+			allCampaigns.filter((campaign: any) =>
+				campaign.name.toLowerCase().includes(value.toLowerCase())
+			)
+		);
+	};
+
+	const {
+		elements: { menu, item, trigger, arrow },
+		states: { open }
+	} = createDropdownMenu({
+		// forceVisible: true,
+		// loop: true,
+	});
 </script>
 
 <section class="px-4 mx-auto container">
@@ -39,8 +46,8 @@
 			<BreadcrumbItem href="/" home>Home</BreadcrumbItem>
 			<BreadcrumbItem>Campaigns</BreadcrumbItem>
 		</Breadcrumb>
-	</div>	
-	
+	</div>
+
 	<div class="sm:flex sm:items-center sm:justify-between">
 		<div>
 			<div class="flex items-center gap-x-3">
@@ -59,7 +66,7 @@
 
 		<div class="flex items-center mt-3 gap-x-3">
 			<button
-				class="flex items-center justify-center w-1/2 px-5 py-2 text-sm tracking-wide text-text-50 dark:text-text-900 transition-colors 
+				class="flex items-center justify-center w-1/2 px-5 py-2 text-sm tracking-wide text-text-50 dark:text-text-900 transition-colors
 					duration-200 bg-primary-600 rounded-lg shrink-0 sm:w-auto gap-x-2 hover:bg-primary-700 dark:hover:bg-primary-400 dark:bg-primary-300"
 				on:click={() => goto('/app/campaigns/add')}
 			>
@@ -125,7 +132,7 @@
 			</span>
 
 			<input
-        on:blur={searchOnBlur}
+				on:blur={searchOnBlur}
 				type="text"
 				placeholder="Search"
 				class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
@@ -207,35 +214,35 @@
 							</tr>
 						</thead>
 						<tbody class="bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-900">
-              {#each $campaigns as campaign (campaign.id)}
-                <tr>
-                  <td class="px-4 py-4 text-sm font-medium whitespace-nowrap">
-                    <div>
-                      <h5 class="font-medium text-gray-800 dark:text-white">{ campaign.name }</h5>
-                      <p class="text-sm font-normal text-gray-600 dark:text-gray-400">
-                        { campaign.url }
-                      </p>
-                    </div>
-                  </td>
-                  <td class="px-12 py-4 text-sm font-medium whitespace-nowrap">
-                    <div
-                      class="inline px-3 py-1 text-sm font-normal rounded-full text-emerald-500 gap-x-2 bg-emerald-100/60 dark:bg-gray-800"
-                    >
-                      { campaign.active ? 'Active' : 'Inactive' }
-                    </div>
-                  </td>
-                  <td class="px-4 py-4 text-sm whitespace-break-spaces">
-                    <div>
-                      <p class="text-gray-500 dark:text-gray-400">
-                        { campaign.description ? campaign.description : 'No description' }
-                      </p>
-                      <!-- <h4 class="text-gray-700 dark:text-gray-200">Content curating app</h4>
+							{#each $campaigns as campaign (campaign.id)}
+								<tr>
+									<td class="px-4 py-4 text-sm font-medium whitespace-nowrap">
+										<div>
+											<h5 class="font-medium text-gray-800 dark:text-white">{campaign.name}</h5>
+											<p class="text-sm font-normal text-gray-600 dark:text-gray-400">
+												{campaign.url}
+											</p>
+										</div>
+									</td>
+									<td class="px-12 py-4 text-sm font-medium whitespace-nowrap">
+										<div
+											class="inline px-3 py-1 text-sm font-normal rounded-full text-emerald-500 gap-x-2 bg-emerald-100/60 dark:bg-gray-800"
+										>
+											{campaign.active ? 'Active' : 'Inactive'}
+										</div>
+									</td>
+									<td class="px-4 py-4 text-sm whitespace-break-spaces">
+										<div>
+											<p class="text-gray-500 dark:text-gray-400">
+												{campaign.description ? campaign.description : 'No description'}
+											</p>
+											<!-- <h4 class="text-gray-700 dark:text-gray-200">Content curating app</h4>
                       <p class="text-gray-500 dark:text-gray-400">
                         Brings all your news into one place
                       </p> -->
-                    </div>
-                  </td>
-                  <!-- <td class="px-4 py-4 text-sm whitespace-nowrap">
+										</div>
+									</td>
+									<!-- <td class="px-4 py-4 text-sm whitespace-nowrap">
                     <div class="flex items-center">
                       <img
                         class="object-cover w-6 h-6 -mx-1 border-2 border-white rounded-full dark:border-gray-700 shrink-0"
@@ -271,48 +278,62 @@
                     </div>
                   </td> -->
 
-                  <td class="px-4 py-4 text-sm whitespace-nowrap">
-                    <button
-                      type="button"
-                      class="trigger"
-                      use:melt={$trigger}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="w-6 h-6"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-                        />
-                      </svg>
-                    </button>
-                    {#if $open}
-                      <div use:melt={$menu} class="menu cursor-pointer" transition:fly={{ duration: 150, y: -10 }}>
-                        <div use:melt={$item} class="item"
-													on:m-pointerdown={e => {
-														e.preventDefault();
-														goto(`/app/campaigns/${campaign.id}`)
-													}}
-												>Edit</div>
-                        <div class="item" use:melt={$item}
-													on:m-pointerdown={e => {
-														e.preventDefault();
-														console.log(e);
-													}}
-												>
-                          { campaign.active ? 'Disable' : 'Enable' }
-                        </div>
-                      </div>
-                    {/if}
-                  </td>
-                </tr>   
-              {/each}
+									<td class="px-4 py-4 text-sm whitespace-nowrap">
+										<button type="button" class="trigger" use:melt={$trigger}>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke-width="1.5"
+												stroke="currentColor"
+												class="w-6 h-6"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+												/>
+											</svg>
+										</button>
+										{#if $open}
+											<div
+												use:melt={$menu}
+												class="menu cursor-pointer"
+												transition:fly={{ duration: 150, y: -10 }}
+											>
+												<form action="?/disable" method="post" use:enhance>
+													<div
+														use:melt={$item}
+														class="item"
+														on:m-pointerdown={(e) => {
+															e.preventDefault();
+															goto(`/app/campaigns/${campaign.id}`);
+														}}
+													>
+														Edit
+													</div>
+													<div
+														class="item"
+														use:melt={$item}
+														on:m-pointerdown={(e) => {
+															e.preventDefault();
+															console.log(e);
+
+															if (disableCampaignBtn) disableCampaignBtn.click();
+														}}
+													>
+														{campaign.active ? 'Disable' : 'Enable'}
+														<input type="hidden" name="campaign_id" value={campaign.id} required />
+														<button type="submit" class="hidden" bind:this={disableCampaignBtn}
+															>{campaign.active ? 'Disable' : 'Enable'}</button
+														>
+													</div>
+												</form>
+											</div>
+										{/if}
+									</td>
+								</tr>
+							{/each}
 						</tbody>
 					</table>
 				</div>
@@ -322,52 +343,52 @@
 </section>
 
 <style lang="postcss">
-  .menu {
-    @apply z-10 flex max-h-[300px] min-w-[220px] flex-col shadow-lg;
-    @apply rounded-md bg-white p-1 shadow-neutral-900/30 lg:max-h-none dark:bg-neutral-800;
-    @apply ring-0 !important;
-  }
-  .subMenu {
-    @apply min-w-[220px] shadow-md shadow-neutral-900/30;
-  }
-  .item {
-    @apply relative h-6 min-h-[24px] select-none rounded-sm pl-6 pr-1;
-    @apply z-20 text-neutral-900 outline-none dark:text-neutral-50;
-    @apply data-[highlighted]:bg-neutral-200 data-[highlighted]:text-neutral-900 dark:data-[highlighted]:bg-neutral-800 dark:data-[highlighted]:text-neutral-50;
-    @apply data-[disabled]:text-neutral-300 dark:data-[disabled]:text-neutral-600;
-    @apply flex items-center text-sm leading-none;
-    @apply ring-0 !important;
-  }
-  .trigger {
-    @apply inline-flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-neutral-800;
-    @apply text-neutral-900 transition-colors hover:bg-white/90 dark:text-neutral-200 dark:hover:bg-neutral-700;
-    @apply data-[highlighted]:ring-neutral-400 data-[highlighted]:ring-offset-2 dark:data-[highlighted]:ring-neutral-600 !important;
-    @apply p-0 text-sm font-medium  data-[highlighted]:outline-none;
-  }
-  .check {
-    @apply absolute left-2 top-1/2 text-neutral-500;
-    translate: 0 calc(-50% + 1px);
-  }
- 
-  .dot {
-    @apply h-[4.75px] w-[4.75px] rounded-full bg-neutral-900;
-  }
- 
-  .separator {
-    @apply m-[5px] h-[1px] bg-neutral-200;
-  }
- 
-  .rightSlot {
-    @apply ml-auto pl-5;
-  }
- 
-  .icon {
-    @apply h-[13px] w-[13px];
-  }
-  .check {
-    @apply absolute left-0 inline-flex w-6 items-center justify-center;
-  }
-  .text {
-    @apply pl-6 text-xs leading-6 text-neutral-600;
-  }
+	.menu {
+		@apply z-10 flex max-h-[300px] min-w-[220px] flex-col shadow-lg;
+		@apply rounded-md bg-white p-1 shadow-neutral-900/30 lg:max-h-none dark:bg-neutral-800;
+		@apply ring-0 !important;
+	}
+	.subMenu {
+		@apply min-w-[220px] shadow-md shadow-neutral-900/30;
+	}
+	.item {
+		@apply relative h-6 min-h-[24px] select-none rounded-sm pl-6 pr-1;
+		@apply z-20 text-neutral-900 outline-none dark:text-neutral-50;
+		@apply data-[highlighted]:bg-neutral-200 data-[highlighted]:text-neutral-900 dark:data-[highlighted]:bg-neutral-800 dark:data-[highlighted]:text-neutral-50;
+		@apply data-[disabled]:text-neutral-300 dark:data-[disabled]:text-neutral-600;
+		@apply flex items-center text-sm leading-none;
+		@apply ring-0 !important;
+	}
+	.trigger {
+		@apply inline-flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-neutral-800;
+		@apply text-neutral-900 transition-colors hover:bg-white/90 dark:text-neutral-200 dark:hover:bg-neutral-700;
+		@apply data-[highlighted]:ring-neutral-400 data-[highlighted]:ring-offset-2 dark:data-[highlighted]:ring-neutral-600 !important;
+		@apply p-0 text-sm font-medium  data-[highlighted]:outline-none;
+	}
+	.check {
+		@apply absolute left-2 top-1/2 text-neutral-500;
+		translate: 0 calc(-50% + 1px);
+	}
+
+	.dot {
+		@apply h-[4.75px] w-[4.75px] rounded-full bg-neutral-900;
+	}
+
+	.separator {
+		@apply m-[5px] h-[1px] bg-neutral-200;
+	}
+
+	.rightSlot {
+		@apply ml-auto pl-5;
+	}
+
+	.icon {
+		@apply h-[13px] w-[13px];
+	}
+	.check {
+		@apply absolute left-0 inline-flex w-6 items-center justify-center;
+	}
+	.text {
+		@apply pl-6 text-xs leading-6 text-neutral-600;
+	}
 </style>

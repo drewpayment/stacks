@@ -1,7 +1,7 @@
 import { drizzleClient as db, drizzleClient } from '$lib/drizzle/mysql/client';
 import { and, eq } from 'drizzle-orm';
 import { employee, employeeCodes, employeeNotes, employeeProfile } from '../schema';
-import type { Employee, InsertEmployee, InsertEmployeeCode, InsertEmployeeNotes, InsertEmployeeProfile, SelectEmployee, SelectEmployeeCode } from '$lib/types/db.model';
+import type { Employee, InsertEmployee, InsertEmployeeCode, InsertEmployeeNotes, InsertEmployeeProfile, SelectEmployee, SelectEmployeeCode } from '$lib/drizzle/mysql/db.model';
 import { nanoid } from 'nanoid';
 import { error } from '@sveltejs/kit';
 

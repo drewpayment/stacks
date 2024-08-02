@@ -1,19 +1,20 @@
-import { getClients, createClient } from '$lib/drizzle/mysql/models/clients';
-import { json } from '@sveltejs/kit';
+import { getClients, createClient } from '$lib/drizzle/postgres/models/clients';
+import { fail } from '@sveltejs/kit';
+import dayjs from 'dayjs';
 import { nanoid } from 'nanoid';
 
 export const load = async ({ locals }) => {
-  const session = await locals.auth.validate();
+  if (!locals.user) fail(401, { message: 'Unauthorized' });
 
   return {
-    session,
     clients: await getClients(),
   };
 };
 
 export const actions = {
   add: async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
+    
     const payload = await request.formData();
     const data = Object.fromEntries(payload.entries()) as { name: string };
     
@@ -21,15 +22,12 @@ export const actions = {
       await createClient({
         id: nanoid(),
         name: data.name,
-        contactUserId: session?.user.userId,
-        created: Date.now() as any,
-        updated: Date.now() as any,
+        contactUserId: locals.user?.id,
+        created: dayjs().toDate(),
+        updated: dayjs().toDate(),
       });
     } catch (err) {
-      return {
-        status: false,
-        body: json({ error: err }),
-      };
+      return fail(400, { error: err });
     }
     
     return { success: true, };

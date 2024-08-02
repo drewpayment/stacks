@@ -1,5 +1,5 @@
 import { RESEND_API_KEY } from '$env/static/private';
-import { getFeedbackObjects } from '$lib/utils';
+import { getFeedbackObjects } from '$lib/utils/utils';
 import { Resend } from 'resend';
 
 const sendResendEmail = async (options: {

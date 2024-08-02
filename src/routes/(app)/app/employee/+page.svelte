@@ -1,7 +1,7 @@
 <script lang="ts">
 	import AddEmployeeDialog from '$lib/components/AddEmployeeDialog.svelte';
 	import EmployeeCard from '$lib/components/EmployeeCard.svelte';
-	import type { Employee } from '$lib/types/db.model';
+	import type { Employee } from '$lib/drizzle/postgres/db.model';
 	import { Breadcrumb, BreadcrumbItem } from 'flowbite-svelte';
 
   

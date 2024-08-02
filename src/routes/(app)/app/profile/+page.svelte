@@ -13,8 +13,8 @@
 	<div class="flex">
 		<div>
 			<h4 class="mb-2">
-				Welcome, {data?.profile.firstName}
-				{data?.profile.lastName}.
+				Welcome, {data?.profile?.firstName}
+				{data?.profile?.lastName}.
 			</h4>
 			<p class="mb-4">This is your user information. Keep it updated and make it your own.</p>
 		</div>
@@ -38,7 +38,7 @@
 		<div class="flex flex-col items-center pb-4 space-y-1">
 			<Avatar size="lg" />
 			<h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
-				{data?.profile.firstName} {data?.profile.lastName}
+				{data?.profile?.firstName} {data?.profile?.lastName}
 			</h5>
 			<span class="text-sm text-gray-500 dark:text-gray-400">{data.user?.email}</span>
 			<Badge color="{data.user?.emailVerified ? 'green' : 'red'}" class="px-2.5 py-0.5">

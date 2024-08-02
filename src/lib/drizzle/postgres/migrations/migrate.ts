@@ -11,12 +11,12 @@ const connection = postgres({
 	user: process.env.POSTGRES_DB_USER,
 	password: process.env.POSTGRES_DB_PASSWORD,
 	database: process.env.POSTGRES_DB_NAME,
-	max: 1
+	max: 1,
 });
 
 const drizzleClient = drizzle(connection);
 
-await migrate(drizzleClient, { migrationsFolder: 'src/lib/drizzle/postgres/migrations/data' })
+await migrate(drizzleClient, { migrationsFolder: 'src/lib/drizzle/postgres/migrations/data', })
 	.then(() => {
 		console.log('Migrations completed');
 		process.exit(0);

@@ -10,6 +10,8 @@ import {
 } from '$env/static/private';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import * as schema from './schema';
+import config from './drizzle.config';
 
 const connection = postgres({
 	host: POSTGRES_DB_HOST,
@@ -17,11 +19,13 @@ const connection = postgres({
 	user: POSTGRES_DB_USER,
 	password: POSTGRES_DB_PASSWORD,
 	database: POSTGRES_DB_NAME,
-	max: POSTGRES_MAX_CONNECTIONS ? Number(POSTGRES_MAX_CONNECTIONS) : 1
+	max: POSTGRES_MAX_CONNECTIONS ? Number(POSTGRES_MAX_CONNECTIONS) : 10,
 });
 
 const drizzleClient = drizzle(connection, {
-	logger: ENABLE_DRIZZLE_LOGGER ? Boolean(ENABLE_DRIZZLE_LOGGER) : dev
+	...config,
+	schema,
+	logger: ENABLE_DRIZZLE_LOGGER ? Boolean(ENABLE_DRIZZLE_LOGGER) : dev,
 });
 
 export { connection, drizzleClient };

@@ -1,17 +1,15 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns.js';
-import { addEmployeeNote, getEmployee, getEmployees, upsertEmployeeCodes } from '$lib/drizzle/mysql/models/employees';
-import { saveOverridingEmployee } from '$lib/drizzle/mysql/models/overrides.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users.js';
-import type { EmployeeWithNotes, SelectOverridingEmployee } from '$lib/types/db.model';
-import { error } from '@sveltejs/kit';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns.js';
+import { addEmployeeNote, getEmployee, getEmployees, upsertEmployeeCodes } from '$lib/drizzle/postgres/models/employees';
+import { saveOverridingEmployee } from '$lib/drizzle/postgres/models/overrides.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users.js';
+import type { EmployeeWithNotes, SelectOverridingEmployee } from '$lib/drizzle/postgres/db.model';
+import { error, fail } from '@sveltejs/kit';
 
 export const load = async ({ locals, params }) => {
   const id = params.id;
-  const session = await locals.auth.validate();
+  if (!locals.user) return fail(401, { message: 'Unauthorized' });
   
-  if (!session) error(401, 'Unauthorized');
-  
-  const profile = await getUserProfileData(session?.user.userId);
+  const profile = await getUserProfileData(locals.user.id);
   const clientId = profile?.clientId || '';
   
   if (!clientId) error(403, 'Forbidden');
@@ -20,10 +18,12 @@ export const load = async ({ locals, params }) => {
     return getCampaigns(clientId as string)
   };
   
-  const allEmployees = async () => (await getEmployees(clientId)).map(ee => ({
-    name: `${ee.firstName} ${ee.lastName}`,
-    value: ee.id,
-  }));
+  const allEmployees = async () => (await getEmployees(clientId))
+    .filter(ee => ee.id !== id)
+    .map(ee => ({
+      name: `${ee.firstName} ${ee.lastName}`,
+      value: ee.id,
+    }));
   
   const employee = async () => (await getEmployee(id)) as unknown as (EmployeeWithNotes & { overrideTo: SelectOverridingEmployee });
   
@@ -36,11 +36,9 @@ export const load = async ({ locals, params }) => {
 
 export const actions = {
   'add-note': async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) error(401, { message: 'Unauthorized' });
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     const myClientId = profile.clientId;
     
     const payload = await request.formData();
@@ -64,11 +62,9 @@ export const actions = {
     return data;
   },
   save: async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) error(401, { message: 'Unauthorized' });
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     const clientId = profile?.clientId;
     
     const data = Object.fromEntries(await request.formData());

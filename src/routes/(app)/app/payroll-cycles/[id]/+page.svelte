@@ -2,14 +2,16 @@
 	import { Breadcrumb, BreadcrumbItem, Button, GradientButton, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
   import { ArrowRightOutline, CheckCircleOutline, PlusOutline, RedoOutline, ThumbsUpSolid } from 'flowbite-svelte-icons';
 	import { enhance } from '$app/forms';
-	import type { SelectPayrollCycle } from '$lib/types/db.model';
 	import { createToast } from '$lib/components/Toast.svelte';
 	import { writable } from 'svelte/store';
-	import type { PaystubWith } from '$lib/types/paystbus.model';
-	import { formatCurrency, formatDate } from '$lib/utils';
+	import { formatCurrency, formatDate } from '$lib/utils/utils';
+	import type { PaystubWith } from '$lib/drizzle/postgres/types/paystbus.model';
+	import type { SelectPayrollCycle } from '$lib/drizzle/postgres/db.model';
   
   export let data;
-  let { cycleAndPaystubs: { paystubs, cycle } } = data;
+  const { cycleAndPaystubs } = data;
+  let { paystubs, cycle } = cycleAndPaystubs!;
+  
   const paystubs$ = writable(paystubs);
   let isEditing = true;
   
@@ -116,22 +118,22 @@
             </div>
             
             <div class="flex flex-row justify-center gap-4">
-              {#if isEditing}
+              {#if isEditing && !cycle.isClosed}
                 <GradientButton color="cyanToBlue" on:click={stopEditing} class="self-start">
                   Ready to Review <ArrowRightOutline class="w-3.5 h-3.5 ml-2" />
                 </GradientButton>
               {:else}
-                <Button outline color="red" class="self-start" on:click={goBack}>
-                  Go back! <RedoOutline class="w-3.5 h-3.5 ml-2" />
-                </Button>
+                {#if isEditing && !cycle.isClosed}
+                  <Button outline color="red" class="self-start" on:click={goBack}>
+                    Go back! <RedoOutline class="w-3.5 h-3.5 ml-2" />
+                  </Button>
+                {/if}
                 
                 <form method="post" action="?/toggle-payroll-cycle-close" use:enhance={({ formData, cancel }) => {
-                  
-                  
                   return async ({ result, update }) => {
                     if (result.status != 200) return;
                     
-                    cycle.isClosed = !!cycle.isClosed ? 0 : 1;
+                    cycle.isClosed = !cycle.isClosed;
                     
                     createToast({
                       title: '',
@@ -142,10 +144,10 @@
                     update();
                   }
                 }}>
-                  <input type="hidden" name="id" value={cycle?.id} />
-                  <input type="hidden" name="isClosed" value={cycle?.isClosed} />
+                  <input type="hidden" name="id" bind:value={cycle.id} />
+                  <input type="hidden" name="isClosed" bind:value={cycle.isClosed} />
                   {#if !cycle?.isClosed}
-                    <Button type="submit" outline color="dark" class="self-start" id="close-button">
+                    <Button type="submit" outline color="green" class="self-start" id="close-button">
                       Close <CheckCircleOutline class="w-3.5 h-3.5 ml-2" />
                     </Button>
                     <Tooltip arrow={false} triggeredBy="#close-button">
@@ -159,11 +161,11 @@
                       Re-opens the payroll cycle and allows changes to be made.
                     </Tooltip>
                   {/if}
+                  
+                  <!-- <Button outline color="green" class="self-start" href="/app/payroll-cycles">
+                    Looks good <ThumbsUpSolid class="w-3.5 h-3.5 ml-2" />
+                  </Button> -->
                 </form>
-                
-                <Button outline color="green" class="self-start" href="/app/payroll-cycles">
-                  Looks good <ThumbsUpSolid class="w-3.5 h-3.5 ml-2" />
-                </Button>
               {/if}
             </div>
           </div>
@@ -231,9 +233,11 @@
                         <!-- <Button href={'/app/paystubs/' + item.id} pill={true} outline={true}>
                           Edit
                         </Button> -->
-                        <Button on:click={() => detachPayrollCycle(item)} pill={true} outline={true} color="red">
-                          Remove
-                        </Button>
+                        {#if isEditing && !cycle.isClosed}
+                          <Button on:click={() => detachPayrollCycle(item)} pill={true} outline={true} color="red">
+                            Remove
+                          </Button>
+                        {/if}
                       {/if}
                     </form>
                   {/if}

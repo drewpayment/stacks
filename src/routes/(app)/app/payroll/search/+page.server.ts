@@ -1,19 +1,17 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns';
-import { getEmployees } from '$lib/drizzle/mysql/models/employees';
-import { getPayrollCycles } from '$lib/drizzle/mysql/models/payroll-cycles';
-import { attachPayrollCycleToPaystub, getPaystubs } from '$lib/drizzle/mysql/models/paystubs.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import { formatDate } from '$lib/utils';
-import { error } from '@sveltejs/kit';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns';
+import { getEmployees } from '$lib/drizzle/postgres/models/employees';
+import { getPayrollCycles } from '$lib/drizzle/postgres/models/payroll-cycles';
+import { attachPayrollCycleToPaystub, getPaystubs } from '$lib/drizzle/postgres/models/paystubs.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import { formatDate } from '$lib/utils/utils';
+import { error, fail } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 
 
 export const load = async ({ locals }) => {
-  const session = await locals.auth.validate();
+  if (!locals.user) return fail(401, { message: 'Unauthorized' });
   
-  if (!session) error(401, 'Unauthorized');
-  
-  const profile = await getUserProfileData(session?.user.userId);
+  const profile = await getUserProfileData(locals.user.id);
   
   if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
   
@@ -59,11 +57,9 @@ export const load = async ({ locals }) => {
 
 export const actions = {
   'search': async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) error(401, 'Unauthorized');
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
     
@@ -84,11 +80,9 @@ export const actions = {
     };
   },
   'add-to-cycle': async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) error(401, 'Unauthorized');
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
     

@@ -1,15 +1,14 @@
-import { getPayrollCycle, togglePayrollCycleClose } from '$lib/drizzle/mysql/models/payroll-cycles.js';
-import { attachPayrollCycleToPaystub, getPaystubs, getPaystubsByPayrollCycleId, getPaystubsWoPayrollCycle } from '$lib/drizzle/mysql/models/paystubs.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { SelectPayrollCycle } from '$lib/types/db.model.js';
-import type { CycleAndPaystubs, PaystubWith } from '$lib/types/paystbus.model';
-import type { Actions } from '@sveltejs/kit';
+import { getPayrollCycle, togglePayrollCycleClose } from '$lib/drizzle/postgres/models/payroll-cycles.js';
+import { attachPayrollCycleToPaystub, getPaystubs, getPaystubsByPayrollCycleId, getPaystubsWoPayrollCycle } from '$lib/drizzle/postgres/models/paystubs.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { SelectPayrollCycle } from '$lib/drizzle/postgres/db.model.js';
+import type { CycleAndPaystubs, PaystubWith } from '$lib/drizzle/postgres/types/paystbus.model';
+import { fail, type Actions } from '@sveltejs/kit';
 
 export const load = async ({ locals, params }) => {
-  const session = await locals.auth.validate();
-  if (!session) return { cycleAndPaystubs: null as unknown as CycleAndPaystubs };
+  if (!locals.user) return fail(401, { message: 'Unauthorized' });
   
-  const profile = await getUserProfileData(session?.user.userId);
+  const profile = locals.user.profile;
   
   const getData = async (): Promise<CycleAndPaystubs> => {  
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) return {
@@ -24,7 +23,7 @@ export const load = async ({ locals, params }) => {
       paystubs: [] as PaystubWith[],
     }
     
-    const unattachedPaystubs = await getPaystubsWoPayrollCycle(profile?.clientId, cycle?.startDate as any, cycle?.endDate as any);
+    const unattachedPaystubs = await getPaystubsWoPayrollCycle(profile?.clientId, cycle?.startDate, cycle?.endDate);
     // const paystubs = await getPaystubs(profile?.clientId, cycle?.startDate as any, cycle?.endDate as any);
     const relatedPaystubs = await getPaystubsByPayrollCycleId(profile?.clientId, cycle.id);
     
@@ -40,11 +39,9 @@ export const load = async ({ locals, params }) => {
 
 export const actions: Actions = {
   'attach-payroll-cycle': async ({ request, locals, params }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) return { status: 401 };
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     
     const formData = await request.formData();
     const data = Object.fromEntries(formData) as {
@@ -59,11 +56,9 @@ export const actions: Actions = {
     return result;
   },
   'toggle-payroll-cycle-close': async ({ request, locals, params }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) return { status: 401 };
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = locals.user.profile;
     
     const formData = await request.formData();
     const data = Object.fromEntries(formData) as unknown as {
@@ -73,7 +68,10 @@ export const actions: Actions = {
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) return { status: 403 };
     
-    const result = await togglePayrollCycleClose(data.id, data.isClosed);
+    // let's toggle the value we are going to save 
+    const isClosed = !(data.isClosed === 'true');
+    
+    const result = await togglePayrollCycleClose(data.id, isClosed);
     
     return result ? { status: 200 } : { status: 400 };
   },

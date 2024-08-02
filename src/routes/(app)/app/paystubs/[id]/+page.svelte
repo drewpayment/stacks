@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatCurrency, formatDate } from '$lib/utils.js';
+	import { formatCurrency, formatDate } from '$lib/utils/utils';
 	import { Breadcrumb, BreadcrumbItem, Hr } from 'flowbite-svelte';
 	import SalesTable from '$lib/components/SalesTable.svelte';
 	import type { SaleTableInputData } from '$lib/types/sale-table-input-data.model';

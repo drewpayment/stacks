@@ -5,15 +5,41 @@ import {
 	GOOGLE_OAUTH_CLIENT_SECRET,
 	GOOGLE_OAUTH_REDIRECT_URI
 } from '$env/static/private';
-import type { UserSchema } from 'lucia';
+import { connect } from '@planetscale/database';
+import { Lucia } from 'lucia';
+import 'dotenv/config'
+import type { RequestEvent } from '@sveltejs/kit';
+
+export const connection = connect({
+	host: process.env.MYSQL_DB_HOST,
+	username: process.env.MYSQL_DB_USER,
+	password: process.env.MYSQL_DB_PASSWORD,
+});
 
 const adapterOptions = {
 	user: 'auth_user',
-	key: 'user_key',
 	session: 'user_session'
 };
 
-const generateUserAttributes = (data: UserSchema) => {
+// const adapter = new PlanetScaleAdapter(connection, {
+// 	user: 'auth_user',
+// 	session: 'user_session',
+// });
+
+// export const lucia = new Lucia(adapter, {
+// 	getUserAttributes: (data) => {
+// 		return generateUserAttributes(data);
+// 	},
+// })
+
+
+export interface DatabaseUserAttributes {
+	email: string;
+	email_verified: boolean;
+	github_username?: string;
+}
+
+const generateUserAttributes = (data: DatabaseUserAttributes) => {
 	return {
 		email: data.email,
 		emailVerified: data.email_verified,

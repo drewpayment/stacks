@@ -2,9 +2,8 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
 	import EmployeeNotes from '$lib/components/EmployeeNotes.svelte';
-	import MaskInput from '$lib/components/MaskInput.svelte';
 	import SubmitButton from '$lib/components/SubmitButton.svelte';
-	import type { EmployeeWithNotes } from '$lib/types/db.model';
+	import type { EmployeeWithNotes } from '$lib/drizzle/postgres/db.model';
 	import { Breadcrumb, BreadcrumbItem, Input, Label, Select } from 'flowbite-svelte';
 	export let data;
 

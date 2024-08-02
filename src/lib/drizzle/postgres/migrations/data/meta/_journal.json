@@ -1,0 +1,41 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1711940931512,
+      "tag": "0000_happy_black_panther",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1712290512620,
+      "tag": "0001_lovely_loa",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1714272556436,
+      "tag": "0002_melted_vapor",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1715913900030,
+      "tag": "0003_futuristic_satana",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1718853292101,
+      "tag": "0004_zippy_skin",
+      "breakpoints": true
+    }
+  ]
+}

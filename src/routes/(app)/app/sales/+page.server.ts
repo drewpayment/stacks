@@ -1,12 +1,12 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns';
-import { getEmployees } from '$lib/drizzle/mysql/models/employees';
-import { getSales } from '$lib/drizzle/mysql/models/sales';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { SaleWithEmployee } from '$lib/types/sale.model';
-import { redirect, type Actions, error } from '@sveltejs/kit';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns';
+import { getEmployees } from '$lib/drizzle/postgres/models/employees';
+import { getSales } from '$lib/drizzle/postgres/models/sales';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { SaleWithEmployee } from '$lib/drizzle/postgres/types/sale.model';
+import { type Actions, error } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 
-const searchSales = async (clientId: string, startDate: number, endDate: number) => {
+const searchSales = async (clientId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
   const withStmt = {
     employee: {
       columns: {
@@ -29,18 +29,17 @@ const searchSales = async (clientId: string, startDate: number, endDate: number)
 }
 
 export const load = async ({ locals, request }) => {
-  const session = await locals.auth.validate();
-	const profile = await getUserProfileData(session?.user.userId);
+	const profile = await getUserProfileData(locals.user!.id);
   
-  if (!session || !profile?.clientId) redirect(302, '/');
-  if (!['org_admin', 'super_admin'].includes(profile?.role)) redirect(302, '/');
+  if (!locals.user || !profile) error(401, 'Unauthorized');
+  if (!['org_admin', 'super_admin'].includes(profile?.role)) error(403, 'Unauthorized');
   
   const clientId = profile?.clientId as string;
   
   const startDate = dayjs().subtract(1, 'month');
-  const endDate = dayjs();
+  const endDate = dayjs().add(15, 'day');
   
-  const sales = async () => await searchSales(clientId, startDate.unix(), endDate.unix());
+  const sales = async () => searchSales(clientId, startDate, endDate);
   
   return {
     sales: await sales(),
@@ -53,17 +52,16 @@ export const load = async ({ locals, request }) => {
 
 export const actions: Actions = {
   search: async ({ locals, request }) => {
-    const session = await locals.auth.validate();
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user!.id);
     
-    if (!session || !profile?.clientId) error(401, 'Unauthorized');
+    if (!locals.user || !profile?.clientId) error(401, 'Unauthorized');
     if (!['org_admin', 'super_admin'].includes(profile?.role)) error(401, 'Unauthorized');
     
     const clientId = profile?.clientId as string;
     const formData = Object.fromEntries(await request.formData());
     
-    const startDate = dayjs(formData.startDate as string, 'YYYY-MM-DD').unix();
-    const endDate = dayjs(formData.endDate as string, 'YYYY-MM-DD').unix();
+    const startDate = dayjs(formData.startDate as string, 'YYYY-MM-DD');
+    const endDate = dayjs(formData.endDate as string, 'YYYY-MM-DD');
     
     const sales = async () => {
       const result = await searchSales(clientId, startDate, endDate);

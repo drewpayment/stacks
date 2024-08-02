@@ -1,6 +1,6 @@
 import { writable, type Writable } from 'svelte/store'
 import { getContext, setContext } from 'svelte'
-import type { SelectSaleOverride } from '$lib/types/db.model';
+import type { SelectSaleOverride } from '$lib/drizzle/mysql/db.model';
 
 export type Context<T> = Writable<T>;
 export type EmployeeOptions = { name: string, value: string };
@@ -30,4 +30,13 @@ export const setManualOverrides = (overrides: SelectSaleOverride[]) => {
 
 export const getManualOverrides = () => {
   return getContext<Context<SelectSaleOverride[]>>('pendingOverrides');
+}
+
+export const setSelectedCampaign = (campaign: string) => {
+  const camp = writable<string>(campaign);
+  setContext('selectedCampaign', camp);
+}
+
+export const getSelectedCampaign = () => {
+  return getContext<Context<string>>('selectedCampaign');
 }

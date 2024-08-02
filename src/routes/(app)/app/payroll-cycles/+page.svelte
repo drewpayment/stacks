@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { SelectPayrollCycle } from '$lib/types/db.model';
-	import { formatDate } from '$lib/utils';
+	import { formatDate } from '$lib/utils/utils';
 	import { Breadcrumb, BreadcrumbItem, Button, Checkbox, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Toggle } from 'flowbite-svelte';
 	import { PenIcon, PlusIcon } from 'lucide-svelte';
 

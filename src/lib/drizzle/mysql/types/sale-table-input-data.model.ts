@@ -1,4 +1,4 @@
-import type { SelectCampaign, SelectEmployee } from './db.model';
+import type { SelectCampaign, SelectEmployee } from '../db.model';
 import type { SaleWithEmployee } from './sale.model';
 
 

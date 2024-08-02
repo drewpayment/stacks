@@ -1,13 +1,9 @@
-import { getClients } from '$lib/drizzle/mysql/models/clients';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
+import { getClients } from '$lib/drizzle/postgres/models/clients';
 
 export const load = async ({ locals }) => {
-	const session = await locals.auth.validate();
-	const profile = await getUserProfileData(session?.user.userId);
-
 	return {
-		user: session?.user,
-		profile,
+		user: locals?.user,
+		profile: locals?.user?.profile,
 		clients: await getClients(),
 	};
 };

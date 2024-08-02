@@ -14,15 +14,22 @@
   use:enhance={({ formElement, formData, action, cancel, submitter }) => {
     
     return async ({ result, update }) => {
-      if (!result) return;
-      console.log(result);
+      if (result.status !== 200) {
+        const error = await result.error;
+        createToast({
+          title: 'Error!',
+          description: error.message,
+          type: 'error',
+        });
+        return;
+      }
       
       createToast({
         title: 'Success!',
         description: 'Payroll cycle created successfully!',
         type: 'success',
       });
-      goto('/app/payroll-cycles/' + result.id);
+      goto('/app/payroll-cycles/' + result.data.id);
     }
   }}
 >

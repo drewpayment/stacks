@@ -1,8 +1,8 @@
 import { nanoid } from 'nanoid';
 import { drizzleClient } from '../client';
 import { overridingEmployee, saleOverride } from '../schema';
-import type { InsertSaleOverride, SelectSale, SelectSaleOverride } from '$lib/types/db.model';
-import type { InsertManualOverride } from '$lib/types/override.model';
+import type { InsertSaleOverride, SelectSale, SelectSaleOverride } from '$lib/drizzle/mysql/db.model';
+import type { InsertManualOverride } from '$lib/drizzle/types/override.model';
 import { error } from '@sveltejs/kit';
 
 export const getPendingSaleOverrides = async (employeeId: string): Promise<SelectSaleOverride[]> => {

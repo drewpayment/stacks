@@ -1,9 +1,20 @@
 import { drizzleClient } from '$lib/drizzle/postgres/client';
 import { emailVerification, passwordResetToken } from '$lib/drizzle/postgres/schema';
+import dayjs from 'dayjs';
 import { eq } from 'drizzle-orm';
-import { generateRandomString, isWithinExpiration } from 'lucia/utils';
+import { generateRandomString, alphabet } from 'oslo/crypto';
 
 const EXPIRES_IN = 1000 * 60 * 60 * 2; // 2 hours
+
+const isWithinExpiration = (expires: number) => {
+	// create expiration date with dayjs from the expires value
+	const expiryDate = dayjs(expires).subtract(EXPIRES_IN / 2, 'milliseconds');
+	
+	// const expiryDate = createDate(new TimeSpan(Number(expires) - EXPIRES_IN / 2, 'h'));
+	return dayjs().isBefore(expiryDate);
+}
+
+const randString = () => generateRandomString(63, alphabet('a-z', 'A-Z', '0-9'));
 
 const generateEmailVerificationToken = async (userId: string | undefined) => {
 	if (!userId) {
@@ -19,7 +30,7 @@ const generateEmailVerificationToken = async (userId: string | undefined) => {
 		const reusableStoredToken = storedUserTokens.find((token) => {
 			// check if expiration is within 1 hour
 			// and reuse the token if true
-			return isWithinExpiration(Number(token.expires) - EXPIRES_IN / 2);
+			return isWithinExpiration(Number(token.expires));
 		});
 
 		if (reusableStoredToken) {
@@ -27,12 +38,12 @@ const generateEmailVerificationToken = async (userId: string | undefined) => {
 		}
 	}
 
-	const token = generateRandomString(63);
+	const token = randString();
 
 	await drizzleClient.insert(emailVerification).values({
 		id: token,
 		userId: userId,
-		expires: BigInt(new Date().getTime() + EXPIRES_IN)
+		expires: dayjs().add(EXPIRES_IN, 'milliseconds').toDate(),
 	});
 
 	return token;
@@ -56,21 +67,21 @@ const generatePasswordResetToken = async (userId: string) => {
 		}
 	}
 
-	const token = generateRandomString(63);
+	const token = randString();
 
 	await drizzleClient.insert(passwordResetToken).values({
 		id: token,
 		userId,
-		expires: BigInt(new Date().getTime() + EXPIRES_IN)
+		expires: dayjs().add(EXPIRES_IN, 'milliseconds').toDate(),
 	});
 
 	return token;
 };
 
 const validateEmailVerificationToken = async (token: string) => {
-	const storedToken = (
-		await drizzleClient.select().from(emailVerification).where(eq(emailVerification.id, token))
-	)[0];
+	const storedToken = await drizzleClient.query.emailVerification.findFirst({
+		where: (emailVerification, { eq, }) => eq(emailVerification.id, token),
+	});
 
 	if (!storedToken) {
 		throw new Error('Invalid token');

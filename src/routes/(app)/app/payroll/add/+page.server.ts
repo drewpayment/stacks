@@ -1,22 +1,19 @@
-import { getCampaigns } from '$lib/drizzle/mysql/models/campaigns.js';
-import { getEmployee, getEmployees } from '$lib/drizzle/mysql/models/employees.js';
-import { getPendingSaleOverrides, saveManualOverrides, createOverridesFromSalesForOverridingManagers } from '$lib/drizzle/mysql/models/overrides.js';
-import { getPayrollCycles } from '$lib/drizzle/mysql/models/payroll-cycles.js';
-import { generatePendingPaystub, insertPaystub } from '$lib/drizzle/mysql/models/paystubs.js';
-import { getUnallocatedSalesByEmployee, saveSales, updateSelectedSalesToPaystub } from '$lib/drizzle/mysql/models/sales.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { Employee, SelectSale, SelectSaleOverride } from '$lib/types/db.model';
-import type { InsertManualOverride } from '$lib/types/override.model.js';
-import { formatDate } from '$lib/utils.js';
-import { error } from '@sveltejs/kit';
+import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns.js';
+import { getEmployee, getEmployees } from '$lib/drizzle/postgres/models/employees.js';
+import { getPendingSaleOverrides, saveManualOverrides, createOverridesFromSalesForOverridingManagers } from '$lib/drizzle/postgres/models/overrides.js';
+import { getPayrollCycles } from '$lib/drizzle/postgres/models/payroll-cycles.js';
+import { generatePendingPaystub, insertPaystub } from '$lib/drizzle/postgres/models/paystubs.js';
+import { getUnallocatedSalesByEmployee, saveSales, updateSelectedSalesToPaystub } from '$lib/drizzle/postgres/models/sales.js';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { Employee, SelectSale, SelectSaleOverride } from '$lib/drizzle/postgres/db.model';
+import type { InsertManualOverride } from '$lib/drizzle/types/override.model.js';
+import { formatDate } from '$lib/utils/utils.js';
+import { error, fail } from '@sveltejs/kit';
 
 
 export const load = async ({ locals }) => {
-  const session = await locals.auth.validate();
-  
-  if (!session) error(401, 'Unauthorized');
-  
-  const profile = await getUserProfileData(session?.user.userId);
+  if (!locals.user) return fail(401, { message: 'Unauthorized' });
+  const profile = locals.user.profile;
   
   if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
   
@@ -51,11 +48,8 @@ export const load = async ({ locals }) => {
 
 export const actions = {
   'get-sales-by-employee': async ({ locals, request }) => {
-    const session = await locals.auth.validate();
-    
-    if (!session) error(401, 'Unauthorized');
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
+    const profile = locals.user.profile;
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
     
@@ -69,11 +63,8 @@ export const actions = {
     return { sales, overrides };
   },
   'save-paystub': async ({ locals, request }) => {
-    const session = await locals.auth.validate();
-    
-    if (!session) error(401, 'Unauthorized');
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
+    const profile = locals.user.profile;
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
     
@@ -117,8 +108,8 @@ export const actions = {
     const getSaleAmount = (sale: SelectSale) => {
       const saleDesc = sale.statusDescription.toLowerCase().trim();
       if (saleDesc === 'pending') return 0;
-      if (saleDesc === 'rejected') return sale.saleAmount;
-      if (saleDesc === 'approved') return sale.saleAmount;
+      if (saleDesc === 'rejected') return Number(sale.saleAmount);
+      if (saleDesc === 'approved') return Number(sale.saleAmount);
       return 0;
     }
     
@@ -126,12 +117,14 @@ export const actions = {
     pendingPaystub.grossPay += selectedSales.reduce((acc, curr) => acc + getSaleAmount(curr), 0);
     pendingPaystub.netPay = pendingPaystub.grossPay;
     
+    // save the paystub
+    const paystubSaved = await insertPaystub(pendingPaystub);
+    
+    if (!paystubSaved) return error(400, 'Could not save paystub! Please try again.');
+    
     // update selected sales with paystub id
     const updated = await updateSelectedSalesToPaystub(selectedSales, pendingPaystub.id);
     if (!updated) error(500, 'Error updating sales');
-    
-    // save the paystub
-    const paystubSaved = await insertPaystub(pendingPaystub);
     
     // test data
     return {
@@ -139,11 +132,9 @@ export const actions = {
     };
   },
   'add-manual-override': async ({ locals, request }) => {
-    const session = await locals.auth.validate();
+    if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
-    if (!session) error(401, 'Unauthorized');
-    
-    const profile = await getUserProfileData(session?.user.userId);
+    const profile = await getUserProfileData(locals.user.id);
     
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
     
