@@ -32,7 +32,7 @@ jobs:
       - name: Create env file
         run: |
           touch .env
-          echo "ORIGIN=https://stacks.drewpayment.com" >> .env
+          echo "ORIGIN=https://stacks.hoyt.services" >> .env
           echo "ENABLE_DRIZZLE_LOGGER=${{ secrets.ENABLE_DRIZZLE_LOGGER }}" >> .env
           echo "POSTGRES_DB_HOST=${{ secrets.POSTGRES_DB_HOST }}" >> .env
           echo "POSTGRES_DB_PORT=${{ secrets.POSTGRES_DB_PORT }}" >> .env
