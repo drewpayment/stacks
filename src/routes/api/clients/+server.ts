@@ -1,5 +1,5 @@
-import { getUserProfileData, insertUserProfileData } from '$lib/drizzle/mysql/models/users';
-import type { userProfile } from '$lib/drizzle/mysql/schema';
+import { getUserProfileData, updateSelectedClient, updateUserProfileData } from '$lib/drizzle/postgres/models/users';
+import type { userProfile } from '$lib/drizzle/postgres/schema';
 import { fail, json } from '@sveltejs/kit';
 
 
@@ -16,7 +16,7 @@ export async function POST({ request, locals }) {
   const updatedProfile = {...profile, clientId };
   
   try {
-    await insertUserProfileData(updatedProfile as typeof userProfile.$inferInsert);
+    await updateSelectedClient(updatedProfile.userId, clientId);
   } catch (e) {
     return json({ error: e }, { status: 500 });
   }

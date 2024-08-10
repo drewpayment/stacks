@@ -1,7 +1,7 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
 	import SelectedClientStore from '$lib/stores/client';
-	import type { SelectClient as ISelectClient } from '$lib/types/db.model';
+	import type { SelectClient as ISelectClient } from '$lib/drizzle/postgres/db.model';
   import Icon from '@iconify/svelte';
 	import { createDialog, melt, createSelect } from '@melt-ui/svelte';
   import { Check, ChevronDown, XSquare } from 'lucide-svelte';

@@ -38,6 +38,20 @@ export const updateUserAttributes = async (userId: string, attributes: Partial<S
 	}
 }
 
+export const updateSelectedClient = async (userId: string, clientId: string) => {
+	const currentUser = await getUserProfileData(userId);
+	
+	if (currentUser.role !== 'super_admin') return false;
+	
+	try {
+		await drizzleClient.update(userProfile)
+			.set({ clientId, })
+			.where(eq(userProfile.userId, userId));
+	} catch (err) {
+		return false;
+	}
+}
+
 /**
  * 
  * 

@@ -72,12 +72,14 @@
 	<NavUl {activeUrl} class="order-1" ulClass={'flex flex-col p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:text-md'}>
 		<NavLi href="/">Home</NavLi>
 		{#if data.user}
-			{#if ['super_admin'].includes(data.profile?.role)}
+			{#if ['super_admin', 'org_admin'].includes(data.profile?.role)}
 				<NavLi class="cursor-pointer">
 					Manage<ChevronDown class="w-3 h-3 ml-2 text-primary-800 dark:text-white inline" />
 				</NavLi>
 				<Dropdown class="w-44 z-20">
+					{#if ['super_admin'].includes(data.profile?.role)}
 					<DropdownItem href="/app/client">Clients</DropdownItem>
+					{/if}
 					<DropdownItem href="/app/campaigns">Campaigns</DropdownItem>
 					<DropdownDivider />
 					<DropdownItem href="/app/user">Users</DropdownItem>
