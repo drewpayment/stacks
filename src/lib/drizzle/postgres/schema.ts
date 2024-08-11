@@ -48,6 +48,12 @@ export const userProfile = pgTable('user_profile', {
 	firstName: varchar('first_name', { length: 255 }),
 	lastName: varchar('last_name', { length: 255 }),
 	picture: varchar('picture', { length: 1024 }),
+	
+	address: varchar('address', { length: 255 }),
+	address2: varchar('address_2', { length: 255 }),
+	city: varchar('city', { length: 255 }),
+	state: varchar('state', { length: 2 }),
+	zip: varchar('zip', { length: 10 }),
 });
 
 export const userProfileRelations = relations(userProfile, ({ one }) => ({
@@ -401,7 +407,14 @@ export const expenseItem = pgTable('expense_item', {
 		.references(() => expenseReport.id),
 	description: text('description').notNull(),
 	amount: decimal('amount').notNull().default("0.00"),
-	dateIncurred: timestamp('date_incurred').notNull(),
-	receiptUrl: varchar('receipt_url', { length: 1024 }),
+	date: timestamp('date_incurred').notNull(),
 });
 
+export const expenseReportRelations = relations(expenseReport, ({ one, many }) => ({
+	employee: one(employee, {
+		fields: [expenseReport.employeeId],
+		references: [employee.id],
+		relationName: 'expenseReportEmployee',
+	}),
+	items: many(expenseItem),
+}));

@@ -1,9 +1,10 @@
 import { drizzleClient } from '$lib/drizzle/postgres/client';
 import { user, userClient, userKey, userProfile } from '$lib/drizzle/postgres/schema';
 import type { InsertUser, InsertUserKey, InsertUserProfile, SelectUser, User, UserProfile } from '$lib/drizzle/mysql/db.model';
-import { and, eq, ne } from 'drizzle-orm';
+import { and, DrizzleError, eq, ne } from 'drizzle-orm';
 import type { SelectClient } from '../db.model';
 import { nanoid } from 'nanoid';
+import { fail } from '@sveltejs/kit';
 
 export const getUserByEmail = async (email: string | undefined) => {
 	if (!email) {
@@ -159,6 +160,25 @@ export const updateUserAndProfile = async (userData: InsertUser, profileData: In
 	}
 	
 	return { success: true, };
+}
+
+export const updateOwnUserProfile = async (props: Partial<InsertUserProfile>) => {
+	if (!props.userId) return fail(400, { message: 'Unable to update user profile.' });
+	
+	try {
+		const currUserProfile = await getUserProfileData(props.userId);
+		
+		if (!currUserProfile || currUserProfile.userId !== props.userId) 
+			return fail(400, { message: 'Unable to update user profile.' });
+		
+		await drizzleClient.update(userProfile)
+			.set(props)
+			.where(eq(userProfile.userId, props.userId));
+	} catch (err) {
+		fail(400, {
+			message: 'Failed to update user profile.',
+		});
+	}
 }
 
 export const updateUser = async (userData: InsertUser): Promise<SelectUser | null> => {

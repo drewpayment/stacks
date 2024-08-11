@@ -54,7 +54,7 @@
 					</Dropdown>
 				{/if}
 			</div>
-			<div class="flex flex-col items-center pb-4">
+			<div class="flex flex-col items-center pb-4 w-56">
 				{#if user.user_profile.picture}
 					<Avatar size="lg" src={user.user_profile.picture} />
 				{:else}
@@ -67,10 +67,10 @@
 				<span class="text-sm text-gray-500 dark:text-gray-400"
 					>{user.auth_user.githubUsername ? user.auth_user.githubUsername : ''}</span
 				>
-				<div class="flex flex-col mt-4 lg:mt-6 space-y-3">
-					<div class="flex items-center space-x-3 rtl:space-x-reverse">
-						<span><AddressCardSolid /></span>
-						<span>{user.auth_user.email}</span>
+				<div class="flex flex-col mt-4 lg:mt-6 space-y-3 w-full">
+					<div class="flex items-center space-x-3 rtl:space-x-reverse w-full">
+						<span class="flex-shrink-0"><AddressCardSolid /></span>
+						<span class="truncate text-sm" title={user.auth_user.email}>{user.auth_user.email}</span>
 					</div>
 					<div class="flex justify-center items-center">
 						{#if user.auth_user.emailVerified}

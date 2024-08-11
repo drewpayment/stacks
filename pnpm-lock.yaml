@@ -83,6 +83,9 @@ importers:
       resend:
         specifier: ^1.1.0
         version: 1.1.0
+      svelte-hero-icons:
+        specifier: ^5.2.0
+        version: 5.2.0(svelte@4.2.12)
       svelte-input-mask:
         specifier: ^1.1.0
         version: 1.1.0(svelte@4.2.12)
@@ -1355,6 +1358,9 @@ packages:
 
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
+
+  '@steeze-ui/heroicons@2.4.0':
+    resolution: {integrity: sha512-gxOytXYV/lQiGxkZQC+CP5IWCa+d/vscRKn4JfZXgF8MZEzg9wfl1tTi/GOr3Eg93YkhlhNDwTIGWjhMaEwmvw==}
 
   '@sveltejs/adapter-auto@3.1.1':
     resolution: {integrity: sha512-6LeZft2Fo/4HfmLBi5CucMYmgRxgcETweQl/yQoZo/895K3S9YWYN4Sfm/IhwlIpbJp3QNvhKmwCHbsqQNYQpw==}
@@ -2792,7 +2798,6 @@ packages:
 
   libsql@0.1.34:
     resolution: {integrity: sha512-LGofp7z7gi1Td6vu2GxaA4WyvSPEkuFn0f/ePSti1TsAlBU0LWxdk+bj9D8nqswzxiqe5wpAyTLhVzTIYSyXEA==}
-    cpu: [x64, arm64]
     os: [darwin, linux, win32]
 
   lilconfig@2.1.0:
@@ -3664,6 +3669,12 @@ packages:
     peerDependenciesMeta:
       svelte:
         optional: true
+
+  svelte-hero-icons@5.2.0:
+    resolution: {integrity: sha512-KpdMTL0bOnkxciEmDXvyVF/R5nrZ1x1uHCSt9gMrrbEd3g5HSIaaDChOutTOfeI+cZ3EJbb+OcBH/lBzJr1aEw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      svelte: ^3.0.0 || ^4.0.0 || ^5.0.0
 
   svelte-hmr@0.16.0:
     resolution: {integrity: sha512-Gyc7cOS3VJzLlfj7wKS0ZnzDVdv3Pn2IuVeJPk9m2skfhcu5bq3wtIZyQGggr7/Iim5rH5cncyQft/kRLupcnA==}
@@ -4974,6 +4985,8 @@ snapshots:
       selderee: 0.10.0
 
   '@sinclair/typebox@0.27.8': {}
+
+  '@steeze-ui/heroicons@2.4.0': {}
 
   '@sveltejs/adapter-auto@3.1.1(@sveltejs/kit@2.5.10(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.12)(vite@5.2.12(@types/node@20.12.12)))(svelte@4.2.12)(vite@5.2.12(@types/node@20.12.12)))':
     dependencies:
@@ -7459,6 +7472,11 @@ snapshots:
       postcss: 8.4.35
       postcss-scss: 4.0.9(postcss@8.4.35)
     optionalDependencies:
+      svelte: 4.2.12
+
+  svelte-hero-icons@5.2.0(svelte@4.2.12):
+    dependencies:
+      '@steeze-ui/heroicons': 2.4.0
       svelte: 4.2.12
 
   svelte-hmr@0.16.0(svelte@4.2.12):

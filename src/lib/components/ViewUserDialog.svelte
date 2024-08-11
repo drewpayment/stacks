@@ -165,7 +165,7 @@
     <div class="mb-2">
       <Label>
         User Type
-        <Select class="mt-2" items={options} bind:value={userRole} placeholder="Choose user type" name="role" required />
+        <Select class="mt-2" items={options} bind:value={userRole} disabled={userRole == 'org_admin'} placeholder="Choose user type" name="role" required />
       </Label>
     </div>
     

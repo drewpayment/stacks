@@ -1,4 +1,4 @@
-import type { campaigns, client, employee, employeeCodes, employeeNotes, employeeProfile, overridingEmployee, payrollCycle, paystub, sale, saleOverride, user, userKey, userProfile } from './schema';
+import type { campaigns, client, employee, employeeCodes, employeeNotes, employeeProfile, expenseItem, expenseReport, overridingEmployee, payrollCycle, paystub, sale, saleOverride, user, userKey, userProfile } from './schema';
 
 
 export type InsertUserKey = typeof userKey.$inferInsert;
@@ -46,6 +46,9 @@ export type SelectOverridingEmployee = typeof overridingEmployee.$inferSelect;
 export type InsertOverridingEmployee = typeof overridingEmployee.$inferInsert;
 export type SelectSaleOverride = typeof saleOverride.$inferSelect;
 export type InsertSaleOverride = typeof saleOverride.$inferInsert;
+
+export type InsertExpenseItem = typeof expenseItem.$inferInsert;
+export type InsertExpenseReport = typeof expenseReport.$inferInsert;
 
 export type SelectSale = typeof sale.$inferSelect;
 export type InsertSale = typeof sale.$inferInsert;
