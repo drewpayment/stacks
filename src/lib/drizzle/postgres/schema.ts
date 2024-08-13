@@ -376,6 +376,11 @@ export const saleOverrideRelations = relations(saleOverride, ({ one }) => ({
 
 export const approvalStatusEnum = pgEnum('approval_status', ['pending', 'approved', 'rejected']);
 
+export const expenseCategoryEnum = pgEnum('expense_category', ['travel', 'meals', 'supplies', 'equipment', 'vehicles', 'utilities', 
+	'rent', 'marketing', 'professional_development', 'subscriptions', 'insurance', 'professional_services', 'repairs', 'shipping',
+	'employee_benefits', 'taxes_licenses', 'interest_bank_fees', 'misc',
+]);
+
 export const expenseReport = pgTable('expense_report', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	employeeId: varchar('employee_id', { length: 255 })
@@ -405,6 +410,7 @@ export const expenseItem = pgTable('expense_item', {
 	exportReportId: varchar('expense_report_id', { length: 255 })
 		.notNull()
 		.references(() => expenseReport.id),
+	category: expenseCategoryEnum('category').notNull().default('misc'),
 	description: text('description').notNull(),
 	amount: decimal('amount').notNull().default("0.00"),
 	date: timestamp('date_incurred').notNull(),

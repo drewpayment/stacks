@@ -49,6 +49,8 @@ export type InsertSaleOverride = typeof saleOverride.$inferInsert;
 
 export type InsertExpenseItem = typeof expenseItem.$inferInsert;
 export type InsertExpenseReport = typeof expenseReport.$inferInsert;
+export type SelectExpenseReport = typeof expenseReport.$inferSelect;
+export type SelectExpenseItem = typeof expenseItem.$inferSelect;
 
 export type SelectSale = typeof sale.$inferSelect;
 export type InsertSale = typeof sale.$inferInsert;
