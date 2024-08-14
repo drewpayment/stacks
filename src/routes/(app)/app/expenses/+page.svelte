@@ -17,68 +17,8 @@
 	} from 'flowbite-svelte';
 	import { Icon, ChevronRight } from 'svelte-hero-icons';
 
-	// Mock data for expense reports
-	let expenseReports = [
-		{
-			id: '1',
-			clientId: 'cmp',
-			employeeId: '398sdlfjsd',
-			paystubId: '123456',
-			submissionDate: new Date('2024-08-10'),
-			approvalStatus: 'pending',
-			approvalDate: '',
-			totalAmount: '450.75',
-			created: new Date('2024-08-09T12:00:00Z'),
-			updated: new Date('2024-08-09T12:00:00Z'),
-			employee: {
-				id: 'sdofaijsd',
-				clientId: 'cmp',
-				firstName: 'John',
-				lastName: 'Doe',
-				isCommissionable: true,
-				userId: '9sdaifsa'
-			},
-			paystub: {
-				id: 'dsafjdas;',
-				cycle: {
-					startDate: new Date('2024-08-10'),
-					endDate: new Date('2024-08-20')
-				}
-			},
-		},
-		{
-			id: '2',
-			clientId: 'cmp',
-			employeeId: '398sdlfjsd',
-			paystubId: '123456',
-			submissionDate: new Date('2024-08-10'),
-			approvalStatus: 'approved',
-			approvalDate: new Date('2024-08-12'),
-			totalAmount: '45.75',
-			created: new Date('2024-08-09T12:00:00Z'),
-			updated: new Date('2024-08-09T12:00:00Z'),
-			employee: {
-				id: 'sdofaijsd',
-				clientId: 'cmp',
-				firstName: 'John',
-				lastName: 'Doe',
-				isCommissionable: true,
-				userId: '9sdaifsa'
-			},
-      paystub: {
-				id: 'dsafjdas;',
-				cycle: {
-					startDate: new Date('2024-08-10'),
-					endDate: new Date('2024-08-20')
-				}
-			},
-		}
-	] as (InsertExpenseReport & {
-		employee: Partial<SelectEmployee>;
-		paystub: Partial<SelectPaystub> & {
-			cycle: Partial<SelectPayrollCycle>;
-		};
-	})[];
+	export let data;
+	const { reports: expenseReports } = data;
 
 	function viewReport(id: string) {
 		// In a real application, this would navigate to the individual report page
@@ -109,7 +49,13 @@
 						<TableBodyCell class="font-medium"
 							>{report.employee.firstName} {report.employee.lastName}</TableBodyCell
 						>
-						<TableBodyCell>{report.paystub.cycle.startDate?.toLocaleDateString()} - {report.paystub.cycle.endDate?.toLocaleDateString()}</TableBodyCell>
+						<TableBodyCell>
+							{#if report.paystub?.payrollCycle != null}
+								{report.paystub?.payrollCycle.startDate?.toLocaleDateString()} - {report.paystub?.payrollCycle.endDate?.toLocaleDateString()}
+							{:else}
+								Not assigned
+							{/if}
+						</TableBodyCell>
 						<TableBodyCell>${Number(report.totalAmount).toFixed(2)}</TableBodyCell>
 						<TableBodyCell>
 							<span
@@ -126,7 +72,7 @@
 							</span>
 						</TableBodyCell>
 						<TableBodyCell>
-							<Button size="xs" color="light" on:click={() => viewReport(report.id)}>
+							<Button size="xs" color="light" href={`/app/expenses/${report.id}`}>
 								View <Icon src={ChevronRight} class="w-4 h-4 ml-1" />
 							</Button>
 						</TableBodyCell>

@@ -390,7 +390,6 @@ export const expenseReport = pgTable('expense_report', {
 		.notNull()
 		.references(() => client.id),
 	paystubId: varchar('paystub_id', { length: 255 })
-		.notNull()
 		.references(() => paystub.id),
 	submissionDate: timestamp('submission_date').notNull(),
 	approvalStatus: approvalStatusEnum('approval_status').notNull().default('pending'),
@@ -416,6 +415,13 @@ export const expenseItem = pgTable('expense_item', {
 	date: timestamp('date_incurred').notNull(),
 });
 
+export const expenseItemRelations = relations(expenseItem, ({ one }) => ({
+	expenseReport: one(expenseReport, {
+		fields: [expenseItem.exportReportId],
+		references: [expenseReport.id],
+	}),
+}));
+
 export const expenseReportRelations = relations(expenseReport, ({ one, many }) => ({
 	employee: one(employee, {
 		fields: [expenseReport.employeeId],
@@ -423,4 +429,8 @@ export const expenseReportRelations = relations(expenseReport, ({ one, many }) =
 		relationName: 'expenseReportEmployee',
 	}),
 	items: many(expenseItem),
+	paystub: one(paystub, {
+		fields: [expenseReport.paystubId],
+		references: [paystub.id],
+	}),
 }));

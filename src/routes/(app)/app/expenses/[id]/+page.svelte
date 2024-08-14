@@ -1,25 +1,19 @@
 <script lang="ts">
+	import type { SelectExpenseItem } from '$lib/drizzle/postgres/db.model.js';
   import { Card, Table, Button, Badge, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Footer } from 'flowbite-svelte';
   import { ChevronLeft, Printer, ArrowDownCircle, Icon } from 'svelte-hero-icons';
 
   // Mock data for the expense report
-  let report = {
-    id: 1,
-    employeeName: 'John Doe',
-    employeeId: 'EMP001',
-    payPeriod: '2024-08-01 to 2024-08-15',
-    submissionDate: '2024-08-16',
-    status: 'Approved',
-    approvedBy: 'Jane Manager',
-    approvalDate: '2024-08-17',
-    totalAmount: 450.75,
-    expenses: [
-      { id: 1, date: '2024-08-03', category: 'Travel', description: 'Flight to client meeting', amount: 300.00 },
-      { id: 2, date: '2024-08-04', category: 'Meals', description: 'Lunch with client', amount: 75.50 },
-      { id: 3, date: '2024-08-10', category: 'Office Supplies', description: 'Printer ink', amount: 55.25 },
-      { id: 4, date: '2024-08-12', category: 'Miscellaneous', description: 'Parking fees', amount: 20.00 },
-    ]
-  };
+  export let data;
+  const { report } = data;
+  let expenseItems: SelectExpenseItem[] = [];
+  
+  $: {
+    expenseItems = report?.items.length ? report?.items as SelectExpenseItem[] : expenseItems;
+  }
+  
+  const startDate = report?.paystub.payrollCycle.startDate;
+  const endDate = report?.paystub.payrollCycle.endDate;
 
   function goBack() {
     // In a real application, this would navigate back to the expense reports list
@@ -35,6 +29,8 @@
     // Implement download functionality
     console.log('Downloading report');
   }
+  
+  console.log(report);
 </script>
 
 <div class="container max-w-5xl mx-auto p-4">
@@ -57,32 +53,32 @@
     <div class="grid grid-cols-2 gap-4 mb-4">
       <div>
         <p class="font-semibold">Employee Name:</p>
-        <p>{report.employeeName} (ID: {report.employeeId})</p>
+        <p>{report?.employee.firstName} {report?.employee.lastName} (ID: {report?.employeeId})</p>
       </div>
       <div>
         <p class="font-semibold">Pay Period:</p>
-        <p>{report.payPeriod}</p>
+        <p>{startDate?.toLocaleDateString()} - {endDate?.toLocaleDateString()}</p>
       </div>
       <div>
         <p class="font-semibold">Submission Date:</p>
-        <p>{report.submissionDate}</p>
+        <p>{report?.submissionDate.toLocaleDateString()}</p>
       </div>
       <div>
         <p class="font-semibold">Status:</p>
         <Badge
-          color={report.status === 'Approved' ? 'green' : 
-                 report.status === 'Pending' ? 'yellow' : 'red'}
+          color={report?.approvalStatus === 'approved' ? 'green' : 
+                 report?.approvalStatus === 'pending' ? 'yellow' : 'red'}
         >
-          {report.status}
+          {report?.approvalStatus}
         </Badge>
       </div>
       <div>
-        <p class="font-semibold">Approved By:</p>
-        <p>{report.approvedBy}</p>
+        <p class="font-semibold">Approval Notes:</p>
+        <p>{report?.approvalNotes}</p>
       </div>
       <div>
         <p class="font-semibold">Approval Date:</p>
-        <p>{report.approvalDate}</p>
+        <p>{report?.approvalDate?.toLocaleDateString()}</p>
       </div>
     </div>
   </Card>
@@ -97,24 +93,24 @@
         <TableHeadCell>Amount</TableHeadCell>
       </TableHead>
       <TableBody tableBodyClass="divide-y">
-        {#each report.expenses as expense (expense.id)}
+        {#each expenseItems as expense (expense.id)}
           <TableBodyRow>
             <TableBodyCell>{expense.date}</TableBodyCell>
             <TableBodyCell>{expense.category}</TableBodyCell>
             <TableBodyCell>{expense.description}</TableBodyCell>
-            <TableBodyCell>${expense.amount.toFixed(2)}</TableBodyCell>
+            <TableBodyCell>${Number(expense.amount).toFixed(2)}</TableBodyCell>
           </TableBodyRow>
         {/each}
         <TableBodyRow>
           <TableBodyCell colspan="3" class="text-right font-semibold">Total:</TableBodyCell>
-          <TableBodyCell class="font-bold">${report.totalAmount.toFixed(2)}</TableBodyCell>
+          <TableBodyCell class="font-bold">${Number(report?.totalAmount).toFixed(2)}</TableBodyCell>
         </TableBodyRow>
       </TableBody>
     </Table>
   </Card>
 
   <div class="mt-4 text-sm text-gray-600">
-    <p>Note: This expense report is associated with the paystub for the pay period {report.payPeriod}.</p>
+    <p>Note: This expense report is associated with the paystub for the pay period {startDate?.toLocaleDateString()} - {endDate?.toLocaleDateString()}.</p>
     <p>For any questions or concerns, please contact the payroll department.</p>
   </div>
 </div>
