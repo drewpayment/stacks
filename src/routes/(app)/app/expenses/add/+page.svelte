@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { InsertExpenseItem, InsertExpenseReport } from '$lib/drizzle/postgres/db.model';
-  import { Button, Card, Label, Input } from 'flowbite-svelte';
+  import { Button, Card, Label, Input, Select, type SelectOptionType } from 'flowbite-svelte';
 	import { nanoid } from 'nanoid';
   import { Icon, Plus, Trash } from 'svelte-hero-icons';
 
@@ -10,6 +10,29 @@
   let report = {
     items: expenses,
   } as InsertExpenseReport & { items: InsertExpenseItem[] };
+  
+  //#region Category options
+  const categories: SelectOptionType[] = [
+    { name: 'Travel', value: 'travel', },
+    { name: 'Meals', value: 'meals', },
+    { name: 'Supplies', value: 'supplies', },
+    { name: 'Equipment', value: 'equipment', },
+    { name: 'Vehicles', value: 'vehicles', },
+    { name: 'Utilities', value: 'utilities', },
+    { name: 'Rent', value: 'rent', },
+    { name: 'Marketing', value: 'marketing', },
+    { name: 'Professional Development', value: 'professional_development', },
+    { name: 'Subscriptions', value: 'subscriptions', },
+    { name: 'Insurance', value: 'insurance', },
+    { name: 'Professional Services', value: 'professional_services', },
+    { name: 'Repairs', value: 'repairs', },
+    { name: 'Shipping', value: 'shipping', },
+    { name: 'Employee Benefits', value: 'employee_benefits', },
+    { name: 'Taxes & Licenses', value: 'taxes_licenses', },
+    { name: 'Interest & Bank Fees', value: 'interest_bank_fees', },
+    { name: 'Miscellaneous', value: 'misc', },
+  ];
+  //#endregion
 
   function addExpense() {
     if (newExpense.date && newExpense.description && newExpense.amount) {
@@ -35,14 +58,16 @@
   </div>
   <div class="p-4">
     <div class="space-y-4">
-      <div class="grid grid-cols-4 gap-4 font-semibold">
+      <div class="grid grid-cols-5 gap-4 font-semibold">
         <div>Date</div>
+        <div>Category</div>
         <div class="col-span-2">Description</div>
         <div>Amount</div>
       </div>
       {#each expenses as expense (expense.id)}
-        <div class="grid grid-cols-4 gap-4 items-center">
+        <div class="grid grid-cols-5 gap-4 items-center">
           <div>{expense.date}</div>
+          <div class="capitalize">{expense.category}</div>
           <div class="col-span-2">{expense.description}</div>
           <div class="flex items-center justify-between">
             ${Number(expense.amount).toFixed(2)}
@@ -53,10 +78,14 @@
         </div>
       {/each}
     </div>
-    <div class="mt-6 grid grid-cols-4 gap-4 items-end">
+    <div class="mt-6 grid grid-cols-5 gap-4 items-end">
       <div>
         <Label for="date" class="mb-2">Date</Label>
         <Input id="date" type="date" bind:value={newExpense.date} />
+      </div>
+      <div>
+        <Label for="category" class="mb-2">Category</Label>
+        <Select class="capitalize" id="category" bind:value={newExpense.category} items={categories} />
       </div>
       <div class="col-span-2">
         <Label for="description" class="mb-2">Description</Label>

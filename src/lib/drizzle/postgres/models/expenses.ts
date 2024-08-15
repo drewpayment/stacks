@@ -27,12 +27,12 @@ export const getExpenseReports = async (clientId: string): Promise<ExpenseReport
   return reports;
 }
 
-export const getExpenseReport = async (clientId: string, employeeId: string): Promise<ExpenseReportResult | null> => {
+export const getExpenseReport = async (clientId: string, reportId: string): Promise<ExpenseReportResult | null> => {
   let report: ExpenseReportResult | null;
   
   try {
     report = await db.query.expenseReport.findFirst({
-      where: (expenseReport, { eq, and }) => and(eq(expenseReport.clientId, clientId), eq(expenseReport.employeeId, employeeId)),
+      where: (expenseReport, { eq, and }) => and(eq(expenseReport.clientId, clientId), eq(expenseReport.id, reportId)),
       with: {
         items: true,
         employee: true,

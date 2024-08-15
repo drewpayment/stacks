@@ -12,8 +12,8 @@
     expenseItems = report?.items.length ? report?.items as SelectExpenseItem[] : expenseItems;
   }
   
-  const startDate = report?.paystub.payrollCycle.startDate;
-  const endDate = report?.paystub.payrollCycle.endDate;
+  const startDate = report?.paystub?.payrollCycle.startDate;
+  const endDate = report?.paystub?.payrollCycle.endDate;
 
   function goBack() {
     // In a real application, this would navigate back to the expense reports list
@@ -29,8 +29,6 @@
     // Implement download functionality
     console.log('Downloading report');
   }
-  
-  console.log(report);
 </script>
 
 <div class="container max-w-5xl mx-auto p-4">
@@ -57,7 +55,13 @@
       </div>
       <div>
         <p class="font-semibold">Pay Period:</p>
-        <p>{startDate?.toLocaleDateString()} - {endDate?.toLocaleDateString()}</p>
+        <p>
+          {#if report?.paystub?.payrollCycle != null}
+            {startDate?.toLocaleDateString()} - {endDate?.toLocaleDateString()}
+          {:else}
+            <span class="text-sm italic">Unassigned</span>
+          {/if}
+        </p>
       </div>
       <div>
         <p class="font-semibold">Submission Date:</p>
@@ -69,16 +73,28 @@
           color={report?.approvalStatus === 'approved' ? 'green' : 
                  report?.approvalStatus === 'pending' ? 'yellow' : 'red'}
         >
-          {report?.approvalStatus}
+          <span class="capitalize">{report?.approvalStatus}</span>
         </Badge>
       </div>
       <div>
         <p class="font-semibold">Approval Notes:</p>
-        <p>{report?.approvalNotes}</p>
+        <p>
+          {#if report?.approvalNotes != null}
+            {report?.approvalNotes}
+          {:else}
+            <span class="text-sm italic">No notes provided.</span>
+          {/if}
+        </p>
       </div>
       <div>
         <p class="font-semibold">Approval Date:</p>
-        <p>{report?.approvalDate?.toLocaleDateString()}</p>
+        <p>
+          {#if report?.approvalDate != null}
+            {report?.approvalDate?.toLocaleDateString()}
+          {:else}
+            <span class="text-sm italic">Not yet approved.</span>
+          {/if}
+        </p>
       </div>
     </div>
   </Card>
@@ -95,8 +111,8 @@
       <TableBody tableBodyClass="divide-y">
         {#each expenseItems as expense (expense.id)}
           <TableBodyRow>
-            <TableBodyCell>{expense.date}</TableBodyCell>
-            <TableBodyCell>{expense.category}</TableBodyCell>
+            <TableBodyCell>{expense.date.toLocaleDateString()}</TableBodyCell>
+            <TableBodyCell tdClass="capitalize">{expense.category}</TableBodyCell>
             <TableBodyCell>{expense.description}</TableBodyCell>
             <TableBodyCell>${Number(expense.amount).toFixed(2)}</TableBodyCell>
           </TableBodyRow>
