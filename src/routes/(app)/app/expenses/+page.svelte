@@ -32,7 +32,7 @@
 	<Card class="w-full mb-4 max-w-5xl">
 		<div class="flex justify-between items-center mb-4">
 			<h2 class="text-xl font-semibold">Existing Reports</h2>
-			<Button color="blue">Create New Report</Button>
+			<Button color="blue" href="/app/expenses/add">Create New Report</Button>
 		</div>
 
 		<Table hoverable={true}>

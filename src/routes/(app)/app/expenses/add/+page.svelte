@@ -1,14 +1,22 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { InsertExpenseItem, InsertExpenseReport } from '$lib/drizzle/postgres/db.model';
+	import dayjs from 'dayjs';
   import { Button, Card, Label, Input, Select, type SelectOptionType } from 'flowbite-svelte';
 	import { nanoid } from 'nanoid';
   import { Icon, Plus, Trash } from 'svelte-hero-icons';
 
+  export let data;
+  const { employees } = data;
+  
   let expenses: InsertExpenseItem[] = [];
   let newExpense = {} as InsertExpenseItem;
   let report = {
     items: expenses,
+    clientId: data.profile?.clientId,
+    submissionDate: dayjs().toDate(),
+    approvalStatus: 'pending',
+    totalAmount: '0',
   } as InsertExpenseReport & { items: InsertExpenseItem[] };
   
   //#region Category options
@@ -40,6 +48,7 @@
       
       expenses = [...expenses, newExpenseItem ];
       report.items = [...report.items, newExpenseItem];
+      report.totalAmount = (Number(report.totalAmount) + Number(newExpense.amount)).toString();
       
       newExpense = {} as InsertExpenseItem;
     }
@@ -55,6 +64,20 @@
 <Card class="w-full max-w-2xl mx-auto">
   <div class="p-4">
     <h2 class="text-2xl font-bold text-center">Expense Report</h2>
+  </div>
+  <div class="p-4">
+    <div class="space-y-4">
+      <div class="grid grid-cols-2">
+        <div class="space-y-4">
+          <Label for="employee">Employee</Label>
+          <Select id="employee" name="employee" bind:value={report.employeeId} required>
+            {#each employees as employee}
+              <option value={employee.value}>{employee.name}</option>
+            {/each}
+          </Select>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="p-4">
     <div class="space-y-4">
