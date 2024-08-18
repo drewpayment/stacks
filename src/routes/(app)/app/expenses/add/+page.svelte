@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { createToast } from '$lib/components/Toast.svelte';
 	import type { InsertExpenseItem, InsertExpenseReport } from '$lib/drizzle/postgres/db.model';
 	import dayjs from 'dayjs';
   import { Button, Card, Label, Input, Select, type SelectOptionType } from 'flowbite-svelte';
@@ -128,15 +129,19 @@
     <div class="text-xl font-bold">${totalExpenses.toFixed(2)}</div>
   </div>
   <div class="p4 flex justify-end">
-    <form action="?/save" method="post" use:enhance={({ formData, cancel, submitter }) => {
-      const report = formData.get('report');
-      formData.set('report', JSON.stringify(report));
+    <form action="?/save" method="post" use:enhance={({ formData, cancel, submitter }) => {      
+      formData.append('report', JSON.stringify(report));
       
       return ({ result, }) => {
-        console.log(result);
+        if (!result.success) return;
+        
+        createToast({
+          type: 'success',
+          title: 'Success',
+          description: 'Your report has been submitted.',
+        });
       }
     }}>
-      <input type="hidden" name="report" bind:value={report} />
       <Button type="submit" disabled={totalExpenses < 1}>Save Report</Button>
     </form>
   </div>
