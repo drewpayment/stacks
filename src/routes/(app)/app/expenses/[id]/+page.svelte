@@ -1,11 +1,13 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import { createToast } from '$lib/components/Toast.svelte';
 	import type { SelectExpenseItem } from '$lib/drizzle/postgres/db.model.js';
-  import { Card, Table, Button, Badge, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Footer } from 'flowbite-svelte';
-  import { ChevronLeft, Printer, ArrowDownCircle, Icon } from 'svelte-hero-icons';
+  import { Card, Table, Button, Badge, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Footer, Select } from 'flowbite-svelte';
+  import { ChevronLeft, Printer, ArrowDownCircle, Icon, CheckCircle } from 'svelte-hero-icons';
 
   // Mock data for the expense report
   export let data;
-  const { report } = data;
+  const { report, user, paystubs } = data;
   let expenseItems: SelectExpenseItem[] = [];
   
   $: {
@@ -14,6 +16,9 @@
   
   const startDate = report?.paystub?.payrollCycle.startDate;
   const endDate = report?.paystub?.payrollCycle.endDate;
+  
+  let paystubId: string = '';
+  let setPaystubBtn: HTMLButtonElement;
 
   function goBack() {
     // In a real application, this would navigate back to the expense reports list
@@ -36,14 +41,36 @@
     <Button color="light" href="/app/expenses">
       <Icon src={ChevronLeft} class="w-4 h-4 mr-2" /> Back to Reports
     </Button>
-    <div>
-      <Button color="light" class="mr-2" on:click={printReport}>
-        <Icon src={Printer} class="w-4 h-4 mr-2" /> Print
-      </Button>
-      <Button color="blue" on:click={downloadReport}>
-        <Icon src={ArrowDownCircle} class="w-4 h-4 mr-2" /> Download
-      </Button>
-    </div>
+    {#if ['super_admin', 'org_admin'].includes(user?.profile.role) && report?.approvalStatus === 'pending'}
+      <form method="post" action="?/approve" use:enhance={() => {
+        return ({ result }) => {
+          if (result.status === 200) {
+            createToast({
+              type: 'success',
+              title: 'Success',
+              description: 'Expense report approved successfully',
+            });
+          } else {
+            createToast({
+              type: 'error',
+              title: 'Error!',
+              description: 'Something went wrong',
+            });
+          }
+        }        
+      }}>
+        <input type="hidden" name="reportId" value={report?.id} />
+        <Button color="blue" class="mr-2" type="submit">
+          <Icon src={CheckCircle} class="w-4 h-4 mr-2" /> Approve
+        </Button>
+      </form>
+    {:else if ['super_admin', 'org_admin'].includes(user?.profile.role) && report?.approvalStatus === 'approved'}
+      <div>
+        <Button color="light" class="mr-2" disabled={true}>
+          <Icon src={CheckCircle} class="w-4 h-4 mr-2" /> Approved
+        </Button>
+      </div>
+    {/if}
   </div>
 
   <Card class="w-full mb-6 max-w-5xl">
@@ -58,6 +85,32 @@
         <p>
           {#if report?.paystub?.payrollCycle != null}
             {startDate?.toLocaleDateString()} - {endDate?.toLocaleDateString()}
+          {:else if ['super_admin', 'org_admin'].includes(user.profile.role)}
+            {#if paystubs?.length > 0}
+            <form action="?/setPaystub" method="post" use:enhance={() => {
+              return ({ result }) => {
+                if (result.status === 200) {
+                  createToast({
+                    type: 'success',
+                    title: 'Success',
+                    description: 'Attached to paystub',
+                  });
+                } else {
+                  createToast({
+                    type: 'error',
+                    title: 'Error!',
+                    description: 'Something went wrong',
+                  });
+                }
+              }
+            }}>
+              <input type="hidden" name="reportId" value={report?.id} />
+              <Select items={paystubs} size="sm" name="paystubId" bind:value={paystubId} on:change={() => setPaystubBtn.click()} />
+              <button type="submit" class="hidden" bind:this={setPaystubBtn}>Attach to paystub</button>
+            </form>
+            {:else}
+            <span class="text-sm italic">No paystubs available - <a href="/app/payroll/add" class="text-blue-500 hover:underline">Create one</a></span>
+            {/if}
           {:else}
             <span class="text-sm italic">Unassigned</span>
           {/if}
