@@ -2,19 +2,21 @@
 	import { enhance } from '$app/forms';
 	import SelectSaleOverridesTable from '$lib/components/SelectSaleOverridesTable.svelte';
 	import SelectSalesTable from '$lib/components/SelectSalesTable.svelte';
-	import { getEmployeeOptions, getManualOverrides, getSelectedCampaign, getSelectedEmployee, setEmployeeOptions, setSelectedEmployee } from '$lib/components/context.js';
+	import { getEmployeeOptions, getManualOverrides, getSelectedCampaign, getSelectedEmployee, setEmployeeOptions, setSelectedEmployee, type EmployeeOptions } from '$lib/components/context.js';
 	import type { OverrideTableInputData } from '$lib/drizzle/postgres/types/override-table-input-data.model.js';
 	import type { SaleTableInputData } from '$lib/drizzle/postgres/types/sale-table-input-data.model.js';
 	import type { SelectSale, SelectSaleOverride } from '$lib/drizzle/postgres/db.model.js';
-	import { Breadcrumb, BreadcrumbItem, Button, Card, Helper, Label, Select } from 'flowbite-svelte';
+	import { Breadcrumb, BreadcrumbItem, Button, Card, Checkbox, Helper, Label, Select, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { ArrowRightOutline } from 'flowbite-svelte-icons';
+	import { formatDate } from '$lib/utils/utils.js';
+  import { ArrowUpRight, Icon } from 'svelte-hero-icons';
   
   export let data;
-  const { employees, campaigns, cycles } = data;
+  const { employees, campaigns, cycles, preloadEmployeeId, expenseReports } = data;
   
   const selectedEmployeeContext = getSelectedEmployee();
   const employeeContext = getEmployeeOptions();
-  employeeContext.set(employees);
+  employeeContext.set(employees as EmployeeOptions[]);
   const manualOverrides = getManualOverrides();
   
   //TODO: Need to finish passing emplid and campaignid to the add sales page
@@ -23,9 +25,11 @@
   let submitBtn: HTMLButtonElement;
   let selectedSales: SelectSale[] = [];
   let selectedSaleOverrides: SelectSaleOverride[] = [];
-  let selectedEmployee = '';
+  let selectedEmployee = preloadEmployeeId || '';
   let selectedCampaign = '';
   let selectedCycle = '';
+  
+  if (selectedEmployee) selectedEmployeeContext.set(selectedEmployee);
   
   let salesTableData = {
     sales: [],
@@ -78,6 +82,19 @@
   const handleEmployeeSelect = (e: any) => {
     selectedEmployeeContext.set(e.target.value);
     submitBtn.click();
+  }
+  
+  const usd = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  });
+  
+  const handleCheckboxChange = (e: Event) => {
+    console.log(e);
+  }
+  
+  const selectAll = () => {
+    
   }
 </script>
 
@@ -174,5 +191,48 @@
   
   <div class="my-6">
     <SelectSaleOverridesTable bind:data={overrideTableData} on:overrideSelected={handleOverrideSelected}></SelectSaleOverridesTable>
+  </div>
+  
+  <div class="my-6">
+    <div class="flex justify-between">
+      <h5 class="mb-2">Pending Expenses</h5>
+      <!-- <div class="p-2">
+        <Button type="button" on:click={() => openAddOverrideModal = !openAddOverrideModal} size="sm">Add Manual Override</Button>
+      </div> -->
+    </div>
+    <Table striped={true} shadow={true} divClass="bg-background-100 dark:bg-background-300 max-h-80 overflow-y-auto">
+      <TableHead class="text-sm text-background-800 font-semibold">
+        <TableHeadCell>
+          <Checkbox on:change={() => selectAll()}></Checkbox>
+        </TableHeadCell>
+        <TableHeadCell>Amount</TableHeadCell>
+        <TableHeadCell>Submitted</TableHeadCell>
+        <TableHeadCell>Status</TableHeadCell>
+      </TableHead>
+      
+      <TableBody tableBodyClass="divide-y">
+        {#if expenseReports != null && expenseReports.length}
+        {#each expenseReports as report (report.id)}
+          <TableBodyRow>
+            <TableBodyCell>
+              {#if report.approvalStatus === 'approved'}
+              <form action="?/attachExpenseReport" method="post">
+                <Checkbox name="expenseReportId" value={report?.id} checked={report.selected}></Checkbox>
+                <input type="hidden" name="employeeId" value={selectedEmployee} />
+              </form>
+              {:else}
+              <a href={`/app/expenses/${report.id}`}>
+                <Icon src={ArrowUpRight} class="w-4 h-4" />
+              </a>
+              {/if}
+            </TableBodyCell>
+            <TableBodyCell>{usd.format(Number(report?.totalAmount))}</TableBodyCell>
+            <TableBodyCell>{report.submissionDate.toLocaleDateString()}</TableBodyCell>
+            <TableBodyCell tdClass="capitalize">{report.approvalStatus}</TableBodyCell>
+          </TableBodyRow>
+        {/each}
+        {/if}
+      </TableBody>
+    </Table>
   </div>
 </div>
