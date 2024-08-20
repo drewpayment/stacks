@@ -8,7 +8,6 @@
 	import type { SelectSale, SelectSaleOverride } from '$lib/drizzle/postgres/db.model.js';
 	import { Breadcrumb, BreadcrumbItem, Button, Card, Checkbox, Helper, Label, Select, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { ArrowRightOutline } from 'flowbite-svelte-icons';
-	import { formatDate } from '$lib/utils/utils.js';
   import { ArrowUpRight, Icon } from 'svelte-hero-icons';
   
   export let data;
@@ -18,6 +17,10 @@
   const employeeContext = getEmployeeOptions();
   employeeContext.set(employees as EmployeeOptions[]);
   const manualOverrides = getManualOverrides();
+  const lastSearchCriteria = {
+    employeeId: '',
+    campaignId: '',
+  };
   
   //TODO: Need to finish passing emplid and campaignid to the add sales page
   const campaignContext = getSelectedCampaign();
@@ -25,6 +28,7 @@
   let submitBtn: HTMLButtonElement;
   let selectedSales: SelectSale[] = [];
   let selectedSaleOverrides: SelectSaleOverride[] = [];
+  let selectedExpenseReports: string[] = [];
   let selectedEmployee = preloadEmployeeId || '';
   let selectedCampaign = '';
   let selectedCycle = '';
@@ -51,6 +55,7 @@
         selectedCycle,
         salesTableData,
         overrideTableData,
+        selectedExpenseReports,
       };
     },
     restore: (snapshot) => {
@@ -61,6 +66,7 @@
       overrideTableData = snapshot.overrideTableData;
       selectedSales = snapshot.selectedSales;
       selectedSaleOverrides = snapshot.selectedSaleOverrides;
+      selectedExpenseReports = snapshot.selectedExpenseReports;
     },
   }
   
@@ -77,11 +83,12 @@
   const handleCampaignSelected = (e: any) => {
     selectedCampaign = e.target?.value;
     campaignContext.set(selectedCampaign);
+    trySearch({ campaignId: selectedCampaign });
   }
   
   const handleEmployeeSelect = (e: any) => {
     selectedEmployeeContext.set(e.target.value);
-    submitBtn.click();
+    trySearch({ employeeId: e.target.value });
   }
   
   const usd = new Intl.NumberFormat('en-US', {
@@ -89,8 +96,25 @@
     currency: 'USD',
   });
   
-  const handleCheckboxChange = (e: Event) => {
-    console.log(e);
+  const handleExpenseReportSelected = (e: Event) => {
+    const expenseReportId = (e.target as any).value as string;
+    selectedExpenseReports.push(expenseReportId);
+  }
+  
+  const trySearch = ({ campaignId, employeeId }: { campaignId?: string, employeeId?: string }) => {
+    let shouldSearch = false;
+    
+    if (campaignId && campaignId !== lastSearchCriteria.campaignId) {
+      lastSearchCriteria.campaignId = campaignId;
+      shouldSearch = true;
+    }
+    
+    if (employeeId && employeeId !== lastSearchCriteria.employeeId) {
+      lastSearchCriteria.employeeId = employeeId;
+      shouldSearch = true;
+    }
+    
+    if (shouldSearch) submitBtn.click();
   }
   
   const selectAll = () => {
@@ -181,6 +205,7 @@
       <input type="hidden" name="campaignId" value={selectedCampaign} />
       <input type="hidden" name="selectedSales" value={JSON.stringify(selectedSales)} />
       <input type="hidden" name="selectedSaleOverrides" value={JSON.stringify(selectedSaleOverrides)} />
+      <input type="hidden" name="selectedExpenseReports" value={JSON.stringify(selectedExpenseReports)} />
       <input type="hidden" name="pendingManualOverrides" value={JSON.stringify($manualOverrides)} />
     </form>
   </div>
@@ -195,7 +220,7 @@
   
   <div class="my-6">
     <div class="flex justify-between">
-      <h5 class="mb-2">Pending Expenses</h5>
+      <h5 class="mb-2">Expense Reports</h5>
       <!-- <div class="p-2">
         <Button type="button" on:click={() => openAddOverrideModal = !openAddOverrideModal} size="sm">Add Manual Override</Button>
       </div> -->
@@ -216,10 +241,7 @@
           <TableBodyRow>
             <TableBodyCell>
               {#if report.approvalStatus === 'approved'}
-              <form action="?/attachExpenseReport" method="post">
-                <Checkbox name="expenseReportId" value={report?.id} checked={report.selected}></Checkbox>
-                <input type="hidden" name="employeeId" value={selectedEmployee} />
-              </form>
+              <Checkbox name="expenseReportId" value={report?.id} on:change={handleExpenseReportSelected}></Checkbox>
               {:else}
               <a href={`/app/expenses/${report.id}`}>
                 <Icon src={ArrowUpRight} class="w-4 h-4" />

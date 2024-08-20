@@ -1,5 +1,8 @@
 import type { SelectEmployee, SelectExpenseItem, SelectExpenseReport, SelectPayrollCycle, SelectPaystub } from '../db.model';
 import { drizzleClient as db } from '$lib/drizzle/postgres/client';
+import { expenseReport } from '../schema';
+import { and, eq, inArray } from 'drizzle-orm';
+import { fail, type ActionFailure } from '@sveltejs/kit';
 
 type ExpenseReportResult = SelectExpenseReport & { items: SelectExpenseItem[], employee: SelectEmployee, paystub: SelectPaystub & { payrollCycle: SelectPayrollCycle, }, };
 
@@ -49,4 +52,20 @@ export const getExpenseReport = async (clientId: string, reportId: string): Prom
   }
   
   return report;
+}
+
+export const saveExpenseReportsToPaystub = async (clientId: string, paystubId: string, reports: string[]): Promise<void | ActionFailure<{ messsage: string }>> => {
+  try {
+    await db.update(expenseReport)
+      .set({
+        paystubId: paystubId,
+      })
+      .where(and(
+        eq(expenseReport.clientId, clientId),
+        inArray(expenseReport.id, reports),
+      ));
+  } catch (err) {
+    console.error(err);
+    return fail(400, { messsage: 'Failed to save expense reports to paystub' });
+  }
 }

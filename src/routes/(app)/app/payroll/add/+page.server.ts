@@ -10,6 +10,7 @@ import type { InsertManualOverride } from '$lib/drizzle/types/override.model.js'
 import { formatDate } from '$lib/utils/utils.js';
 import { error, fail } from '@sveltejs/kit';
 import { drizzleClient as db } from '$lib/drizzle/postgres/client.js';
+import { saveExpenseReportsToPaystub } from '$lib/drizzle/postgres/models/expenses';
 
 
 export const load = async ({ locals, url }) => {
@@ -94,10 +95,11 @@ export const actions = {
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) error(403, 'Forbidden');
 
     const payload = await request.formData();
-    const { selectedSales: salesRaw, employeeId, campaignId, selectedSaleOverrides: rawOverrides, pendingManualOverrides: rawManualOverrides } = Object.fromEntries(payload.entries());
+    const { selectedSales: salesRaw, employeeId, campaignId, selectedSaleOverrides: rawOverrides, pendingManualOverrides: rawManualOverrides, selectedExpenseReports: rawExpReports } = Object.fromEntries(payload.entries());
     const selectedSales = JSON.parse(salesRaw as any) as SelectSale[];
     const selectedOverrides = JSON.parse(rawOverrides as any) as SelectSaleOverride[];
     const pendingManualOverrides = JSON.parse(rawManualOverrides as any) as InsertManualOverride[];
+    const selectedExpenseReports = [...JSON.parse(rawExpReports as string)] as string[];
     const clientId = profile?.clientId || '';
 
     if (!clientId || !employeeId || !campaignId || !selectedSales?.length) error(400, 'Bad Request');
@@ -146,6 +148,12 @@ export const actions = {
     const paystubSaved = await insertPaystub(pendingPaystub);
 
     if (!paystubSaved) return error(400, 'Could not save paystub! Please try again.');
+    
+    const paystubId = paystubSaved.id;
+    
+    // save the expense reports
+    const expReportsSaved = await saveExpenseReportsToPaystub(paystubSaved.clientId, paystubId, selectedExpenseReports);
+    if (expReportsSaved) error(expReportsSaved.status, expReportsSaved.data.messsage);
 
     // update selected sales with paystub id
     const updated = await updateSelectedSalesToPaystub(selectedSales, pendingPaystub.id);

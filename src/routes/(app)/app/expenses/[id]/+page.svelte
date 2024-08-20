@@ -109,7 +109,7 @@
               <button type="submit" class="hidden" bind:this={setPaystubBtn}>Attach to paystub</button>
             </form>
             {:else}
-            <span class="text-sm italic">No paystubs available - <a href="/app/payroll/add" class="text-blue-500 hover:underline">Create one</a></span>
+            <span class="text-sm italic">No paystubs available - <a href={`/app/payroll/add?ee=${report?.employeeId}`} class="text-blue-500 hover:underline">Create one</a></span>
             {/if}
           {:else}
             <span class="text-sm italic">Unassigned</span>
