@@ -1,10 +1,5 @@
 <script lang="ts">
-	import type {
-		InsertExpenseReport,
-		SelectEmployee,
-		SelectPayrollCycle,
-		SelectPaystub
-	} from '$lib/drizzle/postgres/db.model';
+	import type { ExpenseReportResult } from '$lib/drizzle/postgres/types/expenses.model';
 	import {
 		Card,
 		Button,
@@ -13,16 +8,39 @@
 		TableHeadCell,
 		TableBody,
 		TableBodyCell,
-		TableBodyRow
+		TableBodyRow,
+		Select,
+		type SelectOptionType
 	} from 'flowbite-svelte';
 	import { Icon, ChevronRight } from 'svelte-hero-icons';
 
 	export let data;
-	const { reports: expenseReports } = data;
+	const { reports: allReports, employees, payPeriods } = data;
+	let expenseReports = allReports;
 
-	function viewReport(id: string) {
-		// In a real application, this would navigate to the individual report page
-		console.log(`Viewing report ${id}`);
+	const statuses: SelectOptionType<string>[] = [
+		{ name: 'All', value: '' },
+		{ name: 'Approved', value: 'approved' },
+		{ name: 'Pending', value: 'pending' },
+		{ name: 'Rejected', value: 'rejected' }
+	];
+
+	let selectedEmployee = '';
+	let selectedPayPeriod = '';
+	let selectedStatus = '';
+
+	$: {
+		let reports: ExpenseReportResult[] = allReports;
+
+		if (selectedEmployee)
+			reports = reports.filter((report) => report.employeeId === selectedEmployee);
+		// need expenseReports only have paystubs attached and need to get paystubs associated with the payroll cycle....
+		// this filter might just not work
+		// if (selectedPayPeriod) reports = reports.filter(report => report.)
+		if (selectedStatus)
+			reports = reports.filter((report) => report.approvalStatus === selectedStatus);
+
+		expenseReports = [...reports];
 	}
 </script>
 
@@ -34,7 +52,26 @@
 			<h2 class="text-xl font-semibold">Existing Reports</h2>
 			<Button color="blue" href="/app/expenses/add">Create New Report</Button>
 		</div>
-
+		<div class="flex gap-4 mb-4">
+			<Select
+				class="w-1/2"
+				bind:value={selectedEmployee}
+				items={employees}
+				placeholder="Select employee"
+			/>
+			<!-- <Select
+				class="w-1/3"
+				bind:value={selectedPayPeriod}
+				items={payPeriods}
+				placeholder="Select pay period"
+			/> -->
+			<Select
+				class="w-1/2"
+				bind:value={selectedStatus}
+				items={statuses}
+				placeholder="Select status"
+			/>
+		</div>
 		<Table hoverable={true}>
 			<TableHead>
 				<TableHeadCell>Employee Name</TableHeadCell>
