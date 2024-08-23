@@ -1,35 +1,37 @@
 import { getClients, createClient } from '$lib/drizzle/postgres/models/clients';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 import { nanoid } from 'nanoid';
+import type { Actions, PageServerLoad } from './$types';
 
-export const load = async ({ locals }) => {
-  if (!locals.user) fail(401, { message: 'Unauthorized' });
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!locals.user) fail(401, { message: 'Unauthorized' });
+	if (locals.user.profile.role !== 'super_admin') redirect(304, '/');
 
-  return {
-    clients: await getClients(),
-  };
+	return {
+		clients: await getClients()
+	};
 };
 
-export const actions = {
-  add: async ({ locals, request }) => {
-    if (!locals.user) return fail(401, { message: 'Unauthorized' });
-    
-    const payload = await request.formData();
-    const data = Object.fromEntries(payload.entries()) as { name: string };
-    
-    try {
-      await createClient({
-        id: nanoid(),
-        name: data.name,
-        contactUserId: locals.user?.id,
-        created: dayjs().toDate(),
-        updated: dayjs().toDate(),
-      });
-    } catch (err) {
-      return fail(400, { error: err });
-    }
-    
-    return { success: true, };
-  }
-}
+export const actions: Actions = {
+	add: async ({ locals, request }) => {
+		if (!locals.user) return fail(401, { message: 'Unauthorized' });
+
+		const payload = await request.formData();
+		const data = Object.fromEntries(payload.entries()) as { name: string };
+
+		try {
+			await createClient({
+				id: nanoid(),
+				name: data.name,
+				contactUserId: locals.user?.id,
+				created: dayjs().toDate(),
+				updated: dayjs().toDate()
+			});
+		} catch (err) {
+			return fail(400, { error: err });
+		}
+
+		return { success: true };
+	}
+};

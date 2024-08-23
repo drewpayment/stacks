@@ -1,14 +1,18 @@
 <script lang="ts">
-	import { createCollapsible, melt } from '@melt-ui/svelte';
-	import { slide } from 'svelte/transition';
-	import { ChevronsUpDown, X } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
-	import { Breadcrumb, BreadcrumbItem } from 'flowbite-svelte';
+	import { UserPlus } from 'lucide-svelte';
+	import {
+		Breadcrumb,
+		BreadcrumbItem,
+		Card,
+		Button,
+		Label,
+		Input,
+		Badge,
+		Accordion,
+		AccordionItem
+	} from 'flowbite-svelte';
 
-	const {
-		elements: { root, content, trigger },
-		states: { open }
-	} = createCollapsible();
 	export let data;
 	/** @type {import('./$types').ActionData} */
 	export let form;
@@ -18,65 +22,49 @@
 	<title>Clients</title>
 </svelte:head>
 
-<div>
-	<div class="pb-4">
-		<Breadcrumb aria-label="Breadcrumb">
+<div class="container mx-auto px-4 py-8">
+	<div class="mb-6">
+		<Breadcrumb aria-label="Breadcrumb" class="mb-4">
 			<BreadcrumbItem href="/" home>Home</BreadcrumbItem>
 			<BreadcrumbItem>Clients</BreadcrumbItem>
 		</Breadcrumb>
-	</div>	
-	
-	<h4 class="page-title">Manage Clients</h4>
-
-	<div use:melt={$root} class="relative mt-8 mb-28 w-[18rem] max-w-full sm:w-[25rem]">
-		<div class="flex items-center justify-between">
-			<span class="text-sm font-semibold text-neutral-900">
-				Add a new client
-			</span>
-			<button
-				use:melt={$trigger}
-				class="relative h-6 w-6 place-items-center rounded-md bg-white text-sm
-        text-neutral-800 shadow hover:opacity-75 data-[disabled]:cursor-not-allowed
-        data-[disabled]:opacity-75"
-				aria-label="Add client toggle"
-			>
-				<div class="abs-center">
-					{#if $open}
-						<X class="square-4" />
-					{:else}
-						<ChevronsUpDown class="square-4" />
-					{/if}
-				</div>
-			</button>
-		</div>
-
-		<div style:position="absolute" style:top="calc(100% + 10px)">
-			{#if $open}
-				<div use:melt={$content} transition:slide>
-					<form action="?/add" method="post" class="flex flex-col justify-start gap-2" use:enhance>
-						<label>
-							<span>Name</span>
-							<input type="text" name="name" id="name" required />
-						</label>
-				
-						<button class="rounded-md bg-primary-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 flex justify-around items-center gap-2" type="submit">Save</button>
-					</form>
-				</div>
-			{/if}
-		</div>
+		<h1 class="text-3xl font-bold text-gray-900 mb-4">Manage Clients</h1>
 	</div>
 
-	<h5>Clients</h5>
+	<Card class="mb-8">
+		<Accordion>
+			<AccordionItem>
+				<svelte:fragment slot="header">
+					<span class="text-xl font-semibold text-gray-900"> Add a new client </span>
+				</svelte:fragment>
+				<form action="?/add" method="post" class="flex flex-col gap-4" use:enhance>
+					<Label class="space-y-2">
+						<span>Name</span>
+						<Input type="text" name="name" id="name" required placeholder="Enter client name" />
+					</Label>
+					<Button type="submit" class="w-full">
+						<UserPlus class="mr-2 h-5 w-5" />
+						Save Client
+					</Button>
+				</form>
+			</AccordionItem>
+		</Accordion>
+	</Card>
 
-	<div class="flex flex-col gap-2 pt-4">
+	<h2 class="text-2xl font-semibold text-gray-900 mb-4">Clients</h2>
+	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 		{#each data?.clients as client}
-			<!-- content here -->
-			<div class="border border-primary-500 rounded-md shadow-md p-4">
-				<p class="font-bold">{client?.name}</p>
+			<Card>
+				<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+					{client?.name}
+				</h5>
 				{#if client?.contactUserId}
-					<p>Contact User ID: {client?.contactUserId}</p>
+					<Badge color="blue" class="mt-2">
+						Contact User ID: {client?.contactUserId}
+					</Badge>
 				{/if}
-			</div>
+				<!-- <Button href={`/clients/${client.id}`} class="mt-4">View Details</Button> -->
+			</Card>
 		{/each}
 	</div>
 </div>
