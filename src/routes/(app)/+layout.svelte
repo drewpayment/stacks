@@ -8,13 +8,28 @@
 	import { fade } from 'svelte/transition';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Dropdown, DropdownItem, DropdownDivider, Button } from 'flowbite-svelte';
+	import {
+		Navbar,
+		NavBrand,
+		NavLi,
+		NavUl,
+		NavHamburger,
+		Dropdown,
+		DropdownItem,
+		DropdownDivider,
+		Button
+	} from 'flowbite-svelte';
 	import { page } from '$app/stores';
 	import { ChevronRightSolid, PlusSolid } from 'flowbite-svelte-icons';
-	import { setEmployeeOptions, setManualOverrides, setSelectedCampaign, setSelectedEmployee } from '$lib/components/context.js';
+	import {
+		setEmployeeOptions,
+		setManualOverrides,
+		setSelectedCampaign,
+		setSelectedEmployee
+	} from '$lib/components/context.js';
 	$: activeUrl = $page.url.pathname;
 	export let data;
-	
+
 	setSelectedCampaign('');
 	setSelectedEmployee('');
 	setEmployeeOptions([]);
@@ -54,7 +69,7 @@
 		/>
 		<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">Stacks</span>
 	</NavBrand>
-	
+
 	<div class="flex gap-2 md:order-2">
 		{#if data.user && ['super_admin'].includes(data.profile?.role)}
 			<SelectClient clients={data.clients} selectedClientId={data.profile.clientId || ''} />
@@ -68,8 +83,12 @@
 		</button>
 		<NavHamburger />
 	</div>
-	
-	<NavUl {activeUrl} class="order-1" ulClass={'flex flex-col p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:text-md'}>
+
+	<NavUl
+		{activeUrl}
+		class="order-1"
+		ulClass={'flex flex-col p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:text-md'}
+	>
 		<NavLi href="/">Home</NavLi>
 		{#if data.user}
 			{#if ['super_admin', 'org_admin'].includes(data.profile?.role)}
@@ -78,54 +97,32 @@
 				</NavLi>
 				<Dropdown class="w-44 z-20">
 					{#if ['super_admin'].includes(data.profile?.role)}
-					<DropdownItem href="/app/client">Clients</DropdownItem>
+						<DropdownItem href="/app/client">Clients</DropdownItem>
 					{/if}
 					<DropdownItem href="/app/campaigns">Campaigns</DropdownItem>
 					<DropdownDivider />
 					<DropdownItem href="/app/user">Users</DropdownItem>
 				</Dropdown>
 			{/if}
-			
+
 			{#if ['super_admin', 'org_admin'].includes(data.profile?.role)}
 				<NavLi class="cursor-pointer">
 					Payroll<ChevronDown class="w-3 h-3 ml-2 text-primary-800 dark:text-white inline" />
 				</NavLi>
 				<Dropdown class="w-44 z-20">
-					<DropdownItem href="/app/payroll-cycles">Search Cycles</DropdownItem>
-					<DropdownItem href="/app/payroll-cycles/add">New Payroll Cycle</DropdownItem>
-					<DropdownItem href="/app/payroll/search">Search Paystubs</DropdownItem>
-					<DropdownItem href="/app/payroll/add">New Paystub</DropdownItem>
+					<DropdownItem href="/app/payroll-cycles">Payroll Cycles</DropdownItem>
+					<DropdownItem href="/app/payroll/search">Paychecks</DropdownItem>
 				</Dropdown>
-				<!-- <NavLi href="/app/employee">Employees</NavLi> -->
 				<NavLi class="cursor-pointer">
 					Employee<ChevronDown class="w-3 h-3 ml-2 text-primary-800 dark:text-white inline" />
 				</NavLi>
 				<Dropdown class="w-44 z-20">
-					<DropdownItem class="flex items-center justify-between">
-						Employees<ChevronRightSolid class="w-3 h-3 ml-2 text-primary-700 dark:text-white" />
-					</DropdownItem>
-					<Dropdown placement="right-start">
-						<DropdownItem href="/app/employee">View</DropdownItem>
-						<DropdownItem href="/app/employee?add">Add</DropdownItem>	
-					</Dropdown>
-					<DropdownItem class="flex items-center justify-between">
-						Sales<ChevronRightSolid class="w-3 h-3 ml-2 text-primary-700 dark:text-white" />
-					</DropdownItem>
-					<Dropdown placement="right-start">
-						<DropdownItem href="/app/sales">View</DropdownItem>
-						<DropdownItem href="/app/sales/add">Add</DropdownItem>
-						<DropdownItem href="/app/sales/import">Import</DropdownItem>
-					</Dropdown>
-					<DropdownItem class="flex items-center justify-between">
-						Expenses<ChevronRightSolid class="w-3 h-3 ml-2 text-primary-700 dark:text-white" />
-					</DropdownItem>
-					<Dropdown placement="right-start">
-						<DropdownItem href="/app/expenses">Reports</DropdownItem>
-						<DropdownItem href="/app/expenses/add">Add</DropdownItem>
-					</Dropdown>
+					<DropdownItem href="/app/employee">Employees</DropdownItem>
+					<DropdownItem href="/app/sales">Sales</DropdownItem>
+					<DropdownItem href="/app/expenses">Expense Reports</DropdownItem>
 				</Dropdown>
 			{/if}
-			
+
 			<NavLi href="/app/paystubs">My Pay</NavLi>
 			<NavLi href="/app/profile">Profile</NavLi>
 
@@ -138,7 +135,7 @@
 		{/if}
 	</NavUl>
 </Navbar>
-  <!--
+<!--
 	<a href="/">
 		<img
 			src={stacks_logo}
@@ -176,8 +173,8 @@
 			{/if}
 		</button>
 	</div>
-	-->	
-	
+	-->
+
 <main class="py-16 container-base">
 	<slot />
 </main>
