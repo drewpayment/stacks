@@ -110,7 +110,7 @@
 					Payroll<ChevronDown class="w-3 h-3 ml-2 text-primary-800 dark:text-white inline" />
 				</NavLi>
 				<Dropdown class="w-44 z-20">
-					<DropdownItem href="/app/payroll-cycles">Payroll Cycles</DropdownItem>
+					<DropdownItem href="/app/payroll-cycles?closed=true">Payroll Cycles</DropdownItem>
 					<DropdownItem href="/app/payroll/search">Paychecks</DropdownItem>
 				</Dropdown>
 				<NavLi class="cursor-pointer">
