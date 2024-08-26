@@ -1,6 +1,5 @@
 import { getEmployeeByUserId } from '$lib/drizzle/postgres/models/employees';
 import { getPaystubs } from '$lib/drizzle/postgres/models/paystubs.js';
-import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import type { PaystubWith } from '$lib/drizzle/postgres/types/paystbus.model';
 import { error, fail } from '@sveltejs/kit';
 import dayjs from 'dayjs';
@@ -8,7 +7,7 @@ import dayjs from 'dayjs';
 export const load = async ({ locals }) => {
   if (!locals.user) return fail(401, { message: 'Unauthorized' });
   
-  const profile = await getUserProfileData(locals.user.id);
+  const profile = locals.user.profile;
   
   if (!profile) error(403, 'Forbidden');
   
