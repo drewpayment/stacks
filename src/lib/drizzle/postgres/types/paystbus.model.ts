@@ -15,4 +15,5 @@ export type PaystubWith = (SelectPaystub & {
 export type CycleAndPaystubs = {
   cycle: SelectPayrollCycle;
   paystubs: PaystubWith[];
+  canOpen: boolean;
 }

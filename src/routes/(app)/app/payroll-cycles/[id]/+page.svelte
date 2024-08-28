@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Breadcrumb, BreadcrumbItem, Button, GradientButton, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
-  import { ArrowRightOutline, CheckCircleOutline, PlusOutline, RedoOutline, ThumbsUpSolid } from 'flowbite-svelte-icons';
+	import { Breadcrumb, BreadcrumbItem, Button, GradientButton, Modal, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
+  import { ArrowRightOutline, CheckCircleOutline, ExclamationCircleOutline, PlusOutline, RedoOutline, ThumbsUpSolid } from 'flowbite-svelte-icons';
 	import { enhance } from '$app/forms';
 	import { createToast } from '$lib/components/Toast.svelte';
 	import { writable } from 'svelte/store';
@@ -10,10 +10,11 @@
   
   export let data;
   const { cycleAndPaystubs } = data;
-  let { paystubs, cycle } = cycleAndPaystubs!;
+  let { paystubs, cycle, canOpen } = cycleAndPaystubs!;
   
   const paystubs$ = writable(paystubs);
   let isEditing = true;
+  let showReopenModal = false;
   
   const detachPayrollCycle = async (paystub: PaystubWith) => {
     const result = await fetch('/api/paystubs/detach-payroll-cycle', {
@@ -153,13 +154,22 @@
                     <Tooltip arrow={false} triggeredBy="#close-button">
                       Closes the payroll cycle and prevents any further changes.
                     </Tooltip>
-                  {:else}
-                    <Button type="submit" outline class="self-start" id="reopen-button">
+                  {:else if canOpen}
+                    <Button on:click={() => (showReopenModal = true)}>Re-open <RedoOutline class="w-3.5 h-3.5 ml-2" /></Button>
+                    <Modal bind:open={showReopenModal} size="xs" autoclose>
+                      <div class="text-center">
+                        <ExclamationCircleOutline class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" />
+                        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to reopen the pay cycle?</h3>
+                        <Button type="submit" color="red" class="me-2">Yes, I'm sure</Button>
+                        <Button color="alternative">No, cancel</Button>
+                      </div>
+                    </Modal>
+                    <!-- <Button type="submit" outline class="self-start" id="reopen-button">
                       Re-open <RedoOutline class="w-3.5 h-3.5 ml-2" />
                     </Button>
                     <Tooltip arrow={false} triggeredBy="#reopen-button">
                       Re-opens the payroll cycle and allows changes to be made.
-                    </Tooltip>
+                    </Tooltip> -->
                   {/if}
                   
                   <!-- <Button outline color="green" class="self-start" href="/app/payroll-cycles">

@@ -1,9 +1,11 @@
 import { getPayrollCycle, togglePayrollCycleClose } from '$lib/drizzle/postgres/models/payroll-cycles.js';
-import { attachPayrollCycleToPaystub, getPaystubs, getPaystubsByPayrollCycleId, getPaystubsWoPayrollCycle } from '$lib/drizzle/postgres/models/paystubs.js';
+import { attachPayrollCycleToPaystub, getPaystubsByPayrollCycleId, getPaystubsWoPayrollCycle } from '$lib/drizzle/postgres/models/paystubs.js';
 import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import type { SelectPayrollCycle } from '$lib/drizzle/postgres/db.model.js';
 import type { CycleAndPaystubs, PaystubWith } from '$lib/drizzle/postgres/types/paystbus.model';
 import { fail, type Actions } from '@sveltejs/kit';
+import dayjs from 'dayjs';
+import { dev } from '$app/environment';
 
 export const load = async ({ locals, params }) => {
   if (!locals.user) return fail(401, { message: 'Unauthorized' });
@@ -14,6 +16,7 @@ export const load = async ({ locals, params }) => {
     if (!profile || !['super_admin', 'org_admin'].includes(profile.role)) return {
       cycle: null as unknown as SelectPayrollCycle,
       paystubs: [] as PaystubWith[],
+      canOpen: false,
     };
     
     const cycle = await getPayrollCycle(params.id);
@@ -21,6 +24,7 @@ export const load = async ({ locals, params }) => {
     if (profile.clientId !== cycle?.clientId) return {
       cycle: null as unknown as SelectPayrollCycle,
       paystubs: [] as PaystubWith[],
+      canOpen: false,
     }
     
     const unattachedPaystubs = await getPaystubsWoPayrollCycle(profile?.clientId, cycle?.startDate, cycle?.endDate);
@@ -29,7 +33,12 @@ export const load = async ({ locals, params }) => {
     
     const paystubs = [...relatedPaystubs, ...unattachedPaystubs];
     
-    return { cycle, paystubs };
+    const paymentDayjs = dayjs(cycle.paymentDate, 'YYYY-MM-DD HH:mm:ss');
+    const today = dayjs();
+    let canOpen = cycle.isClosed && paymentDayjs.isAfter(today);
+    if (dev) canOpen = true;
+    
+    return { cycle, paystubs, canOpen };
   }
   
   return {
