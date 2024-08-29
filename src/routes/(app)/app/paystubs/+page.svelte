@@ -1,9 +1,12 @@
 <script lang="ts">
+	import type { PaystubWith } from '$lib/drizzle/postgres/types/paystbus.model.js';
 	import { formatCurrency, formatDate } from '$lib/utils/utils';
 	import { Breadcrumb, BreadcrumbItem, Button, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { ArrowUpRightFromSquareOutline } from 'flowbite-svelte-icons';
 
   export let data;
+  
+  const paystubs = data?.paystubs || [] as PaystubWith[];
 </script>
 
 <div class="container max-w-5xl">
@@ -33,7 +36,7 @@
     </TableHead>
     
     <TableBody>
-      {#each data?.paystubs as paystub (paystub.id)}
+      {#each paystubs as paystub (paystub.id)}
         <TableBodyRow>
           <TableBodyCell>
             <a href={`/app/paystubs/${paystub.id}`} class="flex items-baseline">
@@ -55,7 +58,7 @@
           {/if}
         </TableBodyRow>
       {/each}
-      {#if !data?.paystubs.length}
+      {#if !paystubs.length}
         <TableBodyRow>
           <TableBodyCell colspan="5">No paystubs found.</TableBodyCell>
         </TableBodyRow>
