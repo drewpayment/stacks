@@ -3,7 +3,7 @@ import type {
 	SelectPayrollCycle,
 	SelectPaystub
 } from '$lib/drizzle/postgres/db.model';
-import { getLastPayrollCycle, getPayrollCycles } from '$lib/drizzle/postgres/models/payroll-cycles';
+import { getLastPayrollCycle } from '$lib/drizzle/postgres/models/payroll-cycles';
 import { UserClient } from '$lib/drizzle/postgres/models/user-clients';
 import type { PageServerLoad } from './$types';
 import { drizzleClient as db } from '$lib/drizzle/postgres/client';

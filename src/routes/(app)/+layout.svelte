@@ -27,6 +27,8 @@
 		setSelectedCampaign,
 		setSelectedEmployee
 	} from '$lib/components/context.js';
+	import { Account, Client, ID, Query, Databases,  } from 'appwrite';
+	
 	$: activeUrl = $page.url.pathname;
 	export let data;
 
@@ -57,6 +59,26 @@
 		const isDark = browser && localStorage.getItem('theme') === 'dark';
 		if (isDark) document.documentElement.classList.add('dark');
 		isDarkMode.set(isDark);
+		
+		const client = new Client();
+
+		client
+				.setEndpoint('https://appwrite.appwrite-dev.orb.local/v1')
+				.setProject('66d67b25000e0a82926f');
+				
+		const account = new Account(client);
+		const aw = new Databases(client);
+		
+		aw.listDocuments('stacks', '66d67fa9000c8b87655c')
+			.then((resp) => console.log(resp));
+
+		// Register User
+		// account.create(ID.unique(), "email@example.com", "password", "Walter O'Brien")
+		// 	.then(function (response) {
+		// 			console.log(response);
+		// 	}, function (error) {
+		// 			console.log(error);
+		// 	});
 	});
 </script>
 
