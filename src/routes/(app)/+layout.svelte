@@ -60,25 +60,11 @@
 		if (isDark) document.documentElement.classList.add('dark');
 		isDarkMode.set(isDark);
 		
+		// Initialize Appwrite SDK
 		const client = new Client();
-
 		client
 				.setEndpoint('https://appwrite.appwrite-dev.orb.local/v1')
 				.setProject('66d67b25000e0a82926f');
-				
-		const account = new Account(client);
-		const aw = new Databases(client);
-		
-		aw.listDocuments('stacks', '66d67fa9000c8b87655c')
-			.then((resp) => console.log(resp));
-
-		// Register User
-		// account.create(ID.unique(), "email@example.com", "password", "Walter O'Brien")
-		// 	.then(function (response) {
-		// 			console.log(response);
-		// 	}, function (error) {
-		// 			console.log(error);
-		// 	});
 	});
 </script>
 
