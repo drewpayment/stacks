@@ -1,3 +1,4 @@
+import { AppWrite } from '$lib/appwrite/appwrite';
 import type { CurrentUser, SelectUserProfile, UserProfile } from '$lib/drizzle/postgres/db.model';
 import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 import { getSessionId, lucia } from '$lib/lucia/postgres';
@@ -12,6 +13,8 @@ const superAdminRoutesBase = '/app/client';
 const authRoutesBase = ['/auth', '/oauth'];
 
 const authHandler: Handle = async ({ event, resolve }) => {
+	event.locals.appwrite = AppWrite.instance;
+	
 	const sessionId = getSessionId(event);
 	if (!sessionId) {
 		// If the user is not logged in and is trying to access a protected route,

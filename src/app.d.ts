@@ -8,6 +8,7 @@ declare global {
 		interface Locals {
 			user: CurrentUser;
 			session: import('lucia').Session;
+			appwrite: import('$lib/appwrite/appwrite').AppWrite,
 		}
 		// interface PageData {}
 		// interface Platform {}

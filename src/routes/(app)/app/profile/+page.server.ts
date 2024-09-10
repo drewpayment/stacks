@@ -1,16 +1,15 @@
-import { getEmployeeByUserId } from '$lib/drizzle/postgres/models/employees.js';
-import { getUserProfileData, updateOwnUserProfile } from '$lib/drizzle/postgres/models/users';
-import { error, fail, type Actions } from '@sveltejs/kit';
+import { updateOwnUserProfile } from '$lib/drizzle/postgres/models/users';
+import { fail, type Actions } from '@sveltejs/kit';
+import { request } from 'http';
 
 export const load = async ({ locals }) => {
 	if (!locals.user) return fail(401, { message: 'Unauthorized' });
 	
-	const userId = locals.user.id;
-	
-	const profile = () => getUserProfileData(userId);
+	const userAvatar = async () => locals.appwrite.getUserImage(locals.user.id);
 
 	return {
-		profile: await profile(),
+		profile: locals.user.profile,
+		userAvatarBuffer: await userAvatar(),
 	};
 };
 
@@ -29,5 +28,17 @@ export const actions: Actions = {
 		} catch (err: any) {
 			return fail(400, { message: err?.message, });
 		}
+	},
+	uploadProfilePhoto: async ({ request, locals }) => {
+		if (!locals.user) return fail(401, { message: 'Unauthorized' });
+		
+		const userId = locals.user.id;
+		const formData = Object.fromEntries(await request.formData());
+		
+		const photo = formData['profile_photo'];
+		
+		if (!photo) return fail(400, { message: 'No photo provided' });
+		
+		
 	},
 };

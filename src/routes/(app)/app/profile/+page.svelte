@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Card, Breadcrumb, BreadcrumbItem, Dropdown, DropdownItem, Avatar, Badge, Indicator, Label, Input, Button } from 'flowbite-svelte';
+	import { Card, Breadcrumb, BreadcrumbItem, Dropdown, DropdownItem, Avatar, Badge, Indicator, Label, Input, Button, Modal, Fileupload } from 'flowbite-svelte';
 	import { DotsHorizontalOutline } from 'flowbite-svelte-icons';
 
 	export let data;
 	const { profile, user } = data;
 	
 	let isEditMode = false;
+	let showAvatarModal = false;
 </script>
 
 <svelte:head>
@@ -40,7 +41,9 @@
 		</div>
 		
 		<div class="flex flex-col items-center pb-4 space-y-1">
-			<Avatar size="lg" />
+			<Button on:click={() => showAvatarModal = true} color="none">
+				<Avatar size="lg" />
+			</Button>
 			<h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
 				{profile?.firstName} {profile?.lastName}
 			</h5>
@@ -88,3 +91,15 @@
 		</form>
 	</Card>
 </div>
+
+<Modal bind:open={showAvatarModal} size="xs" autoclose={false} class="w-full">
+	<form method="post" action="?/uploadProfilePhoto" class="flex flex-col space-y-6">
+		<h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Upload a profile photo</h3>
+		<Label class="space-y-2">
+			<span>Profile photo</span>
+			<Fileupload accept="image/*" name="profile_photo" />
+			<!-- <Input type="file" name="profile_photo" accept="jpg,png,jpeg" /> -->
+		</Label>
+		<Button type="submit" class="w-full">Upload</Button>
+	</form>
+</Modal>
