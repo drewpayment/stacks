@@ -28,20 +28,25 @@ export class AppWrite {
   }
   
   async saveUserImage(imageMeta: UserImage, file: File) {
-    const fileMeta = await this.db.createDocument(
-      DB_USER_IMAGES,
-      COLLECTION_USER_IMAGES,
-      ID.unique(),
-      imageMeta,
-    );
-    
-    const createdFile = await this.userImageStorage.createFile(
-      BUCKET_USER_IMAGES_ID,
-      ID.unique(),
-      file,
-    );
-    
-    return { fileMeta, createdFile };
+    try {
+      const fileMeta = await this.db.createDocument(
+        DB_USER_IMAGES,
+        COLLECTION_USER_IMAGES,
+        ID.unique(),
+        imageMeta,
+      );
+      
+      const createdFile = await this.userImageStorage.createFile(
+        BUCKET_USER_IMAGES_ID,
+        ID.unique(),
+        file,
+      );
+      
+      return { fileMeta, createdFile };
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
   
   // write a method that gets the user image by the user's userid from the user_images database collection 

@@ -8,6 +8,7 @@
 	
 	let isEditMode = false;
 	let showAvatarModal = false;
+	let files: FileList;
 </script>
 
 <svelte:head>
@@ -97,8 +98,8 @@
 		<h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Upload a profile photo</h3>
 		<Label class="space-y-2">
 			<span>Profile photo</span>
-			<Fileupload accept="image/*" name="profile_photo" />
-			<!-- <Input type="file" name="profile_photo" accept="jpg,png,jpeg" /> -->
+			<Fileupload accept="image/*" id="profile_photos" bind:files />
+			<!-- <Input type="hidden" name="profile_photos" accept="jpg,png,jpeg" bind:value={files} /> -->
 		</Label>
 		<Button type="submit" class="w-full">Upload</Button>
 	</form>
