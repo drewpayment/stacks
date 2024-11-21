@@ -1,1 +1,0 @@
-ALTER TABLE `employee_codes` ADD `client_id` varchar(255);

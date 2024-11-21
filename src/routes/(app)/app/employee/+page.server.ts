@@ -4,6 +4,7 @@ import type { Employee, InsertEmployee, InsertEmployeeProfile } from '$lib/drizz
 import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';
+import { getLegacyEmployees } from '$lib/drizzle/mysql/models/employees';
 
 
 export const load = async ({locals}) => {
@@ -19,6 +20,7 @@ export const load = async ({locals}) => {
   
   return {
     employees: await employees(),
+    legacyEmployees: await getLegacyEmployees(),
   };
 }
 

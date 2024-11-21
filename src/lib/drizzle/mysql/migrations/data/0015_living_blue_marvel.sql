@@ -1,1 +1,0 @@
-ALTER TABLE `sale` ADD `is_commissionable` tinyint DEFAULT 0 NOT NULL;

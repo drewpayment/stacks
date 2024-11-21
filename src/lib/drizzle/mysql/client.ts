@@ -1,21 +1,24 @@
 import { dev } from '$app/environment';
-import { ENABLE_DRIZZLE_LOGGER } from '$env/static/private';
-import { drizzle } from 'drizzle-orm/planetscale-serverless';
+import { ENABLE_DRIZZLE_LOGGER, MYSQL_DB_HOST, MYSQL_DB_PORT, MYSQL_DB_USER, MYSQL_DB_NAME, MYSQL_DB_PASSWORD } from '$env/static/private';
+import { drizzle } from 'drizzle-orm/mysql2';
 import * as schema from './schema';
-import { connection } from '$lib/lucia/utils';
+import * as mysql from 'mysql2';
+import config from './drizzle.config';
 
-// import 'dotenv/config'
-// import { connect } from '@planetscale/database';
+const connection = mysql.createConnection({
+    host: MYSQL_DB_HOST,
+    port: Number(MYSQL_DB_PORT),
+    user: MYSQL_DB_USER,
+    password: MYSQL_DB_PASSWORD,
+    database: MYSQL_DB_NAME,
+})
 
-// const connection = connect({
-//     host: process.env.MYSQL_DB_HOST,
-//     username: process.env.MYSQL_DB_USER,
-//     password: process.env.MYSQL_DB_PASSWORD,
-// });
-
-const drizzleClient = drizzle(connection, {
+const drizzleClient = drizzle(connection,
+{
+    ...config,
     schema,
+    mode: 'default',
     logger: ENABLE_DRIZZLE_LOGGER ? Boolean(ENABLE_DRIZZLE_LOGGER) : dev,
 });
 
-export { drizzleClient };
+export { drizzleClient as legacyDb };
