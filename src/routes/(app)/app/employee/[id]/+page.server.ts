@@ -1,7 +1,9 @@
 import { getCampaigns } from '$lib/drizzle/postgres/models/campaigns.js';
 import {
 	addEmployeeNote,
+	createEmployee,
 	getEmployee,
+	getEmployeeProfile,
 	getEmployees,
 	upsertEmployeeCodes
 } from '$lib/drizzle/postgres/models/employees';
@@ -9,12 +11,16 @@ import { saveOverridingEmployee } from '$lib/drizzle/postgres/models/overrides.j
 import { getUserProfileData } from '$lib/drizzle/postgres/models/users.js';
 import type {
 	EmployeeWithNotes,
+	InsertEmployee,
+	InsertEmployeeProfile,
 	SelectEmployeeProfile,
 	SelectOverridingEmployee
 } from '$lib/drizzle/postgres/db.model';
 import { error, fail } from '@sveltejs/kit';
 import type { RouteParams } from './$types';
 import { getLegacyEmployee, getLegacyManagerOfEmployee } from '$lib/drizzle/mysql/models/employees';
+import { nanoid } from 'nanoid';
+import type { IEmployee } from '$lib/drizzle/types/employee.model';
 
 export const load = async ({
 	locals,
@@ -152,18 +158,27 @@ export const actions = {
 		return data;
 	},
 	save: async ({ locals, request }) => {
+		let result: IEmployee;
 		if (!locals.user) return fail(401, { message: 'Unauthorized' });
-
-		const profile = await getUserProfileData(locals.user.id);
-		const clientId = profile?.clientId;
-
+		
 		const data = Object.fromEntries(await request.formData());
-		const employeeId = data.employeeId as string;
-
-		const emp = await getEmployee(employeeId, true, false);
-
-		if (emp?.clientId !== clientId) error(403, { message: 'Unauthorized' });
-
+		let employeeId = data.employeeId as string;
+		
+		if (!isNaN(data.employeeId as any)) {
+			const pendingEmployee = prepareCreateEmployee(locals.user.profile.clientId as string, data) as IEmployee;
+			const createResult = await createEmployee(pendingEmployee.employee, pendingEmployee.employeeProfile);
+			
+			if (!createResult.success) {
+				return fail(400, { message: 'Error creating employee' });
+			}	
+			
+			employeeId = pendingEmployee.employee.id;
+			result = pendingEmployee;
+		} else {
+			const pendingEmployee = await prepareUpdateEmployee(locals.user.profile.clientId as string, data) as IEmployee;
+			result = pendingEmployee;
+		}
+		
 		const campaigns: {
 			employeeId: string;
 			employeeCode: string;
@@ -189,16 +204,74 @@ export const actions = {
 
 		// sync campaigns for the employee
 		const updatedEmployeeCodes = await upsertEmployeeCodes(campaigns);
-
-		// todo: make the rest of the form update
-		// need to implement the rest of this stuff... but for now, it updates the sales codes.... lol
-
+		
 		const overridesToEmployeeId = data.overridesToEmployeeId as string;
 
 		if (overridesToEmployeeId) {
 			await saveOverridingEmployee(employeeId, overridesToEmployeeId);
 		}
-
-		return data;
+		
+		return result;
 	}
 };
+
+
+const prepareCreateEmployee = (clientId: string, formData: { [k: string]: FormDataEntryValue; }) => {
+	const ee = {
+		id: nanoid(),
+		clientId,
+		firstName: formData.firstName,
+		lastName: formData.lastName,
+		created: new Date(),
+		updated: new Date(),
+	} as InsertEmployee;
+	
+	const ep = {
+		id: nanoid(),
+		employeeId: ee.id,
+		address: formData.address,
+		address2: formData.address2,
+		city: formData.city,
+		state: formData.state,
+		zip: formData.zip,
+		phone: formData.phone,
+		email: formData.email,
+		phone2: formData.phone2,
+	} as InsertEmployeeProfile;
+	
+	return {
+		employee: ee,
+		employeeProfile: ep,
+	};
+}
+
+const prepareUpdateEmployee = async (clientId: string, formData: { [k: string]: FormDataEntryValue; }) => {
+	const ee = {
+		id: formData.employeeId,
+		clientId,
+		firstName: formData.firstName,
+		lastName: formData.lastName,
+		created: new Date(),
+		updated: new Date(),
+	} as InsertEmployee;
+	
+	const currEmpProfile = await getEmployeeProfile(ee.id);
+	
+	const ep = {
+		id: currEmpProfile.id,
+		employeeId: currEmpProfile.employeeId,
+		address: formData.address,
+		address2: formData.address2,
+		city: formData.city,
+		state: formData.state,
+		zip: formData.zip,
+		phone: formData.phone,
+		email: formData.email,
+		phone2: formData.phone2,
+	} as InsertEmployeeProfile;
+	
+	return {
+		employee: ee,
+		employeeProfile: ep,
+	};
+}

@@ -26,7 +26,7 @@
 	
 	const firstName = isLegacy ? (employee as SelectLegacyEmployee).name.split(' ')[0] : (employee as Employee).firstName;
 	const lastName = isLegacy ? (employee as SelectLegacyEmployee).name.split(' ')[1] : (employee as Employee).lastName;
-	const email = isLegacy ? (employee as Employee)?.employeeProfile?.email || '' : (employee as SelectLegacyEmployee)?.email;
+	const email = !isLegacy ? (employee as Employee)?.employeeProfile?.email || '' : (employee as SelectLegacyEmployee)?.email;
 	
   let employeeDetailUrl = '';
   onMount(() => {
@@ -62,7 +62,7 @@
 			{firstName}
 			{lastName}
 		</h4>
-		<p class="text-base font-normal text-text-800 dark:text-text-900 break-all">{email}</p>
+		<p class="text-sm font-normal text-text-800 dark:text-text-900 break-all">{email}</p>
 	</div>
 	<div class="w-[100%] px-2 mt-6 mb-3 flex justify-end gap-14 md:!gap-14">
     <a href={employeeDetailUrl} class="text-accent-700 dark:text-text-800">

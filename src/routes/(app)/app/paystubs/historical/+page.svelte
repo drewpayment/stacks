@@ -1,21 +1,18 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { PaystubWith } from '$lib/types/paystubs.model';
-	import { formatCurrency, formatDate } from '$lib/utils/utils';
-	import { Breadcrumb, BreadcrumbItem, Card, Label, Select, Input, Table, TableHead, TableHeadCell, TableBody, TableBodyCell, TableBodyRow, Button, Toggle } from 'flowbite-svelte';
+	import { formatCurrency, formatDate, toHumanDate } from '$lib/utils/utils';
+	import { Breadcrumb, BreadcrumbItem, Card, Label, Select, Input, Table, TableHead, TableHeadCell, TableBody, TableBodyCell, TableBodyRow, Toggle, Button } from 'flowbite-svelte';
   import { ArrowUpRightFromSquareOutline } from 'flowbite-svelte-icons';
 	import type { Snapshot } from './$types.js';
-	import AttachPaystubToCycleModal from '$lib/components/AttachPaystubToCycleModal.svelte';
+	import type { SelectLegacyPaystub } from '$lib/drizzle/mysql/db.model.js';
 
   export let data;
-  const { campaigns, employees, startDate, endDate, cycles, } = data;
+  const { paystubs: ogPaystubs, campaigns, employees, startDate, endDate, } = data;
   
-  let paystubs = [] as PaystubWith[];
+  let paystubs = [...(ogPaystubs as SelectLegacyPaystub[])];
   
-  let submitBtn: HTMLButtonElement;
-  let selectedEmployee = '';
-  let selectedCampaign = '';
-  let filterPayrollCycles = false;
+  let selectedEmployee = '-1';
+  let selectedCampaign = '-1';
   
   export const snapshot: Snapshot = {
     capture: () => ({
@@ -55,7 +52,6 @@
       
       return ({ result, update }) => {
         if (!result.data) return;
-        
         paystubs = [...result.data.paystubs];
       }
     }}
@@ -77,7 +73,7 @@
         <div class="flex flex-col space-y-6">
           <Label class="space-y-2">
             <span>Employee</span>
-            <Select name="employeeId" items={employees} bind:value={selectedEmployee} on:change={() => submitBtn.click()} />
+            <Select name="employeeId" items={employees} bind:value={selectedEmployee} />
           </Label>
         </div>
       </Card>
@@ -86,26 +82,21 @@
         <div class="flex flex-col space-y-6">
           <Label class="space-y-2">
             <span>Campaign</span>
-            <Select name="campaignId" items={campaigns} bind:value={selectedCampaign} on:change={() => submitBtn.click()} />
+            <Select name="campaignId" items={campaigns} bind:value={selectedCampaign} />
           </Label>
         </div>
-        <button type="submit" bind:this={submitBtn} class="hidden"></button>
       </Card>
     </div>
     
-    <div class="w-full pt-4">
-      <Toggle bind:checked={filterPayrollCycles} value={`${filterPayrollCycles}`} on:change={() => submitBtn.click()}>
-        Hide paystubs attached to payroll cycles
-      </Toggle>
-      <input type="hidden" name="filterPayrollCycles" bind:value={filterPayrollCycles} />
-    </div>
+    <Card class="w-full mt-4">
+      <Button type="submit" color="primary">Search</Button>
+    </Card>
   </form>
   
   <Table class="my-6 space-y-6 rounded-lg">
     <TableHead>
       <TableHeadCell>Employee</TableHeadCell>
       <TableHeadCell>Campaign</TableHeadCell>
-      <TableHeadCell>Sales</TableHeadCell>
       <TableHeadCell>Total</TableHeadCell>
       <TableHeadCell>Payment Date</TableHeadCell>
     </TableHead>
@@ -114,22 +105,14 @@
       {#each paystubs as paystub (paystub.id)}
         <TableBodyRow>
           <TableBodyCell>
-            <a href={`/app/payroll/${paystub.id}`} class="flex items-baseline">
-              <span>{paystub.employee?.firstName} {paystub.employee?.lastName}</span>
+            <a href={`/app/paystubs/historical/${paystub.id}`} class="flex items-baseline">
+              <span>{paystub.agentName}</span>
               <ArrowUpRightFromSquareOutline class="w-3 h-3 ml-1" />
             </a>
           </TableBodyCell>
-          <TableBodyCell>{paystub.campaign?.name}</TableBodyCell>
-          <TableBodyCell>{paystub.totalSales}</TableBodyCell>
-          <TableBodyCell>{formatCurrency(paystub.netPay)}</TableBodyCell>
-          {#if paystub.payrollCycle}
-            <TableBodyCell>{formatDate(paystub.payrollCycle?.paymentDate)}</TableBodyCell>
-          {:else}
-            <TableBodyCell>
-              <Button type="button" size="xs" color="alternative" outline pill on:click={() => paystub.open = !paystub.open}>Add to Cycle</Button>
-              <AttachPaystubToCycleModal cycles={cycles} paystubId={paystub.id} open={paystub.open}></AttachPaystubToCycleModal>
-            </TableBodyCell>
-          {/if}
+          <TableBodyCell>{paystub.vendorName}</TableBodyCell>
+          <TableBodyCell>{formatCurrency(paystub.amount)}</TableBodyCell>
+          <TableBodyCell>{toHumanDate(new Date(paystub.issueDate))}</TableBodyCell>
         </TableBodyRow>
       {/each}
       {#if !paystubs.length}

@@ -5,7 +5,8 @@ import { legacyManagerEmployees } from '../schema';
 export const getLegacyEmployees = async (): Promise<SelectLegacyEmployee[]> => {
 	try {
 		return await legacyDb.query.legacyEmployees.findMany({
-			where: (legacyEmployees, { eq }) => eq(legacyEmployees.isActive, 1)
+			where: (legacyEmployees, { eq }) => eq(legacyEmployees.isActive, 1),
+			orderBy: (legacyEmployees, { asc }) => asc(legacyEmployees.name),
 		});
 	} catch (err) {
 		console.error(err);

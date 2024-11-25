@@ -5,6 +5,7 @@ import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';
 import { getLegacyEmployees } from '$lib/drizzle/mysql/models/employees';
+import type { SelectLegacyEmployee } from '$lib/drizzle/mysql/db.model.js';
 
 
 export const load = async ({locals}) => {
@@ -18,10 +19,18 @@ export const load = async ({locals}) => {
     return await getEmployees(up?.clientId as string);
   }
   
-  return {
-    employees: await employees(),
-    legacyEmployees: await getLegacyEmployees(),
-  };
+  const loadData = async (): Promise<{ employees: Employee[]; legacyEmployees: SelectLegacyEmployee[] }> => {
+    const ees = await employees();
+    const legacyEmployees = await getLegacyEmployees();
+    const filterLegacyEmps = legacyEmployees.filter(le => le.email && !ees.find(ee => ee.employeeProfile.email === le.email));
+    
+    return {
+      employees: ees,
+      legacyEmployees: filterLegacyEmps,
+    };
+  }
+  
+  return await loadData();
 }
 
 export const actions = {
