@@ -1,21 +1,79 @@
 import type { Dayjs } from 'dayjs';
 import { legacyDb } from '../client';
 import type { SelectLegacyExpense, SelectLegacyInvoice, SelectLegacyOverride, SelectLegacyPaystub } from '../db.model';
+import { legacyPaystubs } from '../schema';
+import { and, eq, gte, lte, sql } from 'drizzle-orm';
 
-export const searchPaystubs = async (startDate: Dayjs, endDate: Dayjs, vendorId = -1, employeeId = -1): Promise<SelectLegacyPaystub[]> => {
+export const searchPaystubs = async (
+  startDate: Dayjs,
+  endDate: Dayjs,
+  take: number,
+  page: number,
+  vendorId: number,
+  employeeId: number,
+): Promise<{
+  data: SelectLegacyPaystub[];
+  pagination: {
+    total: number;
+    offset: number;
+    limit: number;
+    totalPages: number;
+    currentPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  }
+}> => {
+  const offset = (page - 1) * take;
+  
   try {
-    return await legacyDb.query.legacyPaystubs.findMany({
-      where: (legacyPaystubs, { and, eq, gte, lte }) => and(
+    const total = (await legacyDb
+      .select({ count: sql<number>`count(*)` })
+      .from(legacyPaystubs)
+      .where(and(
         vendorId > 0 ? eq(legacyPaystubs.vendorId, vendorId) : undefined,
         employeeId > 0 ? eq(legacyPaystubs.agentId, employeeId) : undefined,
         gte(legacyPaystubs.issueDate, startDate.toISOString().slice(0, 19).replace('T', ' ')),
         lte(legacyPaystubs.issueDate, endDate.toISOString().slice(0, 19).replace('T', ' ')),
-      ),
-      orderBy: (p, { desc }) => desc(p.issueDate),
-    });
+      )))[0].count;
+      
+    const totalPages = Math.ceil(total / take);
+    
+    return {
+      data: await legacyDb.query.legacyPaystubs.findMany({
+        where: (legacyPaystubs, { and, eq, gte, lte }) => and(
+          vendorId > 0 ? eq(legacyPaystubs.vendorId, vendorId) : undefined,
+          employeeId > 0 ? eq(legacyPaystubs.agentId, employeeId) : undefined,
+          gte(legacyPaystubs.issueDate, startDate.toISOString().slice(0, 19).replace('T', ' ')),
+          lte(legacyPaystubs.issueDate, endDate.toISOString().slice(0, 19).replace('T', ' ')),
+        ),
+        orderBy: (p, { desc }) => desc(p.issueDate),
+        limit: take,
+        offset,
+      }) as SelectLegacyPaystub[],
+      pagination: {
+        total,
+        offset,
+        limit: take,
+        totalPages,
+        currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    }
   } catch (err) {
     console.error(err);
-    return [];
+    return {
+      data: [],
+      pagination: {
+        total: 0,
+        offset,
+        limit: take,
+        totalPages: 0,
+        currentPage: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+    };
   }
 }
 
@@ -30,7 +88,7 @@ export const getPaystubById = async (id: number): Promise<{
       const res = (await tx.query.legacyPaystubs.findFirst({
         where: (legacyPaystubs, { eq }) => eq(legacyPaystubs.id, id),
       })) as SelectLegacyPaystub;
-      
+
       const sales = await tx.query.legacyInvoices.findMany({
         where: (i, { and, eq }) => and(
           eq(i.agentid, res.agentId),
@@ -39,7 +97,7 @@ export const getPaystubById = async (id: number): Promise<{
         ),
         orderBy: (i, { desc }) => desc(i.saleDate),
       });
-      
+
       const overrides = await tx.query.legacyOverrides.findMany({
         where: (o, { and, eq }) => and(
           eq(o.agentid, res.agentId),
@@ -47,7 +105,7 @@ export const getPaystubById = async (id: number): Promise<{
           eq(o.issueDate, res.issueDate),
         ),
       });
-      
+
       const expenses = await tx.query.legacyExpenses.findMany({
         where: (e, { and, eq }) => and(
           eq(e.agentid, res.agentId),
@@ -55,7 +113,7 @@ export const getPaystubById = async (id: number): Promise<{
           eq(e.issueDate, res.issueDate),
         ),
       });
-      
+
       return {
         paystub: res,
         sales,

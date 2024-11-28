@@ -1,3 +1,4 @@
+import { getLegacyEmployee } from '$lib/drizzle/mysql/models/employees.js';
 import { getPaystubById } from '$lib/drizzle/mysql/models/paystubs.js';
 import type { SaleTableInputData } from '$lib/drizzle/postgres/types/sale-table-input-data.model';
 import { fail } from '@sveltejs/kit';
@@ -24,6 +25,7 @@ export const load = async ({ locals, params }) => {
     const totalExpenses = statement?.expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
     const [firstName, ...lastNameParts] = paystub.agentName.split(' ');
     const lastName = lastNameParts.join(' ');
+    const agent = await getLegacyEmployee(paystub.agentId);
     
     const saleTableData = {
       sales: statement?.sales.map(sale => ({
@@ -45,6 +47,11 @@ export const load = async ({ locals, params }) => {
         id: paystub.agentId,
         firstName,
         lastName,
+        address: agent.address,
+        address2: agent.address2,
+        city: agent.city,
+        state: agent.state,
+        zip: agent.postalCode,
       }],
       startDate: dayjs(paystub.weekendDate, 'YYYY-MM-DD').subtract(10, 'd').format('YYYY-MM-DD'),
       endDate: paystub.weekendDate,
