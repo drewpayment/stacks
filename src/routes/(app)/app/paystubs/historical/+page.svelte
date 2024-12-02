@@ -8,6 +8,7 @@
 	import type { OptionItem } from '$lib/drizzle/types/option-item.model.js';
 	import type { ActionResult } from '@sveltejs/kit';
 	import { updateSearchParams } from '$lib/utils/url-params.js';
+	import AutocompleteSelect from '$lib/components/AutocompleteSelect.svelte';
 
   export let data: { paystubs: ILegacyPaystubSearchResult; campaigns: OptionItem[]; employees: OptionItem[]; startDate: string; endDate: string; };
   const { paystubs: ogPaystubs, campaigns, employees, startDate, endDate, } = data;
@@ -115,6 +116,7 @@
   <form action="?/search" method="post" class="flex flex-col pt-4"
     use:enhance={({ formData, cancel }) => {
       formData.set('page', `${currentPage}`);
+      formData.set('employeeId', selectedEmployee);
       
       updateSearchFromForm(formData);
       
@@ -134,6 +136,7 @@
         </Label>
         
         <div class="flex flex-col space-y-6">
+          <!-- <AutocompleteSelect name="employeeId" options={employees} value={selectedEmployee} placeholder="Select Employee" /> -->
           <Label class="space-y-2">
             <span>Employee</span>
             <Select name="employeeId" items={employees} bind:value={selectedEmployee} />

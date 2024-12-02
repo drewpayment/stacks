@@ -3,6 +3,7 @@ import { legacyDb } from '../client';
 import type { SelectLegacyExpense, SelectLegacyInvoice, SelectLegacyOverride, SelectLegacyPaystub } from '../db.model';
 import { legacyPaystubs } from '../schema';
 import { and, eq, gte, lte, sql } from 'drizzle-orm';
+import dayjs from 'dayjs';
 
 export const searchPaystubs = async (
   startDate: Dayjs,
@@ -77,7 +78,7 @@ export const searchPaystubs = async (
   }
 }
 
-export const getPaystubById = async (id: number): Promise<{
+export const getPaystubDetailById = async (id: number): Promise<{
   paystub: SelectLegacyPaystub;
   sales: SelectLegacyInvoice[];
   overrides: SelectLegacyOverride[];
@@ -121,6 +122,34 @@ export const getPaystubById = async (id: number): Promise<{
         expenses,
       };
     })
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
+
+export const getLegacyEmployeePaystubsSinceDate = async (sinceDate: Dayjs, employees: number[]): Promise<SelectLegacyPaystub[]> => {
+  try {
+    return await legacyDb.query.legacyPaystubs.findMany({
+      where: (legacyPaystubs, { and, eq, gte, lte, inArray }) => and(
+        inArray(legacyPaystubs.agentId, employees),
+        gte(legacyPaystubs.issueDate, sinceDate.subtract(1, 'year').toISOString()),
+        lte(legacyPaystubs.issueDate, sinceDate.toISOString()),
+      ),
+      orderBy: (p, { desc }) => desc(p.issueDate),
+    }) as SelectLegacyPaystub[];
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
+
+export const getLatestPaystubDate = async (): Promise<Dayjs | null> => {
+  try {
+    const res = await legacyDb.query.legacyPaystubs.findFirst({
+      orderBy: (p, {desc}) => desc(p.issueDate),
+    });
+    return dayjs(res!.issueDate, 'YYYY-MM-DD');
   } catch (err) {
     console.error(err);
     return null;

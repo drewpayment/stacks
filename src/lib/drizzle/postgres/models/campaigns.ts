@@ -93,6 +93,19 @@ const addCampaign = async (campaign: InsertCampaign): Promise<SelectCampaign | n
   return dto as SelectCampaign;
 }
 
+export const addCampaigns = async (dtos: InsertCampaign[]): Promise<SelectCampaign[]> => {
+  if (!dtos) return [];
+  
+  try {
+    await drizzleClient.insert(campaigns)
+      .values(dtos);
+    return dtos as SelectCampaign[];
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
+
 export const disableCampaign = async (clientId: string, campaignId: string): Promise<boolean> => {
    try {
     await drizzleClient.update(campaigns)

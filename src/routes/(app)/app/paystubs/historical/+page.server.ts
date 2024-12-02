@@ -2,7 +2,7 @@ import { searchPaystubs } from '$lib/drizzle/mysql/models/paystubs';
 import dayjs from 'dayjs';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import { getVendors } from '$lib/drizzle/mysql/models/vendors';
-import { getLegacyEmployees } from '$lib/drizzle/mysql/models/employees';
+import { getLegacyEmployeesWithPayroll } from '$lib/drizzle/mysql/models/employees';
 import type { ILegacyPaystubSearchResult } from '$lib/drizzle/types/legacy-paystub.model';
 
 
@@ -39,13 +39,13 @@ export const load = async ({ locals, url }) => {
   }
   
   const employees = async () => {
-    const emps = await getLegacyEmployees();
+    const emps = await getLegacyEmployeesWithPayroll();
     return [{
       name: 'All Employees',
       value: '-1',
     }, ...emps.map(ee => ({
       name: `${ee.name}`,
-      value: ee.id,
+      value: `${ee.id}`,
     }))];
   }
   

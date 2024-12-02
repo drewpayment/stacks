@@ -1,13 +1,15 @@
 import { disableCampaign, getCampaigns } from '$lib/drizzle/postgres/models/campaigns';
+import { importLegacyVendorsToCampaigns } from '$lib/legacy/campaigns.js';
 import { fail, type Actions } from '@sveltejs/kit';
 
-
 export const load = async ({ locals, params }) => {  
-  if (!locals.user) return { status: 401 };
+  if (!locals.user || !locals.user.profile.clientId) return { status: 401 };
   
   const campaigns = async () => {
     const clientId = locals.user.profile.clientId;
-    const data = await getCampaigns(clientId as string)
+    
+    let data = await getCampaigns(clientId as string);
+    data = await importLegacyVendorsToCampaigns(clientId!, data);
     
     return data.map(campaign => ({
       ...campaign,

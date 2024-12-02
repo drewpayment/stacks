@@ -1,5 +1,5 @@
 import { getLegacyEmployee } from '$lib/drizzle/mysql/models/employees.js';
-import { getPaystubById } from '$lib/drizzle/mysql/models/paystubs.js';
+import { getPaystubDetailById } from '$lib/drizzle/mysql/models/paystubs.js';
 import type { SaleTableInputData } from '$lib/drizzle/postgres/types/sale-table-input-data.model';
 import { fail } from '@sveltejs/kit';
 import dayjs from 'dayjs';
@@ -15,7 +15,7 @@ export const load = async ({ locals, params }) => {
   if (isNaN(id) || id < 1) return fail(400, { message: 'Invalid ID' });
   
   const getData = async (id: number) => {
-    const statement = await getPaystubById(id);
+    const statement = await getPaystubDetailById(id);
     if (!statement?.paystub) return {};
     
     const paystub = statement!.paystub!;

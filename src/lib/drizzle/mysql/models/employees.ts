@@ -1,6 +1,6 @@
 import { legacyDb } from '../client';
 import type { SelectLegacyEmployee, SelectLegacyManagerEmploeyee } from '../db.model';
-import { legacyManagerEmployees } from '../schema';
+import { getLatestPaystubDate, getLegacyEmployeePaystubsSinceDate } from './paystubs';
 
 export const getLegacyEmployees = async (): Promise<SelectLegacyEmployee[]> => {
 	try {
@@ -8,6 +8,19 @@ export const getLegacyEmployees = async (): Promise<SelectLegacyEmployee[]> => {
 			where: (legacyEmployees, { eq }) => eq(legacyEmployees.isActive, 1),
 			orderBy: (legacyEmployees, { asc }) => asc(legacyEmployees.name),
 		});
+	} catch (err) {
+		console.error(err);
+		return [];
+	}
+};
+
+export const getLegacyEmployeesWithPayroll = async (): Promise<SelectLegacyEmployee[]> => {
+	try {
+		const latestPayrollDate = await getLatestPaystubDate();
+		if (!latestPayrollDate) throw new Error('Failed to get latest payroll date.');
+		const employees = await getLegacyEmployees();
+		const paystubs = await getLegacyEmployeePaystubsSinceDate(latestPayrollDate, employees.map(e => e.id));
+		return employees.filter(e => paystubs.some(p => p.agentId === e.id));
 	} catch (err) {
 		console.error(err);
 		return [];

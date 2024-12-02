@@ -112,7 +112,8 @@
 				<Dropdown class="w-44 z-20">
 					<DropdownItem href="/app/payroll-cycles?closed=true">Payroll Cycles</DropdownItem>
 					<DropdownItem href="/app/payroll/search">Paychecks</DropdownItem>
-					<DropdownItem href="/app/paystubs/historical">Historical</DropdownItem>
+					<DropdownDivider />
+					<DropdownItem href="/app/paystubs/historical">Historical Pay</DropdownItem>
 				</Dropdown>
 				<NavLi class="cursor-pointer">
 					Employee<ChevronDown class="w-3 h-3 ml-2 text-primary-800 dark:text-white inline" />
