@@ -1,8 +1,7 @@
 import { drizzleClient } from '$lib/drizzle/postgres/client';
 import { user, userClient, userKey, userProfile } from '$lib/drizzle/postgres/schema';
-import type { InsertUser, InsertUserKey, InsertUserProfile, SelectUser, User, UserProfile } from '$lib/drizzle/mysql/db.model';
-import { and, DrizzleError, eq, ne } from 'drizzle-orm';
-import type { SelectClient } from '../db.model';
+import { and, eq, ne } from 'drizzle-orm';
+import type { InsertUser, InsertUserKey, InsertUserProfile, SelectClient, SelectUser, User, UserProfile } from '../db.model';
 import { nanoid } from 'nanoid';
 import { fail } from '@sveltejs/kit';
 
@@ -186,7 +185,7 @@ export const updateUser = async (userData: InsertUser): Promise<SelectUser | nul
 		await drizzleClient.update(user).set(userData).where(eq(user.id, userData.id));
 		
 		return userData as SelectUser;
-	} catch (err) {
+	} catch (err: any) {
 		fail(err);
 		
 		return null;

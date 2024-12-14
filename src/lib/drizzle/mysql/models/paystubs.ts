@@ -1,284 +1,157 @@
-import { eq, or } from 'drizzle-orm';
-import { drizzleClient } from '../client';
-import { paystub } from '../schema';
-import type { PaystubWith } from '$lib/drizzle/mysql/types/paystbus.model';
-import type { InsertPaystub, } from '$lib/drizzle/mysql/db.model';
-import { error } from '@sveltejs/kit';
-import { nanoid } from 'nanoid';
+import type { Dayjs } from 'dayjs';
+import { legacyDb } from '../client';
+import type { SelectLegacyExpense, SelectLegacyInvoice, SelectLegacyOverride, SelectLegacyPaystub } from '../db.model';
+import { legacyPaystubs } from '../schema';
+import { and, eq, gte, lte, sql } from 'drizzle-orm';
 import dayjs from 'dayjs';
 
-export const getPaystubs = async (
-  clientId: string, 
-  startDate: number, 
-  endDate: number, 
-  employeeId = '', 
-  campaignId = '',
-  filterPayrollCycles = false,
-): Promise<PaystubWith[]> => {
-  if (!clientId) {
-    return [] as PaystubWith[];
+export const searchPaystubs = async (
+  startDate: Dayjs,
+  endDate: Dayjs,
+  take: number,
+  page: number,
+  vendorId: number,
+  employeeId: number,
+): Promise<{
+  data: SelectLegacyPaystub[];
+  pagination: {
+    total: number;
+    offset: number;
+    limit: number;
+    totalPages: number;
+    currentPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
   }
-  
-  const data = await drizzleClient.query.paystub.findMany({
-    where: filterPayrollCycles 
-      ? (employeeId || campaignId)
-        ? (ps, { eq, and, isNull }) => and(
-            eq(ps.clientId, clientId),
-            isNull(ps.payrollCycleId),
-            employeeId ? eq(ps.employeeId, employeeId) : undefined,
-            campaignId ? eq(ps.campaignId, campaignId) : undefined,
-          )
-        : (ps, { eq, and, isNull }) => and(
-            eq(ps.clientId, clientId),
-            isNull(ps.payrollCycleId),
-          )
-      : (employeeId || campaignId)
-        ? (ps, { eq, and }) => and(
-            eq(ps.clientId, clientId),
-            employeeId ? eq(ps.employeeId, employeeId) : undefined,
-            campaignId ? eq(ps.campaignId, campaignId) : undefined,
-          )
-        : (ps, { eq, }) => eq(ps.clientId, clientId),
-    with: {
-      employee: true,
-      campaign: {
-        columns: {
-          name: true,
-        }
-      },
-      payrollCycle: true,
-      sales: {
-        with: {
-          employee: true,
-        },
-        where: (s, { and, gte, lte }) => and(
-          gte(s.saleDate, startDate as any),
-          lte(s.saleDate, endDate as any),
-        ),
-        orderBy: (s, { desc }) => [desc(s.saleDate)],
-      },
-    },
-  }) as PaystubWith[];
-  
-  return data || [] as PaystubWith[];
-}
-
-export const getPaystubById = async (clientId: string, paystubId: string): Promise<PaystubWith> => {
-  if (!clientId || !paystubId) return null as unknown as Promise<PaystubWith>;
+}> => {
+  const offset = (page - 1) * take;
   
   try {
-    return await drizzleClient.query.paystub.findFirst({
-      where: (ps, { eq, and }) => and(
-        eq(ps.clientId, clientId),
-        eq(ps.id, paystubId),
-      ),
-      with: {
-        sales: {
-          with: {
-            employee: true,
-          },
-        },
-        employee: {
-          with: {
-            employeeProfile: true,
-          },
-        },
-        campaign: true,
-        payrollCycle: true,
-        client: true,
-      },
-    }) as PaystubWith;
-  } catch (ex) {
-    console.error(ex);
-    error(500, 'Internal Server Error');
-  }
-}
-
-export const getPaystubsWoPayrollCycle = async (clientId: string, startDate: number, endDate: number): Promise<PaystubWith[]> => {
-  if (!clientId) {
-    return [] as PaystubWith[];
-  }
-  
-  const data = await drizzleClient.query.paystub.findMany({
-    where: (ps, { and, eq, isNull }) => and(
-      eq(ps.clientId, clientId),
-      or(
-        isNull(ps.payrollCycleId),
-        eq(ps.payrollCycleId, ''),
-      ),
-    ),
-    with: {
-      employee: true,
-      campaign: true,
-      payrollCycle: true,
-      sales: {
-        with: {
-          employee: true,
-        },
-        where: (s, { and, gte, lte }) => and(
-          gte(s.saleDate, startDate as any),
-          lte(s.saleDate, endDate as any),
-        ),
-        orderBy: (s, { desc }) => [desc(s.saleDate)],
-      },
-    },
-  }) as PaystubWith[];
-  
-  return data || [] as PaystubWith[];
-}
-
-export const getPaystubsByPayrollCycleId = async (clientId: string, payrollCycleId: string): Promise<PaystubWith[]> => {
-  if (!payrollCycleId) return [] as PaystubWith[];
-  
-  const data = await drizzleClient.query.paystub.findMany({
-    where: (ps, { and, eq }) => and(
-      eq(ps.clientId, clientId),
-      eq(ps.payrollCycleId, payrollCycleId),
-    ),
-    with: {
-      employee: true,
-      campaign: true,
-      payrollCycle: true,
-      sales: {
-        with: {
-          employee: true,
-        },
-        orderBy: (s, { desc }) => [desc(s.saleDate)],
-      },
-    },
-  }) as PaystubWith[];
-  
-  return data || [] as PaystubWith[];
-}
-
-/**
- * Remove associated payroll cycles from all paystubs by
- * the payroll cycle's id.
- * 
- * @param payrollCycleId 
- * @returns 
- */
-export const detachPayrollCycleFromPaystubs = async (payrollCycleId: string): Promise<boolean> => {
-  if (!payrollCycleId) return false;
-  
-  try {
-    await drizzleClient.update(paystub)
-      .set({
-        payrollCycleId: null,
-      })
-      .where(eq(paystub.payrollCycleId, payrollCycleId));
-  } catch (ex) {
-    console.error(ex);
-    return false;
-  }
-  
-  return true;
-}
-
-/**
- * Remove associated payroll cycles from a paystub by 
- * the paystub's id.
- * 
- * @param paystubId 
- * @returns 
- */
-export const detachPayrollCycleFromPaystub = async (paystubId: string): Promise<boolean> => {
-  if (!paystubId) return false;
-  
-  try {
-    await drizzleClient.update(paystub)
-      .set({
-        payrollCycleId: null,
-      })
-      .where(eq(paystub.id, paystubId));
-  } catch (ex) {
-    console.log(ex);
-    return false;
-  }
-  
-  return true;
-}
-
-export const detachPaystubFromPayrollCycles = async (paystubId: string): Promise<boolean> => {
-  if (!paystubId) return false;
-  
-  try {
-    await drizzleClient.update(paystub)
-      .set({
-        payrollCycleId: null,
-      })
-      .where(eq(paystub.id, paystubId));
-  } catch (ex) {
-    console.error(ex);
-    return false;
-  }
-  
-  return true;
-}
-
-export const attachPayrollCycleToPaystub = async (paystubId: string, payrollCycleId: string): Promise<boolean> => {
-  if (!paystubId || !payrollCycleId) return false;
-  
-  try {
-    await drizzleClient.update(paystub)
-      .set({
-        payrollCycleId,
-      })
-      .where(eq(paystub.id, paystubId));
-  } catch (ex) {
-    console.error(ex);
-    return false;
-  }
-  
-  return true;
-}
-
-export const numberOfPaystubsByPayrollCycleId = async (payrollCycleId: string): Promise<number> => {
-  let data = 0;
-  if (!payrollCycleId) return data;
-  
-  try {
-    const results = await drizzleClient.query.paystub.findMany({
-      where: (ps, { eq }) => eq(ps.payrollCycleId, payrollCycleId),
-    });
+    const total = (await legacyDb
+      .select({ count: sql<number>`count(*)` })
+      .from(legacyPaystubs)
+      .where(and(
+        vendorId > 0 ? eq(legacyPaystubs.vendorId, vendorId) : undefined,
+        employeeId > 0 ? eq(legacyPaystubs.agentId, employeeId) : undefined,
+        gte(legacyPaystubs.issueDate, startDate.toISOString().slice(0, 19).replace('T', ' ')),
+        lte(legacyPaystubs.issueDate, endDate.toISOString().slice(0, 19).replace('T', ' ')),
+      )))[0].count;
+      
+    const totalPages = Math.ceil(total / take);
     
-    data = results.length;
-  } catch (ex) {
-    console.error(ex);
-    return 0;
+    return {
+      data: await legacyDb.query.legacyPaystubs.findMany({
+        where: (legacyPaystubs, { and, eq, gte, lte }) => and(
+          vendorId > 0 ? eq(legacyPaystubs.vendorId, vendorId) : undefined,
+          employeeId > 0 ? eq(legacyPaystubs.agentId, employeeId) : undefined,
+          gte(legacyPaystubs.issueDate, startDate.toISOString().slice(0, 19).replace('T', ' ')),
+          lte(legacyPaystubs.issueDate, endDate.toISOString().slice(0, 19).replace('T', ' ')),
+        ),
+        orderBy: (p, { desc }) => desc(p.issueDate),
+        limit: take,
+        offset,
+      }) as SelectLegacyPaystub[],
+      pagination: {
+        total,
+        offset,
+        limit: take,
+        totalPages,
+        currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    }
+  } catch (err) {
+    console.error(err);
+    return {
+      data: [],
+      pagination: {
+        total: 0,
+        offset,
+        limit: take,
+        totalPages: 0,
+        currentPage: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+    };
   }
-  
-  return data;
 }
 
-export const generatePendingPaystub = (clientId: string, employeeId: string, campaignId: string): InsertPaystub => {
-  return {
-    id: nanoid(),
-    clientId,
-    employeeId,
-    campaignId,
-    payrollCycleId: null,
-    totalSales: 0,
-    totalOverrides: 0,
-    grossPay: 0,
-    netPay: 0,
-    pieceRate: 0,
-    otherDeductions: 0,
-    taxDeductions: 0,
-    created: dayjs().unix(),
-    updated: dayjs().unix(),
-  } as InsertPaystub;
-}
-
-export const insertPaystub = async (dto: InsertPaystub): Promise<InsertPaystub> => {
-  if (!dto) return null as unknown as InsertPaystub;
-  
+export const getPaystubDetailById = async (id: number): Promise<{
+  paystub: SelectLegacyPaystub;
+  sales: SelectLegacyInvoice[];
+  overrides: SelectLegacyOverride[];
+  expenses: SelectLegacyExpense[];
+} | null> => {
   try {
-    await drizzleClient.insert(paystub).values({...dto});
-  } catch (ex) {
-    console.error(ex);
-    error(500, 'Error saving paystub');
+    return await legacyDb.transaction(async (tx) => {
+      const res = (await tx.query.legacyPaystubs.findFirst({
+        where: (legacyPaystubs, { eq }) => eq(legacyPaystubs.id, id),
+      })) as SelectLegacyPaystub;
+
+      const sales = await tx.query.legacyInvoices.findMany({
+        where: (i, { and, eq }) => and(
+          eq(i.agentid, res.agentId),
+          eq(i.vendor, `${res.vendorId}`),
+          eq(i.issueDate, res.issueDate),
+        ),
+        orderBy: (i, { desc }) => desc(i.saleDate),
+      });
+
+      const overrides = await tx.query.legacyOverrides.findMany({
+        where: (o, { and, eq }) => and(
+          eq(o.agentid, res.agentId),
+          eq(o.vendorId, res.vendorId),
+          eq(o.issueDate, res.issueDate),
+        ),
+      });
+
+      const expenses = await tx.query.legacyExpenses.findMany({
+        where: (e, { and, eq }) => and(
+          eq(e.agentid, res.agentId),
+          eq(e.vendorId, res.vendorId),
+          eq(e.issueDate, res.issueDate),
+        ),
+      });
+
+      return {
+        paystub: res,
+        sales,
+        overrides,
+        expenses,
+      };
+    })
+  } catch (err) {
+    console.error(err);
+    return null;
   }
-  
-  return dto;
+}
+
+export const getLegacyEmployeePaystubsSinceDate = async (sinceDate: Dayjs, employees: number[]): Promise<SelectLegacyPaystub[]> => {
+  try {
+    return await legacyDb.query.legacyPaystubs.findMany({
+      where: (legacyPaystubs, { and, eq, gte, lte, inArray }) => and(
+        inArray(legacyPaystubs.agentId, employees),
+        gte(legacyPaystubs.issueDate, sinceDate.subtract(1, 'year').toISOString()),
+        lte(legacyPaystubs.issueDate, sinceDate.toISOString()),
+      ),
+      orderBy: (p, { desc }) => desc(p.issueDate),
+    }) as SelectLegacyPaystub[];
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
+
+export const getLatestPaystubDate = async (): Promise<Dayjs | null> => {
+  try {
+    const res = await legacyDb.query.legacyPaystubs.findFirst({
+      orderBy: (p, {desc}) => desc(p.issueDate),
+    });
+    return dayjs(res!.issueDate, 'YYYY-MM-DD');
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
 }

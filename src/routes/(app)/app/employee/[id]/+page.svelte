@@ -2,9 +2,11 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
 	import EmployeeNotes from '$lib/components/EmployeeNotes.svelte';
+	import LegacyAlertModal from '$lib/components/LegacyAlertModal.svelte';
 	import SubmitButton from '$lib/components/SubmitButton.svelte';
 	import type { EmployeeWithNotes } from '$lib/drizzle/postgres/db.model';
 	import { Breadcrumb, BreadcrumbItem, Input, Label, Select } from 'flowbite-svelte';
+
 	export let data;
 
 	// how you read the id param from the url
@@ -22,15 +24,15 @@
 		const code = codes?.find((c) => c.campaignId === campaignId);
 		return code?.employeeCode || '';
 	};
-  
-  let phone = null as unknown as string;
-  let phone2 = null as unknown as string;
+
+	let phone = null as unknown as string;
+	let phone2 = null as unknown as string;
 
 	const formatPhoneNumber = (e: any, callback = (v: string) => {}) => {
-    const value = e.target.value;
-    
-    if (!value || value.length < 10) return callback(value);
-    
+		const value = e.target.value;
+
+		if (!value || value.length < 10) return callback(value);
+
 		const regex = /^(\d{0,3})(\d{0,3})(\d{0,4})$/g;
 		const parts = regex.exec(value);
 
@@ -40,11 +42,13 @@
 			callback(value);
 		}
 	};
-  
-  if (profile?.phone) 
-    formatPhoneNumber({ target: { value: profile?.phone } }, res => phone = res);
-  if (profile?.phone2) 
-    formatPhoneNumber({ target: { value: profile?.phone2 } }, res => phone2 = res);
+
+	if (profile?.phone)
+		formatPhoneNumber({ target: { value: profile?.phone } }, (res) => (phone = res));
+	if (profile?.phone2)
+		formatPhoneNumber({ target: { value: profile?.phone2 } }, (res) => (phone2 = res));
+	
+	const isLegacyMode = $page.url.searchParams.get('mode') === 'legacy';
 </script>
 
 <div class="pb-3">
@@ -61,16 +65,28 @@
 		<BreadcrumbItem>{employee?.firstName} {employee?.lastName}</BreadcrumbItem>
 	</Breadcrumb>
 </div>
+		
+{#if isLegacyMode}
+<LegacyAlertModal showModal={true} 
+	messageText="This is a legacy employee. Please update the information below." 
+	btnConfirmDesc="Ok" 
+	btnCancelDesc="Cancel"
+	onCancel={() => window.location.href = `/app/employee`}
+/>
+{/if}
 
 <form
 	action="?/save"
 	method="post"
 	use:enhance={({ formElement, formData, action, cancel, submitter }) => {
 		return async ({ result, update }) => {
-			console.dir(result);
+			if (result.type !== 'success') return;
+			
+			window.location.href = `/app/employee/${result.data.employee.id}`;
 		};
 	}}
 >
+	<input type="hidden" name="isLegacy" value={isLegacyMode}>
 	<input type="hidden" name="employeeId" value={ee?.id} required />
 	<div
 		class="bg-background-100 border-gray-100 border dark:border-gray-800 shadow-lg rounded-2xl px-6 pb-6"
@@ -127,7 +143,7 @@
 						required
 						autocomplete="phone"
 						bind:value={phone}
-            on:input={(e) => formatPhoneNumber(e, res => phone = res)}
+						on:input={(e) => formatPhoneNumber(e, (res) => (phone = res))}
 					/>
 				</div>
 
@@ -139,7 +155,7 @@
 						id="phone2"
 						autocomplete="phone2"
 						bind:value={phone2}
-            on:input={e => formatPhoneNumber(e, res => phone2 = res)}
+						on:input={(e) => formatPhoneNumber(e, (res) => (phone2 = res))}
 					/>
 				</div>
 
@@ -176,7 +192,8 @@
 		<div class="border-b border-gray-900/10 pb-12">
 			<h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-50">Sales Codes</h2>
 			<p class="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-100">
-				Sales codes are used to track sales and commissions. They are used to import sales data from sales commission reports 
+				Sales codes are used to track sales and commissions. They are used to import sales data from
+				sales commission reports
 				<a href="/app/sales/import">here.</a>
 				<br />
 				<span class="text-xs text-gray-400 dark:text-gray-50">*Sales codes are not required.</span>

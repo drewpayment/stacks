@@ -1,7 +1,7 @@
 import { drizzleClient as db } from '$lib/drizzle/postgres/client';
 import { and, eq } from 'drizzle-orm';
 import { employee, employeeCodes, employeeNotes, employeeProfile } from '../schema';
-import type { Employee, InsertEmployee, InsertEmployeeCode, InsertEmployeeNotes, InsertEmployeeProfile, SelectEmployee, SelectEmployeeCode } from '$lib/drizzle/postgres/db.model';
+import type { Employee, EmployeeProfile, InsertEmployee, InsertEmployeeCode, InsertEmployeeNotes, InsertEmployeeProfile, SelectEmployee, SelectEmployeeCode } from '$lib/drizzle/postgres/db.model';
 import { nanoid } from 'nanoid';
 import { error } from '@sveltejs/kit';
 
@@ -67,6 +67,16 @@ export const getEmployeeByUserId = async (userId: string): Promise<Employee> => 
   return data as Employee;
 }
 
+export const getEmployeeProfile = async (employeeId: string): Promise<EmployeeProfile> => {
+  if (!employeeId) return null as unknown as EmployeeProfile;
+  
+  const data = await db.query.employeeProfile.findFirst({
+    where: (employeeProfile, { eq }) => eq(employeeProfile.employeeId, employeeId),
+  });
+  
+  return data as EmployeeProfile;
+}
+
 const _createEmployee = async (employeeData: InsertEmployee) => {
   try {
     await db.insert(employee)
@@ -112,6 +122,18 @@ const updateEmployee = async (employeeData: InsertEmployee) => {
     return { success: false, };
   }
 
+  return { success: true, };
+}
+
+export const updateEmployeeProfile = async (data: InsertEmployeeProfile) => {
+  try {
+    await db.update(employeeProfile)
+      .set(data)
+      .where(eq(employeeProfile.employeeId, data.employeeId));
+  } catch (err) {
+    console.error(err);
+    return { success: false, };
+  }
   return { success: true, };
 }
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { PaystubWith } from '$lib/types/paystbus.model';
+	import type { PaystubWith } from '$lib/types/paystubs.model';
 	import { formatCurrency, formatDate } from '$lib/utils/utils';
 	import { Breadcrumb, BreadcrumbItem, Card, Label, Select, Input, Table, TableHead, TableHeadCell, TableBody, TableBodyCell, TableBodyRow, Button, Toggle } from 'flowbite-svelte';
   import { ArrowUpRightFromSquareOutline } from 'flowbite-svelte-icons';

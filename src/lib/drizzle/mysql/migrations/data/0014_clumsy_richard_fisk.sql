@@ -1,1 +1,0 @@
-ALTER TABLE `sale` MODIFY COLUMN `paystub_id` varchar(255) DEFAULT '';

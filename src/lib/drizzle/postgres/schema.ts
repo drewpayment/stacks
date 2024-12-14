@@ -230,6 +230,7 @@ export const campaigns = pgTable('campaigns', {
 		.notNull()
 		.references(() => client.id),
 	name: varchar('name', { length: 255 }).notNull(),
+	importedId: varchar('imported_id', { length: 255 }).default(''),
 	url: varchar('url', { length: 255 }).default(''),
 	description: text('description').default(''),
 	active: boolean('active').default(false).notNull(),

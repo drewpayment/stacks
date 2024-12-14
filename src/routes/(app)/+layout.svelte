@@ -112,6 +112,8 @@
 				<Dropdown class="w-44 z-20">
 					<DropdownItem href="/app/payroll-cycles?closed=true">Payroll Cycles</DropdownItem>
 					<DropdownItem href="/app/payroll/search">Paychecks</DropdownItem>
+					<DropdownDivider />
+					<DropdownItem href="/app/paystubs/historical">Historical Pay</DropdownItem>
 				</Dropdown>
 				<NavLi class="cursor-pointer">
 					Employee<ChevronDown class="w-3 h-3 ml-2 text-primary-800 dark:text-white inline" />
@@ -135,45 +137,6 @@
 		{/if}
 	</NavUl>
 </Navbar>
-<!--
-	<a href="/">
-		<img
-			src={stacks_logo}
-			class="object-contain h-24"
-			alt="Stacks logo, looks like overlapping triangles."
-		/>
-	</a>
-
-	<div class="flex gap-4 items-center">
-		{#if data.user}
-			{#if data.profile?.role === 'super_admin'}
-				<SelectClient clients={data.clients} selectedClientId={data.profile.clientId || ''} />
-				<a href="/app/client">Manage Clients</a>
-				<a href="/app/campaigns">Campaigns</a>
-				<a href="/app/user">Users</a>
-			{/if}
-			{#if ['super_admin', 'org_admin'].includes(data.profile?.role)}
-				<a href="/app/employee">Employees</a>
-				<a href="/app/profile">Profile</a>
-			{/if}
-
-			<form method="post" action="/auth/login?/logout" use:enhance>
-				<button type="submit">Log Out</button>
-			</form>
-		{:else}
-			<a href="/auth/signup" class="action-base action-primary w-fit">Sign Up</a>
-			<a href="/auth/login" class="action-base action-outline w-fit">Login</a>
-		{/if}
-
-		<button type="button" on:click={toggleTheme}>
-			{#if $isDarkMode}
-				<span transition:fade><Moon /></span>
-			{:else}
-				<span transition:fade><Sun /></span>
-			{/if}
-		</button>
-	</div>
-	-->
 
 <main class="py-16 container-base">
 	<slot />

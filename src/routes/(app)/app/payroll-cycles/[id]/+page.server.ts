@@ -27,16 +27,21 @@ export const load = async ({ locals, params }) => {
       canOpen: false,
     }
     
-    const unattachedPaystubs = await getPaystubsWoPayrollCycle(profile?.clientId, cycle?.startDate, cycle?.endDate);
+    const paymentDayjs = dayjs(cycle.paymentDate, 'YYYY-MM-DD HH:mm:ss');
+    const today = dayjs();
+    const canOpen = cycle.isClosed && paymentDayjs.isAfter(today);
+    
     // const paystubs = await getPaystubs(profile?.clientId, cycle?.startDate as any, cycle?.endDate as any);
     const relatedPaystubs = await getPaystubsByPayrollCycleId(profile?.clientId, cycle.id);
     
-    const paystubs = [...relatedPaystubs, ...unattachedPaystubs];
-    
-    const paymentDayjs = dayjs(cycle.paymentDate, 'YYYY-MM-DD HH:mm:ss');
-    const today = dayjs();
-    let canOpen = cycle.isClosed && paymentDayjs.isAfter(today);
-    if (dev) canOpen = true;
+    let paystubs: PaystubWith[];
+    if (canOpen || !cycle.isClosed) {
+      const unattachedPaystubs = await getPaystubsWoPayrollCycle(profile?.clientId, cycle?.startDate, cycle?.endDate);
+      
+      paystubs = [...relatedPaystubs, ...unattachedPaystubs];
+    } else {
+      paystubs = relatedPaystubs;
+    }
     
     return { cycle, paystubs, canOpen };
   }
