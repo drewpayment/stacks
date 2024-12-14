@@ -110,6 +110,7 @@
     "resend": "^1.1.0",
     "svelte-hero-icons": "^5.2.0",
     "svelte-input-mask": "^1.1.0",
+    "tunnel-ssh": "^5.1.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
   }
 }

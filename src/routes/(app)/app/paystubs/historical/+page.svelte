@@ -168,7 +168,7 @@
       <TableHeadCell>Payment Date</TableHeadCell>
     </TableHead>
     
-    <TableBody>
+    <TableBody tableBodyClass="text-base">
       {#each paystubs as paystub (paystub.id)}
         <TableBodyRow>
           <TableBodyCell>
