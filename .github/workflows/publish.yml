@@ -44,8 +44,8 @@ jobs:
           echo "TUNNEL_HOST=${{ secrets.TUNNEL_HOST }}" >> .env
           echo "TUNNEL_USER=${{ secrets.TUNNEL_USER }}" >> .env
           echo "TUNNEL_PORT=22" >> .env
-          echo "TUNNEL_PRIVATE_KEY_PATH=" >> .env
-          echo "TUNNEL_PRIVATE_KEY=${{ secrets.TUNNEL_PRIVATE_KEY }}" >> .env
+          echo "TUNNEL_PRIVATE_KEY=" >> .env
+          echo "TUNNEL_PRIVATE_KEY_PATH=~/.ssh/tunnel_key" >> .env
           echo "TUNNEL_DEST_HOST=${{ secrets.TUNNEL_DEST_HOST }}" >> .env
           echo "TUNNEL_DEST_PORT=${{ secrets.TUNNEL_DEST_PORT }}" >> .env
           echo "TUNNEL_LOCAL_PORT=${{ secrets.TUNNEL_LOCAL_PORT }}" >> .env
@@ -65,7 +65,14 @@ jobs:
           echo "GOOGLE_OAUTH_REDIRECT_URI=" >> .env
           echo "RESEND_API_KEY=" >> .env
           echo "CMP_CLIENT_ID=${{ secrets.CMP_CLIENT_ID }}" >> .env
+          
           cat .env
+          
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.TUNNEL_PRIVATE_KEY }}" > ~/.ssh/tunnel_key
+          chmod 600 ~/.ssh/tunnel_key
 
       - name: Build and push Docker image for Linux
         uses: docker/build-push-action@v6
