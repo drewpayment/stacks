@@ -36,7 +36,6 @@ WORKDIR /app
 COPY --from=builder /staging/package.json /staging/pnpm-lock.yaml ./
 COPY --from=builder /staging/node_modules ./node_modules
 COPY --from=builder /staging/build ./build
-COPY --from=builder /staging/drizzle ./drizzle
 
 EXPOSE 3000
 CMD ["node", "-r", "dotenv/config", "./build/index.js"]
