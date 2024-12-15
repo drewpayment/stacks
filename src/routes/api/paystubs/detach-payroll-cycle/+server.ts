@@ -1,20 +1,17 @@
-import { detachPayrollCycleFromPaystub } from '$lib/drizzle/mysql/models/paystubs.js';
-import { getUserProfileData } from '$lib/drizzle/mysql/models/users.js';
-import type { SelectPaystub } from '$lib/drizzle/mysql/db.model.js';
+import type { SelectPaystub } from '$lib/drizzle/postgres/db.model';
+import { detachPayrollCycleFromPaystub } from '$lib/drizzle/postgres/models/paystubs';
+import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
 
 
 /**
  * Used to detach a payroll cycle from a paystub.
- *  
- * @type {import('./$types').RequestHandler} 
 **/
 export async function POST({ request, locals }) {
   const paystub = await request.json() as SelectPaystub;
   
-  const session = await locals.auth.validate();
-  if (!session) return new Response('Unauthorized', { status: 401 });
+  if (!locals.session) return new Response('Unauthorized', { status: 401 });
   
-  const profile = await getUserProfileData(session.user.userId);
+  const profile = await getUserProfileData(locals.user.id);
   
   if (!profile || profile.clientId != paystub.clientId) 
     return new Response('Unauthorized', { status: 401 });
