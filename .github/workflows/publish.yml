@@ -43,6 +43,7 @@ jobs:
           
           echo "TUNNEL_HOST=${{ secrets.TUNNEL_HOST }}" >> .env
           echo "TUNNEL_USER=${{ secrets.TUNNEL_USER }}" >> .env
+          echo "TUNNEL_PRIVATE_KEY_PATH=" >> .env
           echo "TUNNEL_PRIVATE_KEY=${{ secrets.TUNNEL_PRIVATE_KEY }}" >> .env
           echo "TUNNEL_DEST_HOST=${{ secrets.TUNNEL_DEST_HOST }}" >> .env
           echo "TUNNEL_DEST_PORT=${{ secrets.TUNNEL_DEST_PORT }}" >> .env
