@@ -25,7 +25,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const getLatestPayrollCycle = async (): Promise<
 		SelectPayrollCycle & { paystubs: (SelectPaystub & { employee: SelectEmployee })[] }
 	> => {
-		return (await getLastPayrollCycle(clientId)) as SelectPayrollCycle & {
+		return ((await getLastPayrollCycle(clientId)) || {}) as SelectPayrollCycle & {
 			paystubs: (SelectPaystub & { employee: SelectEmployee })[];
 		};
 	};
@@ -39,7 +39,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			orderBy: (pc, { desc }) => [desc(pc.paymentDate)]
 		});
 
-		return data as (SelectPayrollCycle & { paystubs: SelectPaystub[] })[];
+		return data || [] as (SelectPayrollCycle & { paystubs: SelectPaystub[] })[];
 	};
 
 	return {

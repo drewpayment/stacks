@@ -25,6 +25,7 @@
 		paystubs: (SelectPaystub & { employee: SelectEmployee })[];
 	};
 	const cycles = historyCycles as (SelectPayrollCycle & { paystubs: SelectPaystub[] })[];
+	console.log(data);
 </script>
 
 <svelte:head>
@@ -43,35 +44,42 @@
 			<div class="px-4 mb-4 text-2xl font-medium">Latest Payroll</div>
 			<div class="flex flex-col md:flex-row md:justify-around">
 				{#if user && ['org_admin', 'super_admin'].includes(user.profile.role)}
+					{#if cycle !== null && cycle.paystubs?.length > 0}
 					<Card size="sm">
 						<h5 class="mb-4 text-2xl font-medium text-gray-600 dark:text-gray-50">
-							{toHumanDate(cycle.paymentDate)}
+							{toHumanDate(cycle?.paymentDate)}
 						</h5>
 						<div class="flex items-baseline text-gray-900 dark:text-white">
 							<ul class="my-7 space-y-4">
+								{#if cycle.paystubs?.length > 0}
 								<li class="flex space-x-2 rtl:space-x-reverse">
 									<CheckCircleSolid class="w-4 h-4 text-primary-600 dark:text-primary-500" />
 									<span class="text-xl font-extrabold tracking-tight"
 										>{cycle.paystubs?.length} paystubs</span
 									>
 								</li>
+								{/if}
+								{#if cycle.paystubs?.length > 0}
 								<li class="flex space-x-2 rtl:space-x-reverse">
 									<CheckCircleSolid class="w-4 h-4 text-primary-600 dark:text-primary-500" />
 									<span class="text-xl font-extrabold tracking-tight"
 										>${cycle.paystubs?.reduce((acc, curr) => acc + Number(curr.netPay), 0)}</span
 									> total net
 								</li>
+								{/if}
 							</ul>
 						</div>
 						<div class="flex flex-col w-full md:flex-row md:justify-end md:w-auto">
-							<Button href={'/app/payroll-cycles/' + cycle.id}>View Details</Button>
+							<Button href={'/app/payroll-cycles/' + cycle?.id}>View Details</Button>
 						</div>
 					</Card>
+					{/if}
 					<Card size="sm">
 						<div class="mb-4 text-xl font-medium text-gray-400 dark:text-gray-500">
 							Top Performers
 						</div>
 						<div class="flex items-baseline text-gray-900 dark:text-white">
+							{#if cycle?.paystubs?.length > 0}
 							{#each cycle?.paystubs as paystub (paystub.id)}
 								<div class="flex flex-col md:flex-row justify-between gap-2 w-full">
 									<span class="text-xl font-extrabold tracking-tight"
@@ -82,6 +90,9 @@
 									>
 								</div>
 							{/each}
+							{:else}
+							<span class="text-xl font-extrabold tracking-tight">No paystubs</span>
+							{/if}
 						</div>
 					</Card>
 				{:else}
@@ -105,6 +116,7 @@
 						<TableHeadCell>Closed</TableHeadCell>
 					</TableHead>
 					<TableBody>
+						{#if cycles.length > 0}
 						{#each cycles as cycle (cycle.id)}
 							<TableBodyRow>
 								<TableBodyCell>
@@ -121,6 +133,13 @@
 								</TableBodyCell>
 							</TableBodyRow>
 						{/each}
+						{:else}
+							<TableBodyRow>
+								<TableBodyCell colSpan={6} class="text-center">
+									No payroll cycles found
+								</TableBodyCell>
+							</TableBodyRow>
+						{/if}
 					</TableBody>
 				</Table>
 			</div>
