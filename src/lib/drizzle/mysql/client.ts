@@ -1,8 +1,8 @@
 import { dev } from '$app/environment';
 import {
   ENABLE_DRIZZLE_LOGGER, MYSQL_DB_HOST, MYSQL_DB_PORT, MYSQL_DB_USER, MYSQL_DB_NAME, MYSQL_DB_PASSWORD,
-  TUNNEL_HOST, TUNNEL_USER, TUNNEL_PORT, TUNNEL_PRIVATE_KEY, TUNNEL_DEST_HOST, TUNNEL_DEST_PORT,
-  TUNNEL_LOCAL_HOST, TUNNEL_LOCAL_PORT, TUNNEL_DEBUG,
+  TUNNEL_HOST, TUNNEL_USER, TUNNEL_PORT, TUNNEL_PRIVATE_KEY, TUNNEL_PRIVATE_KEY_PATH, TUNNEL_DEST_HOST, TUNNEL_DEST_PORT,
+  TUNNEL_LOCAL_PORT, TUNNEL_DEBUG,
   MYSQL_USE_SSH
 } from '$env/static/private';
 import { drizzle } from 'drizzle-orm/mysql2';
@@ -19,11 +19,32 @@ const debug = (message: string, ...args: any[]) => {
   }
 };
 
+const getPrivateKey = async (): Promise<string> => {
+  try {
+    // If TUNNEL_PRIVATE_KEY_PATH is set, read from file
+    if (TUNNEL_PRIVATE_KEY_PATH) {
+      debug('Reading SSH private key from file...');
+      return (runtime.isDeno ? 
+        await Deno?.readTextFile(TUNNEL_PRIVATE_KEY_PATH) :
+        await import('fs').then(fs => fs.readFileSync(TUNNEL_PRIVATE_KEY_PATH, 'utf8'))) as string;
+    }
+    
+    // Otherwise use the direct key value
+    if (TUNNEL_PRIVATE_KEY) {
+      debug('Using provided SSH private key...');
+      return TUNNEL_PRIVATE_KEY;
+    }
+
+    throw new Error('No private key provided. Set either TUNNEL_PRIVATE_KEY or TUNNEL_PRIVATE_KEY_PATH');
+  } catch (error) {
+    console.error('Failed to get private key:', error);
+    throw error;
+  }
+};
+
 const getTunnelConfig = async () => {
-  debug('Reading SSH private key...');
-  const privateKey = runtime.isDeno ? 
-    await Deno?.readTextFile(TUNNEL_PRIVATE_KEY) :
-    await import('fs').then(fs => fs.readFileSync(TUNNEL_PRIVATE_KEY, 'utf8'));
+  debug('Getting SSH private key...');
+  const privateKey = await getPrivateKey();
   
   if (TUNNEL_DEBUG === 'true') {
     debug('Private key loaded, first line:', privateKey?.split('\n')[0]);
