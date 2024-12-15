@@ -40,6 +40,22 @@ jobs:
           echo "POSTGRES_DB_PASSWORD=${{ secrets.POSTGRES_DB_PASSWORD }}" >> .env
           echo "POSTGRES_DB_NAME=${{ secrets.POSTGRES_DB_NAME }}" >> .env
           echo "POSTGRES_MAX_CONNECTIONS=${{ secrets.POSTGRES_MAX_CONNECTIONS }}" >> .env
+          
+          echo "TUNNEL_HOST=${{ secrets.TUNNEL_HOST }}" >> .env
+          echo "TUNNEL_USER=${{ secrets.TUNNEL_USER }}" >> .env
+          echo "TUNNEL_PRIVATE_KEY=${{ secrets.TUNNEL_PRIVATE_KEY }}" >> .env
+          echo "TUNNEL_DEST_HOST=${{ secrets.TUNNEL_DEST_HOST }}" >> .env
+          echo "TUNNEL_DEST_PORT=${{ secrets.TUNNEL_DEST_PORT }}" >> .env
+          echo "TUNNEL_LOCAL_PORT=${{ secrets.TUNNEL_LOCAL_PORT }}" >> .env
+          echo "TUNNEL_DEBUG=${{ secrets.TUNNEL_DEBUG }}" >> .env
+          
+          echo "MYSQL_DB_HOST=${{ secrets.MYSQL_DB_HOST }}" >> .env
+          echo "MYSQL_DB_PORT=${{ secrets.MYSQL_DB_PORT }}" >> .env
+          echo "MYSQL_DB_USER=${{ secrets.MYSQL_DB_USER }}" >> .env
+          echo "MYSQL_DB_PASSWORD=${{ secrets.MYSQL_DB_PASSWORD }}" >> .env
+          echo "MYSQL_DB_NAME=${{ secrets.MYSQL_DB_NAME }}" >> .env
+          echo "MYSQL_USE_SSH=${{ secrets.MYSQL_USE_SSH }}" >> .env
+          
           echo "GITHUB_CLIENT_ID=" >> .env
           echo "GITHUB_CLIENT_SECRET=" >> .env
           echo "GOOGLE_OAUTH_CLIENT_ID=" >> .env
@@ -49,23 +65,14 @@ jobs:
           cat .env
 
       - name: Build and push Docker image for Linux
-        uses: docker/build-push-action@v2
-        continue-on-error: true
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/drewpayment/stacks:latest
+          tags: |
+            ghcr.io/drewpayment/stacks:latest
+            ghcr.io/drewpayment/stacks:${{ github.sha }}
           build-args: |
             ORIGIN=${{ secrets.ORIGIN }}
-
-      # - name: Build and push Docker image for Apple Silicon
-      #   uses: docker/build-push-action@v2
-      #   continue-on-error: true
-      #   with:
-      #     context: .
-      #     file: ./Dockerfile
-      #     platforms: linux/arm64
-      #     push: true
-      #     tags: ghcr.io/drewpayment/stacks:latest
