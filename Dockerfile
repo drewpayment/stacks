@@ -22,7 +22,8 @@ RUN corepack enable && \
 COPY . .
 
 # Generate Drizzle models first, then build
-RUN pnpm drizzle-kit generate:mysql && \
+RUN pnpm generate-migrations:postgres && \
+    pnpm generate-migrations:mysql && \
     pnpm build && \
     pnpm prune --prod
 
