@@ -25,7 +25,6 @@
 		paystubs: (SelectPaystub & { employee: SelectEmployee })[];
 	};
 	const cycles = historyCycles as (SelectPayrollCycle & { paystubs: SelectPaystub[] })[];
-	console.log(data);
 </script>
 
 <svelte:head>
