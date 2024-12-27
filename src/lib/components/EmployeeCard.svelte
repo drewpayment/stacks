@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { Employee } from '$lib/drizzle/postgres/db.model';
 	import { createAvatar, melt } from '@melt-ui/svelte';
-	import { AppWindow } from 'lucide-svelte';
+	import { AppWindow, ArchiveRestore } from 'lucide-svelte';
   import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import type { SelectLegacyEmployee } from '$lib/drizzle/mysql/db.model';
+	import type { CombinedEmployeeResult } from '$lib/types/combined-employee-result.model';
 
 	// A blank source to demonstrate the fallback
 	const {
@@ -13,27 +14,28 @@
 		src: ''
 	});
 
-	export let employee: Employee | SelectLegacyEmployee;
-	const keys = Object.keys(employee);
-	const isLegacy = keys.includes('name');
-	let initials = '';
+	export let employee: CombinedEmployeeResult;
 	
-	if (isLegacy) {
-		initials = (employee as SelectLegacyEmployee).name.split(' ').map((n) => n[0]).join('');
-	} else {
-		initials = `${(employee as Employee).firstName[0]}${(employee as Employee).lastName[0]}`;
-	}
-	
-	const firstName = isLegacy ? (employee as SelectLegacyEmployee).name.split(' ')[0] : (employee as Employee).firstName;
-	const lastName = isLegacy ? (employee as SelectLegacyEmployee).name.split(' ')[1] : (employee as Employee).lastName;
-	const email = !isLegacy ? (employee as Employee)?.employeeProfile?.email || '' : (employee as SelectLegacyEmployee)?.email;
-	
-  let employeeDetailUrl = '';
-  onMount(() => {
-		employeeDetailUrl = isLegacy
-			? `${window.location.href}/${employee?.id}?mode=legacy`
-			: `${window.location.href}/${employee?.id}`;
-	});
+	// Make these computations reactive
+  $: initials = employee.legacy 
+    ? (employee as SelectLegacyEmployee).name.split(' ').map((n) => n[0]).join('')
+    : `${(employee as Employee).firstName[0]}${(employee as Employee).lastName[0]}`;
+  
+  $: firstName = employee.legacy 
+    ? (employee as SelectLegacyEmployee).name.split(' ')[0] 
+    : (employee as Employee).firstName;
+    
+  $: lastName = employee.legacy 
+    ? (employee as SelectLegacyEmployee).name.split(' ')[1] 
+    : (employee as Employee).lastName;
+    
+  $: email = !employee.legacy 
+    ? (employee as Employee)?.employeeProfile?.email || '' 
+    : (employee as SelectLegacyEmployee)?.email;
+  
+	$: employeeDetailUrl = employee.legacy
+    ? `/app/employee/${employee?.id}?mode=legacy`
+    : `/app/employee/${employee?.id}`;
 </script>
 
 <div
@@ -58,27 +60,24 @@
 		</div>
 	</div>
 	<div class="w-[100%] mt-16 flex flex-col justify-center items-center">
-		<h4 class="text-xl font-bold text-text-800 dark:text-text-900">
+		<h4 class="text-xl font-bold text-text-800 dark:text-text-900 overflow-x-hidden text-nowrap">
 			{firstName}
 			{lastName}
 		</h4>
 		<p class="text-sm font-normal text-text-800 dark:text-text-900 break-all">{email}</p>
 	</div>
+	{#if employee.legacy}
+	<div class="w-[100%] px-2 mt-6 mb-3 flex justify-between gap-14 md:!gap-14">
+		<ArchiveRestore class="text-accent-700 dark:text-text-800" />
+    <a href={employeeDetailUrl} class="text-accent-700 dark:text-text-800">
+      <AppWindow />
+    </a>
+	</div>
+	{:else}
 	<div class="w-[100%] px-2 mt-6 mb-3 flex justify-end gap-14 md:!gap-14">
     <a href={employeeDetailUrl} class="text-accent-700 dark:text-text-800">
       <AppWindow />
     </a>
-		<!-- <div class="flex flex-col items-center justify-center">
-			<p class="text-2xl font-bold text-navy-700 dark:text-white">17</p>
-			<p class="text-sm font-normal text-gray-600">Posts</p>
-		</div>
-		<div class="flex flex-col items-center justify-center">
-			<p class="text-2xl font-bold text-navy-700 dark:text-white">9.7K</p>
-			<p class="text-sm font-normal text-gray-600">Followers</p>
-		</div>
-		<div class="flex flex-col items-center justify-center">
-			<p class="text-2xl font-bold text-navy-700 dark:text-white">434</p>
-			<p class="text-sm font-normal text-gray-600">Following</p>
-		</div> -->
 	</div>
+	{/if}
 </div>

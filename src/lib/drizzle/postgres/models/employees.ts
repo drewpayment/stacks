@@ -28,6 +28,37 @@ const getEmployees = async (clientId: string, isCommissionable = false): Promise
   }
 }
 
+export const searchEmployees = async (clientId: string, page: number, take: number, search: string | undefined): Promise<Employee[]> => {
+  if (!clientId) {
+    return [] as Employee[];
+  }
+  
+  const offset = (page - 1) * take;
+
+  try {
+    return await db.query.employee.findMany({
+      with: {
+        employeeProfile: true,
+        employeeCodes: {
+          where: (code, { eq }) => eq(code.isActive, true),
+        },
+      },
+      where: (employee, { eq, and, like, or }) => search !== undefined 
+        ? and(
+            or(like(employee.firstName, search), like(employee.lastName, search)), 
+            eq(employee.clientId, clientId), 
+            eq(employee.isCommissionable, true)
+          )
+        : and(eq(employee.clientId, clientId), eq(employee.isCommissionable, true)),
+      offset,
+      limit: take,
+    }) as Employee[];
+  } catch (ex) {
+    console.error(ex);
+    return [] as Employee[];
+  }
+}
+
 const getEmployee = async (employeeId: string, withProfile = true, withCodes = true, withNotes = true, withOverride = true): Promise<Employee | undefined> => {
   if (!employeeId) {
     return null as unknown as Employee;

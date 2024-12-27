@@ -4,13 +4,32 @@ import { getLatestPaystubDate, getLegacyEmployeePaystubsSinceDate } from './pays
 
 export const getLegacyEmployees = async (): Promise<SelectLegacyEmployee[]> => {
 	try {
-		return await legacyDb.query.legacyEmployees.findMany({
+		return (await legacyDb.query.legacyEmployees.findMany({
 			where: (legacyEmployees, { eq }) => eq(legacyEmployees.isActive, 1),
 			orderBy: (legacyEmployees, { asc }) => asc(legacyEmployees.name),
-		});
+		})) as SelectLegacyEmployee[];
 	} catch (err) {
 		console.error(err);
-		return [];
+		return [] as SelectLegacyEmployee[];
+	}
+};
+
+export const searchLegacyEmployees = async (page: number, take: number, search: string | undefined): Promise<SelectLegacyEmployee[]> => {
+	try {
+		return (await legacyDb.query.legacyEmployees.findMany({
+			where: (legacyEmployees, { and, eq, like }) => search !== undefined 
+				? and(
+					eq(legacyEmployees.isActive, 1),
+					like(legacyEmployees.name, `%${search}%`)
+				)
+				: eq(legacyEmployees.isActive, 1),
+			orderBy: (legacyEmployees, { asc }) => asc(legacyEmployees.name),
+			offset: (page - 1) * take,
+			limit: take,
+		})) as SelectLegacyEmployee[];
+	} catch (err) {
+		console.error(err);
+		return [] as SelectLegacyEmployee[];
 	}
 };
 
