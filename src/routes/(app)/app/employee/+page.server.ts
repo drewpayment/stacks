@@ -1,36 +1,31 @@
-import { createEmployee, getEmployees } from '$lib/drizzle/postgres/models/employees';
-import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
+import { createEmployee, searchEmployees } from '$lib/drizzle/postgres/models/employees';
 import type { Employee, InsertEmployee, InsertEmployeeProfile } from '$lib/drizzle/postgres/db.model';
 import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';
-import { getLegacyEmployees } from '$lib/drizzle/mysql/models/employees';
-import type { SelectLegacyEmployee } from '$lib/drizzle/mysql/db.model.js';
+import { searchLegacyEmployees } from '$lib/drizzle/mysql/models/employees';
+import type { CombinedEmployeeResult } from '$lib/types/combined-employee-result.model.js';
 
 
-export const load = async ({locals}) => {
+export const load = async ({ locals, request, url }) => {
   if (!locals.user) return fail(401, { message: 'Unauthorized' });
+  const clientId = locals.user?.profile?.clientId;
   
-  const employees = async (): Promise<Employee[]> => {
-    const up = await getUserProfileData(locals.user?.id);
-    
-    if (!up) return [];
-    
-    return await getEmployees(up?.clientId as string);
+  if (!clientId) return {};
+  
+  const searchParams = url.searchParams;
+  const search = searchParams.get('search') || undefined;
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = parseInt(searchParams.get('limit') || '16');
+  
+  return {
+    employees: await getPaginatedEmployees(clientId, search, page, limit),
+    params: {
+      search, 
+      page, 
+      limit,
+    },
   }
-  
-  const loadData = async (): Promise<{ employees: Employee[]; legacyEmployees: SelectLegacyEmployee[] }> => {
-    const ees = await employees();
-    const legacyEmployees = await getLegacyEmployees();
-    const filterLegacyEmps = legacyEmployees.filter(le => le.email && !ees.find(ee => ee.employeeProfile.email === le.email));
-    
-    return {
-      employees: ees,
-      legacyEmployees: filterLegacyEmps,
-    };
-  }
-  
-  return await loadData();
 }
 
 export const actions = {
@@ -38,7 +33,6 @@ export const actions = {
     if (!locals.user) return fail(401, { message: 'Unauthorized' });
     
     const profile = locals.user.profile;
-    
     const payload = await request.formData();
     const data = Object.fromEntries(payload.entries());
     const now = dayjs().toDate();
@@ -74,5 +68,47 @@ export const actions = {
     }
     
     return data;
+  },
+  search: async ({ locals, url, request }) => {
+    if (!locals.user || !locals.user.profile) return fail(401, { message: 'Unauthorized' });
+    
+    const clientId = locals.user.profile.clientId;
+    
+    if (!clientId) return {};
+    
+    const formData = await request.formData();
+    const data = Object.fromEntries(formData.entries());
+    
+    const page = parseInt(data.page as string);
+    const limit = parseInt(data.limit as string);
+    const search = data.search as string;
+    
+    if (page == null || limit == null) return fail(400, { message: 'Invalid request' });
+    
+    return {
+      employees: await getPaginatedEmployees(clientId, search, page, limit),
+      params: {
+        search, 
+        page, 
+        limit,
+      },
+    }
   }
+}
+
+const getPaginatedEmployees = async (clientId: string, search: string | undefined, page: number, limit: number) => {
+  const employees = async (): Promise<{ data: Employee[], count: number }> => await searchEmployees(clientId as string, page, limit, search);
+  
+  const loadData = async (): Promise<{ data: CombinedEmployeeResult[], count: number }> => {
+    const { data: ees, count } = await employees();
+    const { data: legacyEmployees, count: legacyCount } = await searchLegacyEmployees(page, limit, search);
+    const filterLegacyEmps = legacyEmployees.filter(le => le.email && !ees.find(ee => ee.employeeProfile.email === le.email)).map(le => ({ ...le, legacy: true }));
+    
+    return {
+      data: [...ees, ...filterLegacyEmps] as CombinedEmployeeResult[],
+      count: count + legacyCount
+    };
+  }
+  
+  return await loadData();
 }
