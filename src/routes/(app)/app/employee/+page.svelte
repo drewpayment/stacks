@@ -84,7 +84,7 @@
 </div>
 
 <div class="flex justify-center pb-4">
-  <EmployeePaginator {previous} {next} {page} />
+  <EmployeePaginator {previous} {next} {page} {count} {limit} />
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -94,5 +94,5 @@
 </div>
 
 <div class="flex justify-center pt-4">
-  <EmployeePaginator {previous} {next} {page} />
+  <EmployeePaginator {previous} {next} {page} {count} {limit} />
 </div>
