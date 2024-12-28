@@ -4,20 +4,23 @@
   
   export let previous: () => void;
   export let next: () => void;
-  
-  const noop = () => {};
-  
-  previous = previous || noop;
-  next = next || noop;
+  export let page: number;
 </script>
 
-<div class="flex space-x-3 rtl:space-x-reverse">
-  <PaginationItem large class="flex items-center" on:click={previous}>
-    <ArrowLeftOutline class="me-2 w-5 h-5" />
-    Previous
-  </PaginationItem>
-  <PaginationItem large class="flex items-center" on:click={next}>
-    Next
-    <ArrowRightOutline class="ms-2 w-5 h-5" />
-  </PaginationItem>
+<div class="flex flex-col items-center">
+  <div class="inline-flex mt-2 xs:mt-0">
+    <button
+      class="flex items-center justify-center px-3 h-8 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+      on:click={previous}
+      disabled={page <= 1}
+    >
+      <ArrowLeftOutline class="w-5 h-5" />
+    </button>
+    <button
+      class="flex items-center justify-center px-3 h-8 text-sm font-medium text-white bg-gray-800 border-0 border-l border-gray-700 rounded-r hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+      on:click={next}
+    >
+      <ArrowRightOutline class="w-5 h-5" />
+    </button>
+  </div>
 </div>

@@ -5,21 +5,20 @@
 		Breadcrumb,
 		BreadcrumbItem,
 		Button,
-		Input,
-		Label,
-		PaginationItem
-	} from 'flowbite-svelte';
-	import { ArrowLeftOutline, ArrowRightOutline, SearchOutline } from 'flowbite-svelte-icons';
+		Input	} from 'flowbite-svelte';
+	import { SearchOutline } from 'flowbite-svelte-icons';
 	import EmployeePaginator from './EmployeePaginator.svelte';
-	import type { CombinedEmployeeResult } from '$lib/types/combined-employee-result.model';
 	import { enhance } from '$app/forms';
 	import { onMount, tick } from 'svelte';
 	import { writable } from 'svelte/store';
 
 	export let data;
 
-	const { employees: allEmployees, params } = data;
-	const employeesStore = writable([...allEmployees || []]);
+	const { employees: employeesData, params } = data;
+	const allEmployees = employeesData?.data || [];
+	const count = employeesData?.count || 0;
+	
+	const employeesStore = writable([...allEmployees]);
   $: employees = $employeesStore;
   
   let btn: HTMLButtonElement;
@@ -28,12 +27,21 @@
 	let page = params?.page || 1;
 	let limit = params?.limit || 16;
 
-	const previous = () => {
+	const previous = async () => {
+		if (page <= 1) {
+      page = 1;
+      return;
+    }
     page = page - 1;
-    
+		await tick();
+    btn.click();
   };
-	const next = () => {
+	const next = async () => {
+		if (Math.floor((page - 1) * limit) >= count) return;
+    if (page < 1) page = 1;
 		page = page + 1;
+		await tick();
+    btn.click();
 	};
   
   onMount(() => {
@@ -60,7 +68,8 @@
           if (!result.data) return;
           
 					const data = result.data;
-          employeesStore.set(data.employees);
+          employeesStore.set(data.employees.data);
+          page = data.params.page;
 				};
 			}}
 		>
@@ -75,7 +84,7 @@
 </div>
 
 <div class="flex justify-center pb-4">
-  <EmployeePaginator {previous} {next} />
+  <EmployeePaginator {previous} {next} {page} />
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -85,5 +94,5 @@
 </div>
 
 <div class="flex justify-center pt-4">
-  <EmployeePaginator {previous} {next} />
+  <EmployeePaginator {previous} {next} {page} />
 </div>

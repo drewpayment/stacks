@@ -14,9 +14,9 @@ export const getLegacyEmployees = async (): Promise<SelectLegacyEmployee[]> => {
 	}
 };
 
-export const searchLegacyEmployees = async (page: number, take: number, search: string | undefined): Promise<SelectLegacyEmployee[]> => {
+export const searchLegacyEmployees = async (page: number, take: number, search: string | undefined): Promise<{ data: SelectLegacyEmployee[], count: number }> => {
 	try {
-		return (await legacyDb.query.legacyEmployees.findMany({
+		const data = (await legacyDb.query.legacyEmployees.findMany({
 			where: (legacyEmployees, { and, eq, like }) => search !== undefined 
 				? and(
 					eq(legacyEmployees.isActive, 1),
@@ -27,9 +27,20 @@ export const searchLegacyEmployees = async (page: number, take: number, search: 
 			offset: (page - 1) * take,
 			limit: take,
 		})) as SelectLegacyEmployee[];
+
+		const count = (await legacyDb.query.legacyEmployees.findMany({
+			where: (legacyEmployees, { and, eq, like }) => search !== undefined 
+				? and(
+					eq(legacyEmployees.isActive, 1),
+					like(legacyEmployees.name, `%${search}%`)
+				)
+				: eq(legacyEmployees.isActive, 1),
+		})).length;
+
+		return { data, count };
 	} catch (err) {
 		console.error(err);
-		return [] as SelectLegacyEmployee[];
+		return { data: [] as SelectLegacyEmployee[], count: 0 };
 	}
 };
 

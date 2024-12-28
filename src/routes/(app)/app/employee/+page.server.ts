@@ -97,14 +97,17 @@ export const actions = {
 }
 
 const getPaginatedEmployees = async (clientId: string, search: string | undefined, page: number, limit: number) => {
-  const employees = async (): Promise<Employee[]> => await searchEmployees(clientId as string, page, limit, search);
+  const employees = async (): Promise<{ data: Employee[], count: number }> => await searchEmployees(clientId as string, page, limit, search);
   
-  const loadData = async (): Promise<CombinedEmployeeResult[]> => {
-    const ees = await employees();
-    const legacyEmployees = await searchLegacyEmployees(page, limit, search);
+  const loadData = async (): Promise<{ data: CombinedEmployeeResult[], count: number }> => {
+    const { data: ees, count } = await employees();
+    const { data: legacyEmployees, count: legacyCount } = await searchLegacyEmployees(page, limit, search);
     const filterLegacyEmps = legacyEmployees.filter(le => le.email && !ees.find(ee => ee.employeeProfile.email === le.email)).map(le => ({ ...le, legacy: true }));
     
-    return [...ees, ...filterLegacyEmps] as CombinedEmployeeResult[];
+    return {
+      data: [...ees, ...filterLegacyEmps] as CombinedEmployeeResult[],
+      count: count + legacyCount
+    };
   }
   
   return await loadData();
