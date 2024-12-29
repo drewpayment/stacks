@@ -1,8 +1,8 @@
-# 🚀 KitForStartups
+# 🚀 KitForStartups - Stacks
 
 The Open Source SvelteKit SaaS boilerplate.
 
-_KitForStartups_ is a starter kit for building and shipping fast, secure, and scalable full stack SaaS applications with SvelteKit and TypeScript.
+_KitForStartups_ is a starter kit for building and shipping fast, secure, and scalable full-stack SaaS applications with SvelteKit and TypeScript. This particular instance, named **Stacks**, is tailored for payroll and employee management.
 
 If you already found yourself in a situation where you were:
 
@@ -22,127 +22,134 @@ Then _KitForStartups_ is for you 🎉!
 - Drizzle ORM
 - Drizzle Kit
 - Tailwind CSS
-- MySQL
-- SQLite
 - PostgreSQL
-- Stripe (coming soon)
-- Lemon Squeezy (coming soon)
+- Lucia Auth
 - Resend
-- Mailgun (coming soon)
+- Playwright
+- Vitest
+- Docker
 
 ## 📦 Getting Started
 
-The default configuration for the project uses MySQL as a database.
+This project uses PostgreSQL as a database.
 
 ### Prerequisites
 
 - Node.js 18+
-- MySQL 8.1+
+- PostgreSQL 13+
 - pnpm
 - Docker Compose (optional)
 
 ### Installation
 
-1. Setup
+1.  **Setup**
 
-- Clone or fork the repository:
+    - Clone or fork the repository:
 
-```bash
-git clone https://github.com/okupter/kitforstartups my-project
-```
+    ```bash
+    git clone https://github.com/okupter/kitforstartups my-project
+    ```
 
-2. Install dependencies
+2.  **Install dependencies**
 
-```bash
-cd my-project
-pnpm install
-```
+    ```bash
+    cd my-project
+    pnpm install
+    ```
 
-3. Setup the environment variables
+3.  **Setup the environment variables**
 
-Duplicate the `.env.example` file and rename it to `.env`. Then, fill in the values for the environment variables.
+    Duplicate the `.env.example` file and rename it to `.env`. Then, fill in the values for the environment variables.
 
-```bash
-cp .env.example .env
-```
+    ```bash
+    cp .env.example .env
+    ```
 
-4. Setup the database
+4.  **Setup the database**
 
-For easy local development, there is a `./docker/mysql.yml` file that you can use to spin up a MySQL database in a Docker container. If you don't want to use Docker, you can install MySQL locally and skip this step.
+    For easy local development, there is a `./docker/mysql.yml` file that you can use to spin up a MySQL database in a Docker container. If you don't want to use Docker, you can install MySQL locally and skip this step.
 
-```bash
-docker-compose -f docker/mysql.yml up -d
-```
+    ```bash
+    docker-compose -f docker/mysql.yml up -d
+    ```
 
-Remember to update the MYSQL\_\* environment variables in the `.env` file with your database credentials.
+    Remember to update the `POSTGRES_*` environment variables in the `.env` file with your database credentials.
 
-5. Run the migrations
+5.  **Run the migrations**
 
-We use [`Drizzle Kit`](https://orm.drizzle.team/kit-docs/overview) for automatic SQL migrations and prototyping.
+    We use [`Drizzle Kit`](https://orm.drizzle.team/kit-docs/overview) for automatic SQL migrations and prototyping.
 
-To run the migrations for MySQL, run the following command:
+    To run the migrations for PostgreSQL, run the following command:
 
-```bash
-pnpm generate-migrations:mysql
-```
+    ```bash
+    pnpm generate-migrations:postgres
+    ```
 
-This will generate the SQL migrations, as well as migrations metadata files in the `./src/lib/drizzle/mysql/migrations/data` directory.
+    This will generate the SQL migrations, as well as migrations metadata files in the `./src/lib/drizzle/postgres/migrations/data` directory.
 
-You can now run the following command to push the migrations to the database:
+    You can now run the following command to push the migrations to the database:
 
-```bash
-pnpm migrate:mysql
-```
+    ```bash
+    pnpm migrate:postgres
+    ```
 
-In early stage of development or when you're at the prototyping stage, you can use directly update the database schema and run the following command to directly push the schema changes to the database:
+    In the early stage of development or when you're at the prototyping stage, you can directly update the database schema and run the following command to directly push the schema changes to the database:
 
-```bash
-pnpm push:mysql
-```
+    ```bash
+    pnpm push:postgres
+    ```
 
-6. Setup MailHog for local email testing
+6.  **Setup MailHog for local email testing**
 
-We use MailHog to send and test emails locally. The boilerplate is configured to automatically send emails to MailHog when running in development mode.
+    We use MailHog to send and test emails locally. The boilerplate is configured to automatically send emails to MailHog when running in development mode.
 
-Check `./src/lib/emails/send.ts` for more details about the implementation.
+    Check `./src/lib/emails/send.ts` for more details about the implementation.
 
-We also provide a Docker Compose file to quickly spin up a MailHog container.
+    We also provide a Docker Compose file to quickly spin up a MailHog container.
 
-```bash
-docker-compose -f docker/mailhog.yml up -d
-```
+    ```bash
+    docker-compose -f docker/mailhog.yml up -d
+    ```
 
-The MailHog server will be available at `http://localhost:8025`.
+    The MailHog server will be available at `http://localhost:8025`.
 
-7. Run the app
+7.  **Run the app**
 
-```bash
-pnpm dev
-```
+    ```bash
+    pnpm dev
+    ```
 
 ### Changing the database
 
-Right now, there is no CLI or configuration file to change the database. You will have to do some search and replace in the codebase to change the database.
+This project is configured to use PostgreSQL. If you want to use a different database, you will need to manually change the drizzle config and schema files.
 
-The default database is MySQL. If you want to use PostgreSQL, you will have to:
+**PS**: We plan to add a central configuration file for the app and a CLI to generate a starter project with the database of your choice.
 
-* Change occurences of `$lib/lucia/mysql` to `$lib/lucia/postgres` in the `./src` directory
-* Change occurences of `$lib/drizzle/mysql/models` to `$lib/drizzle/postgres/models` in the `./src` directory
+## 🚀 Key Features
 
-This should be enough to get you started with PostgreSQL.
-
-**PS**: This won't be necessary in the future, as we plan to add a central configuration file for the app and a CLI to generate a starter project with the database of your choice.
+-   **Authentication:** Built with Lucia for secure user authentication.
+-   **Database:** Uses Drizzle ORM for type-safe database interactions with PostgreSQL.
+-   **Email:** Integrated with Resend for sending emails, with local testing via MailHog.
+-   **Testing:** Includes Playwright for end-to-end testing and Vitest for unit testing.
+-   **Styling:** Uses Tailwind CSS for a modern and responsive design.
+-   **Components:** Leverages Flowbite Svelte for UI components.
+-   **Payroll Management:** Core functionality for managing pay cycles, paystubs, and employee information.
+-   **Sales Tracking:** Functionality to import and manage sales data.
+-   **Employee Management:** Features for managing employee information, notes, and more.
+-   **Client Management:** Functionality to manage clients.
+-   **User Management:** Functionality to manage users and their roles.
+-   **Theme:** Dark mode support.
 
 ## 🗺️ Roadmap
 
 KitForStartups is still in the early stages of development. Here is a list of features that we plan to add in the very near future:
 
-- [x] PostgreSQL support
-- [x] Proper error handling on the client with toast notifications
-- [ ] A central configuration file for the app
-- [ ] Magic link authentication
-- [x] Authorization logic with load functions and hooks
-- [ ] Stripe integration
-- [ ] Lemon Squeezy integration
-- [ ] Mailgun integration
-- [ ] CLI for generating a starter project
+-   [x] PostgreSQL support
+-   [x] Proper error handling on the client with toast notifications
+-   [ ] A central configuration file for the app
+-   [ ] Magic link authentication
+-   [x] Authorization logic with load functions and hooks
+-   [ ] Stripe integration
+-   [ ] Lemon Squeezy integration
+-   [ ] Mailgun integration
+-   [ ] CLI for generating a starter project
