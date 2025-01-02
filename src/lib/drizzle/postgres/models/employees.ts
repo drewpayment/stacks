@@ -1,7 +1,7 @@
 import { drizzleClient as db } from '$lib/drizzle/postgres/client';
 import { and, eq } from 'drizzle-orm';
 import { employee, employeeCodes, employeeNotes, employeeProfile } from '../schema';
-import type { Employee, EmployeeProfile, InsertEmployee, InsertEmployeeCode, InsertEmployeeNotes, InsertEmployeeProfile, SelectEmployee, SelectEmployeeCode } from '$lib/drizzle/postgres/db.model';
+import type { Employee, EmployeeProfile, InsertEmployee, InsertEmployeeCode, InsertEmployeeNotes, InsertEmployeeProfile, SelectEmployee, SelectEmployeeCode, SelectEmployeeProfile } from '$lib/drizzle/postgres/db.model';
 import { nanoid } from 'nanoid';
 import { error } from '@sveltejs/kit';
 
@@ -27,6 +27,56 @@ const getEmployees = async (clientId: string, isCommissionable = false): Promise
     return [] as Employee[];
   }
 }
+
+/**
+ * Gets an employee by their email address
+ * 
+ * @param email - The email address to look up
+ * @returns Promise containing the Employee object if found, undefined if not found
+ */
+export const getEmployeeByEmail = async (email: string | undefined): Promise<SelectEmployee & { employeeProfile: SelectEmployeeProfile } | undefined> => {
+  if (!email) {
+    return undefined;
+  }
+
+  try {
+    const result = await db.transaction(async (tx) => {
+      const profile = await tx.query.employeeProfile.findFirst({
+        where: (profile, { eq }) => eq(profile.email, email),
+      }) as SelectEmployeeProfile;
+      
+      const employee = await tx.query.employee.findFirst({
+        where: (employee, { eq }) => eq(employee.id, profile.employeeId),
+      }) as Employee;
+      
+      return {
+        ...employee,
+        employeeProfile: profile,
+      };
+    });
+    
+    return result;
+  } catch (err) {
+    console.error(err);
+    return undefined;
+  }
+};
+
+
+/**
+ * Gets a list of employees for a given client ID with optional search filtering
+ * 
+ * @param clientId - The ID of the client to get employees for
+ * @param page - The page number to return (1-based)
+ * @param take - The number of records to return per page
+ * @param search - Optional search string to filter employees by first or last name
+ * @returns Promise containing array of Employee objects and total count
+ * 
+ * The search parameter will filter employees where either first name OR last name 
+ * contains the search string (case-insensitive). Only returns commissionable employees.
+ * 
+ * Returns employee records with their associated profile and active employee codes.
+ */
 
 export const searchEmployees = async (clientId: string, page: number, take: number, search: string | undefined): Promise<{ data: Employee[], count: number }> => {
   if (!clientId) {

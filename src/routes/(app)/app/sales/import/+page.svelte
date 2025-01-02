@@ -3,11 +3,10 @@
 	import { createToast } from '$lib/components/Toast.svelte';
 	import { Button, Breadcrumb, BreadcrumbItem, Label, Fileupload, Table, TableBody, TableBodyRow, TableBodyCell, TableHead, TableHeadCell, Select } from 'flowbite-svelte';
 	import type { PageData } from './$types';
-	import { read, utils } from 'xlsx';
-  import type { ImportSalesResult } from '$lib/types/sale.model';
 	import type { ActionResult } from '@sveltejs/kit';
-	import type { InsertSale } from '$lib/types/db.model';
 	import { formatCurrency, formatDate } from '$lib/utils/utils';
+	import type { InsertSale } from '$lib/drizzle/postgres/db.model';
+	import type { ImportSalesResult } from '$lib/drizzle/postgres/types/sale.model';
 
   export let data: PageData;
   const { campaigns, employees } = data;
