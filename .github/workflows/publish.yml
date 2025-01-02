@@ -64,6 +64,7 @@ jobs:
           echo "GOOGLE_OAUTH_CLIENT_SECRET=" >> .env
           echo "GOOGLE_OAUTH_REDIRECT_URI=" >> .env
           echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> .env
+          echo "FROM_EMAIL=${{ secrets.FROM_EMAIL }}" >> .env
           echo "CMP_CLIENT_ID=${{ secrets.CMP_CLIENT_ID }}" >> .env
           
           cat .env
