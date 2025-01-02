@@ -14,7 +14,8 @@ export const AuthUtils = {
     try {
       const resetToken = await generatePasswordResetToken(userId);
   
-      const sender = 'Stacks <drew@verostack.dev>';
+      const fromAddress = process.env.FROM_EMAIL || 'donotreply@stacks.hoyt.services';
+      const sender = `Stacks <${fromAddress}>`;
       const recipient = profile?.firstName ? `${profile.firstName}` : email;
       const emailHtml = `Hello ${recipient},<br><br>Here is your password reset link:<br><br><a href="${appUrl}/password-reset/${resetToken}">Reset Password</a><br><br>Thanks,<br>Drew from Stacks`;
   
