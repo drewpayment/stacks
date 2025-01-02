@@ -1,25 +1,21 @@
-import { generateEmailVerificationToken } from '$lib/drizzle/postgres/models/tokens';
-import { createUser } from '$lib/drizzle/postgres/models/users';
-import { sendEmail } from '$lib/emails/send';
+import { createUser, getUserByEmail } from '$lib/drizzle/postgres/models/users';
 import { getFeedbackObjects } from '$lib/utils/utils';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
 import type { Actions } from './$types';
 import { Argon2id } from 'oslo/password';
-import type { InsertUser, InsertUserKey, InsertUserProfile } from '$lib/drizzle/postgres/db.model';
-import { lucia } from '$lib/lucia/postgres';
-
+import type { InsertUser, InsertUserKey, InsertUserProfile, SelectEmployee } from '$lib/drizzle/postgres/db.model';
+import { AuthUtils } from '$lib/utils/auth';
+import { dev } from '$app/environment';
+import { getEmployeeByEmail } from '$lib/drizzle/postgres/models/employees';
 
 const signupUserSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  email: z.string().email(),
-  password: z.string().min(1)
+  email: z.string().email()
 });
 
 export const actions: Actions = {
-  signupUser: async ({ locals, request, url, cookies }) => {
+  signupUser: async ({ request, url }) => {
     const formData = Object.fromEntries(await request.formData());
     const signupUser = signupUserSchema.safeParse(formData);
 
@@ -40,85 +36,54 @@ export const actions: Actions = {
       });
     }
 
-    const { firstName, lastName, email, password: inputPassword } = signupUser.data;
+    const { email } = signupUser.data;
     
-    try {      
-      const insertUser = {
-        id: nanoid(),
-        email,
-      } as InsertUser;
+    try {
+      // Check if user exists
+      const existingEmployee = await getEmployeeByEmail(email);
+      
+      if (existingEmployee) {
+        let userId: string;
+        const user = await getUserByEmail(email);
         
-      const hashedPassword = await new Argon2id().hash(inputPassword);
-      
-      const insertUserKey = {
-        id: nanoid(),
-        userId: insertUser.id,
-        hashedPassword,
-      } as InsertUserKey;
-      
-      const insertUserProfile = {
-        id: nanoid(),
-        userId: insertUser.id,
-        firstName,
-        lastName,
-        clientId: 'default',
-        role: 'user',
-      } as InsertUserProfile;
+        if (!user) {
+          userId = await createNewUserFromEmployee(email, existingEmployee);
+        } else {
+          userId = user.id;
+        }
         
-      const result = await createUser(insertUser, insertUserKey, insertUserProfile);
-      
-      if (!result.success) {
-        return fail(500, {
-          feedbacks: [
+        // User exists, send password reset
+        const failure = await AuthUtils.sendPasswordResetLink(url.origin, email, userId);
+        
+        if (failure) {
+          throw new Error(failure.data.feedbacks[0].message);
+        }
+        
+        return {
+          feedbacks: getFeedbackObjects([
             {
-              type: 'error',
-              title: 'Error creating user',
-              message: 'An error occurred while creating your account. Please try again.'
+              type: 'success',
+              title: 'Password Reset Link Sent',
+              message: 'If an account exists with this email, you will receive a password reset link.'
             }
-          ]
-        });
+          ])
+        };
       }
       
-      const session = await lucia.createSession(insertUser.id, {});
-      const sessionCookie = lucia.createSessionCookie(session.id);
-
-      // Set session cookie
-      cookies.set(sessionCookie.name, sessionCookie.value, {
-        path: '.',
-        ...sessionCookie.attributes,
-      });
-
-      // Send verification email
-      const verificationToken = await generateEmailVerificationToken(insertUser.id);
-
-      const sender = 'Stacks <drew@verostack.dev>';
-      const recipient = firstName ? `${firstName}` : email;
-      const emailHtml = `Hello ${recipient},
-			<br><br>
-			Thank you for signing up to Stacks! Please click the link below to verify your email address:
-			<br><br>
-			<a href="${url.origin}/app/email-verification/${verificationToken}">Verify Email Address</a>
-			<br>
-			You can also copy directly into your browser:
-			<br><br>
-			<code>${url.origin}/app/email-verification/${verificationToken}</code>
-			<br><br>
-			Thanks,
-			<br>
-			Drew from Stacks`;
-
-      const signupEmail = await sendEmail({
-        from: sender,
-        to: email,
-        subject: 'Verify Your Email Address',
-        html: emailHtml
-      });
-
-      if (signupEmail[0].type === 'error') {
-        return fail(500, {
-          feedbacks: signupEmail
-        });
+      if (dev) {
+        console.log('User does not exist, sending email verification link');
       }
+
+      // If user doesn't exist, return same message to avoid email enumeration
+      return {
+        feedbacks: getFeedbackObjects([
+          {
+            type: 'success',
+            title: 'Password Reset Link Sent',
+            message: 'If an account exists with this email, you will receive a password reset link.'
+          }
+        ])
+      };
     } catch (e) {
       const feedbacks = getFeedbackObjects([
         {
@@ -132,7 +97,34 @@ export const actions: Actions = {
         feedbacks
       });
     }
-
-    redirect(302, '/app/email-verification');
   }
 };
+
+const createNewUserFromEmployee = async (email: string, existingEmployee: SelectEmployee) => {
+  // Create user record for existing employee
+  const userId = nanoid();
+  const newUser: InsertUser = {
+    id: userId,
+    email: email,
+    emailVerified: false
+  };
+
+  const newUserKey: InsertUserKey = {
+    id: `email:${email}`,
+    userId: userId,
+    hashedPassword: await new Argon2id().hash(nanoid())
+  };
+
+  const newUserProfile: InsertUserProfile = {
+    id: nanoid(),
+    userId: userId,
+    clientId: existingEmployee.clientId,
+    role: 'user',
+    firstName: existingEmployee.firstName,
+    lastName: existingEmployee.lastName
+  };
+
+  await createUser(newUser, newUserKey, newUserProfile);
+  
+  return userId;
+}
