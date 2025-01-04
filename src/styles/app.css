@@ -190,12 +190,12 @@
   body {
 		@apply text-text-950 dark:text-text-900 bg-background-50 dark:bg-background-200;
 		
-		font-family: 'Lora';
+		font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   	font-weight: 400;
 	}
 	
 	h1, h2, h3, h4, h5 {
-		font-family: 'Nunito';
+		font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 		font-weight: 700;
 	}
 
