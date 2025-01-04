@@ -86,35 +86,37 @@ export const searchEmployees = async (clientId: string, page: number, take: numb
   const offset = (page - 1) * take;
 
   try {
-    const data = await db.query.employee.findMany({
-      with: {
-        employeeProfile: true,
-        employeeCodes: {
-          where: (code, { eq }) => eq(code.isActive, true),
+    return await db.transaction(async (tx) => {
+      const data = await tx.query.employee.findMany({
+        with: {
+          employeeProfile: true,
+          employeeCodes: {
+            where: (code, { eq }) => eq(code.isActive, true),
+          },
         },
-      },
-      where: (employee, { eq, and, like, or }) => search !== undefined 
-        ? and(
-            or(like(employee.firstName, search), like(employee.lastName, search)), 
-            eq(employee.clientId, clientId), 
-            eq(employee.isCommissionable, true)
-          )
-        : and(eq(employee.clientId, clientId), eq(employee.isCommissionable, true)),
-      offset,
-      limit: take,
-    }) as Employee[];
-
-    const count = (await db.query.employee.findMany({
-      where: (employee, { eq, and, like, or }) => search !== undefined 
-        ? and(
-            or(like(employee.firstName, search), like(employee.lastName, search)), 
-            eq(employee.clientId, clientId), 
-            eq(employee.isCommissionable, true)
-          )
-        : and(eq(employee.clientId, clientId), eq(employee.isCommissionable, true)),
-    })).length;
-
-    return { data, count };
+        where: (employee, { eq, and, ilike, or }) => search != null 
+          ? and(
+              or(ilike(employee.firstName, `%${search}%`), ilike(employee.lastName, `%${search}%`)), 
+              eq(employee.clientId, clientId), 
+              eq(employee.isCommissionable, true)
+            )
+          : and(eq(employee.clientId, clientId), eq(employee.isCommissionable, true)),
+        offset,
+        limit: take,
+      }) as Employee[];
+  
+      const count = (await tx.query.employee.findMany({
+        where: (employee, { eq, and, ilike, or }) => search != null 
+          ? and(
+              or(ilike(employee.firstName, `%${search}%`), ilike(employee.lastName, `%${search}%`)), 
+              eq(employee.clientId, clientId), 
+              eq(employee.isCommissionable, true)
+            )
+          : and(eq(employee.clientId, clientId), eq(employee.isCommissionable, true)),
+      })).length;
+  
+      return { data, count };
+    });
   } catch (ex) {
     console.error(ex);
     return { data: [] as Employee[], count: 0 };
