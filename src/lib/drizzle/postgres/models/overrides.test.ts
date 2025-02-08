@@ -1,15 +1,15 @@
 import { vi, describe, it, expect, afterAll } from 'vitest';
-import { drizzleClient } from '../client';
+import { db } from '../client';
 import { getPendingSaleOverrides, saveOverridingEmployee } from './overrides';
 import type { SelectSaleOverride } from '../db.model';
 
 vi.mock('$lib/drizzle/postgres/client');
 
-vi.spyOn(drizzleClient.query.saleOverride, 'findMany')
+vi.spyOn(db.query.saleOverride, 'findMany')
   .mockRejectedValueOnce(new Error('test error'))
   .mockResolvedValueOnce([{ id: 'testId', clientId: 'clientId',  } as SelectSaleOverride]);
   
-vi.spyOn(drizzleClient.query.overridingEmployee, 'findFirst')
+vi.spyOn(db.query.overridingEmployee, 'findFirst')
   .mockResolvedValueOnce({ id: 'testId' } as any)
   
 

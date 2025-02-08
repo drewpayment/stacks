@@ -2,7 +2,7 @@ import { getEmployeeByUserId } from '$lib/drizzle/postgres/models/employees';
 import type { PaystubWith } from '$lib/drizzle/postgres/types/paystbus.model';
 import { error, fail } from '@sveltejs/kit';
 import dayjs from 'dayjs';
-import { drizzleClient as db } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 
 export const load = async ({ locals }) => {
   if (!locals.user) return fail(401, { message: 'Unauthorized' });

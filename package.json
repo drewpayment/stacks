@@ -13,9 +13,9 @@
     "generate-migrations:mysql": "drizzle-kit generate:mysql --config=src/lib/drizzle/mysql/drizzle.config.ts",
     "generate-migrations:postgres": "drizzle-kit generate:pg --config=src/lib/drizzle/postgres/drizzle.config.ts",
     "generate-migrations:turso": "drizzle-kit generate:turso --config=src/lib/drizzle/turso/drizzle.config.ts",
-    "push:mysql": "drizzle-kit push:mysql --config=src/lib/drizzle/mysql/drizzle.config.ts",
-    "push:postgres": "drizzle-kit push:pg --config=src/lib/drizzle/postgres/drizzle.config.ts",
-    "push:turso": "drizzle-kit push:turso --config=src/lib/drizzle/turso/drizzle.config.ts",
+    "push:mysql": "drizzle-kit push --config=src/lib/drizzle/mysql/drizzle.config.ts",
+    "push:pg": "drizzle-kit push --config=src/lib/drizzle/postgres/drizzle.config.ts ",
+    "push:turso": "drizzle-kit push --config=src/lib/drizzle/turso/drizzle.config.ts",
     "migrate:mysql": "tsx src/lib/drizzle/mysql/migrations/migrate.ts",
     "migrate:drop": "drizzle-kit drop --config=src/lib/drizzle/mysql/drizzle.config.ts",
     "migrate:postgres": "tsx src/lib/drizzle/postgres/migrations/migrate.ts",
@@ -52,7 +52,7 @@
     "autoprefixer": "^10.4.16",
     "bits-ui": "^0.21.16",
     "clsx": "^2.1.1",
-    "drizzle-kit": "^0.19.13",
+    "drizzle-kit": "^0.30.4",
     "emailjs": "^4.0.3",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^8.10.0",
@@ -90,13 +90,15 @@
     "@lucia-auth/adapter-sqlite": "^3.0.0",
     "@lucia-auth/oauth": "^3.5.3",
     "@melt-ui/svelte": "^0.49.1",
+    "@oslojs/crypto": "^1.0.1",
+    "@oslojs/encoding": "^1.1.0",
     "@planetscale/database": "^1.13.0",
     "@popperjs/core": "^2.11.8",
     "@tailwindcss/forms": "^0.5.7",
     "cmdk-sv": "^0.0.18",
     "dayjs": "^1.11.10",
     "dotenv": "^16.4.1",
-    "drizzle-orm": "^0.28.6",
+    "drizzle-orm": "^0.39.1",
     "flowbite": "^2.2.1",
     "flowbite-svelte": "^0.44.21",
     "flowbite-svelte-blocks": "^0.5.1",
@@ -112,5 +114,13 @@
     "svelte-input-mask": "^1.1.0",
     "tunnel-ssh": "^5.1.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
-  }
+  },
+  "trustedDependencies": [
+    "cpu-features",
+    "es5-ext",
+    "esbuild",
+    "msw",
+    "ssh2",
+    "svelte-preprocess"
+  ]
 }

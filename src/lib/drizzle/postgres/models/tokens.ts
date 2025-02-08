@@ -1,4 +1,4 @@
-import { drizzleClient } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import { emailVerification, passwordResetToken } from '$lib/drizzle/postgres/schema';
 import dayjs from 'dayjs';
 import { eq } from 'drizzle-orm';
@@ -21,7 +21,7 @@ const generateEmailVerificationToken = async (userId: string | undefined) => {
 		throw new Error('Invalid user ID');
 	}
 
-	const storedUserTokens = await drizzleClient
+	const storedUserTokens = await db
 		.select()
 		.from(emailVerification)
 		.where(eq(emailVerification.userId, userId));
@@ -40,7 +40,7 @@ const generateEmailVerificationToken = async (userId: string | undefined) => {
 
 	const token = randString();
 
-	await drizzleClient.insert(emailVerification).values({
+	await db.insert(emailVerification).values({
 		id: token,
 		userId: userId,
 		expires: dayjs().add(EXPIRES_IN, 'milliseconds').toDate(),
@@ -50,7 +50,7 @@ const generateEmailVerificationToken = async (userId: string | undefined) => {
 };
 
 const generatePasswordResetToken = async (userId: string) => {
-	const storedUserTokens = await drizzleClient
+	const storedUserTokens = await db
 		.select()
 		.from(passwordResetToken)
 		.where(eq(passwordResetToken.userId, userId));
@@ -69,7 +69,7 @@ const generatePasswordResetToken = async (userId: string) => {
 
 	const token = randString();
 
-	await drizzleClient.insert(passwordResetToken).values({
+	await db.insert(passwordResetToken).values({
 		id: token,
 		userId,
 		expires: dayjs().add(EXPIRES_IN, 'milliseconds').toDate(),
@@ -79,7 +79,7 @@ const generatePasswordResetToken = async (userId: string) => {
 };
 
 const validateEmailVerificationToken = async (token: string) => {
-	const storedToken = await drizzleClient.query.emailVerification.findFirst({
+	const storedToken = await db.query.emailVerification.findFirst({
 		where: (emailVerification, { eq, }) => eq(emailVerification.id, token),
 	});
 
@@ -88,7 +88,7 @@ const validateEmailVerificationToken = async (token: string) => {
 	}
 
 	// Delete all tokens for the user
-	await drizzleClient
+	await db
 		.delete(emailVerification)
 		.where(eq(emailVerification.userId, storedToken.userId));
 
@@ -103,7 +103,7 @@ const validateEmailVerificationToken = async (token: string) => {
 
 const validatePasswordResetToken = async (token: string) => {
 	const storedToken = (
-		await drizzleClient.select().from(passwordResetToken).where(eq(passwordResetToken.id, token))
+		await db.select().from(passwordResetToken).where(eq(passwordResetToken.id, token))
 	)[0];
 
 	if (!storedToken) {
@@ -111,7 +111,7 @@ const validatePasswordResetToken = async (token: string) => {
 	}
 
 	// Delete all tokens for the user
-	await drizzleClient
+	await db
 		.delete(passwordResetToken)
 		.where(eq(passwordResetToken.userId, storedToken.userId));
 

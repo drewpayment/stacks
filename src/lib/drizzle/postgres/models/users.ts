@@ -1,4 +1,4 @@
-import { drizzleClient } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import { user, userClient, userKey, userProfile } from '$lib/drizzle/postgres/schema';
 import { and, eq, ne } from 'drizzle-orm';
 import type { InsertUser, InsertUserKey, InsertUserProfile, SelectClient, SelectUser, User, UserProfile } from '../db.model';
@@ -10,7 +10,7 @@ export const getUserByEmail = async (email: string | undefined) => {
 		return undefined;
 	}
 
-	const data = await drizzleClient.query.user.findFirst({
+	const data = await db.query.user.findFirst({
 		where: eq(user.email, email),
 	});
 
@@ -18,7 +18,7 @@ export const getUserByEmail = async (email: string | undefined) => {
 };
 
 export const updateUserProfileData = async (profileData: typeof userProfile.$inferInsert) => {
-	await drizzleClient
+	await db
 		.insert(userProfile)
 		.values(profileData)
 		.onConflictDoUpdate({
@@ -31,7 +31,7 @@ export const updateUserProfileData = async (profileData: typeof userProfile.$inf
 
 export const updateUserAttributes = async (userId: string, attributes: Partial<SelectUser>) => {
 	try {
-		await drizzleClient.update(user).set(attributes).where(eq(user.id, userId));
+		await db.update(user).set(attributes).where(eq(user.id, userId));
 		return true;
 	} catch (err) {
 		return false;
@@ -44,7 +44,7 @@ export const updateSelectedClient = async (userId: string, clientId: string) => 
 	if (currentUser.role !== 'super_admin') return false;
 	
 	try {
-		await drizzleClient.update(userProfile)
+		await db.update(userProfile)
 			.set({ clientId, })
 			.where(eq(userProfile.userId, userId));
 	} catch (err) {
@@ -63,7 +63,7 @@ export const getUserProfileData = async (userId: string | undefined): Promise<Us
 		return null as unknown as UserProfile & { client: SelectClient };
 	}
 
-	const data = await drizzleClient.query.userProfile
+	const data = await db.query.userProfile
 		.findFirst({
 			where: eq(userProfile.userId, userId),
 			with: {
@@ -72,9 +72,6 @@ export const getUserProfileData = async (userId: string | undefined): Promise<Us
 		}) as UserProfile & { client: SelectClient };
 		
 	return data;
-	// const data = await drizzleClient.select().from(userProfile).where(eq(userProfile.userId, userId));
-
-	// return data[0] as UserProfile;
 };
 
 /**
@@ -84,7 +81,7 @@ export const getUserProfileData = async (userId: string | undefined): Promise<Us
  * @returns Promise<User[]>
  */
 export const getUsers = async (clientId: string): Promise<User[]> => {
-	const data = (await drizzleClient.select()
+	const data = (await db.select()
 		.from(userProfile)
 		.innerJoin(user, eq(userProfile.userId, user.id))
 		.where(and(eq(userProfile.clientId, clientId), ne(userProfile.role, 'super_admin')))
@@ -94,7 +91,7 @@ export const getUsers = async (clientId: string): Promise<User[]> => {
 }
 
 export const getUserDetail = async (userId: string): Promise<User> => {
-	const data = (await drizzleClient.select()
+	const data = (await db.select()
 		.from(userProfile)
 		.innerJoin(user, eq(userProfile.userId, user.id))
 		.where(eq(userProfile.userId, userId))) as unknown as User[];
@@ -105,7 +102,7 @@ export const getUserDetail = async (userId: string): Promise<User> => {
 export const getUserById = async (userId: string): Promise<SelectUser> => {
 	if (!userId) return null as unknown as SelectUser;
 	
-	const user = await drizzleClient.query.user
+	const user = await db.query.user
 		.findFirst({
 			where: (user, { eq }) => eq(user.id, userId),
 		});
@@ -120,7 +117,7 @@ export const createUser = async (userData: InsertUser, userKeyData: InsertUserKe
 	if (userData.id !== (profileData.userId as unknown as string)) profileData.userId = userData.id;
 	
 	try {
-		await drizzleClient.transaction(async (tx) => {			
+		await db.transaction(async (tx) => {			
 			await tx.insert(user).values(userData);
 			await tx.insert(userKey).values(userKeyData);
 			await tx.insert(userProfile).values(profileData);
@@ -145,7 +142,7 @@ export const createUser = async (userData: InsertUser, userKeyData: InsertUserKe
 export const updateUserAndProfile = async (userData: InsertUser, profileData: InsertUserProfile) => {
 	
 	try {
-		await drizzleClient.transaction(async (tx) => {
+		await db.transaction(async (tx) => {
 			await tx.update(user).set(userData).where(eq(user.id, userData.id));
 			await tx.update(userProfile).set(profileData).where(eq(userProfile.id, profileData.id));
 		});
@@ -170,7 +167,7 @@ export const updateOwnUserProfile = async (props: Partial<InsertUserProfile>) =>
 		if (!currUserProfile || currUserProfile.userId !== props.userId) 
 			return fail(400, { message: 'Unable to update user profile.' });
 		
-		await drizzleClient.update(userProfile)
+		await db.update(userProfile)
 			.set(props)
 			.where(eq(userProfile.userId, props.userId));
 	} catch (err) {
@@ -182,7 +179,7 @@ export const updateOwnUserProfile = async (props: Partial<InsertUserProfile>) =>
 
 export const updateUser = async (userData: InsertUser): Promise<SelectUser | null> => {
 	try {
-		await drizzleClient.update(user).set(userData).where(eq(user.id, userData.id));
+		await db.update(user).set(userData).where(eq(user.id, userData.id));
 		
 		return userData as SelectUser;
 	} catch (err: any) {

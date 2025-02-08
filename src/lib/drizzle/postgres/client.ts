@@ -22,10 +22,10 @@ const connection = postgres({
 	max: POSTGRES_MAX_CONNECTIONS ? Number(POSTGRES_MAX_CONNECTIONS) : 10,
 });
 
-const drizzleClient = drizzle(connection, {
+export const db = drizzle(connection, {
 	...config,
 	schema,
 	logger: ENABLE_DRIZZLE_LOGGER ? Boolean(ENABLE_DRIZZLE_LOGGER) : dev,
 });
 
-export { connection, drizzleClient };
+export { connection };

@@ -1,6 +1,6 @@
 // Import necessary modules and functions
 import { vi, describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
-import { drizzleClient as db, drizzleClient } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import { getClients, createClient } from './clients';
 import { client } from '../schema';
 import type { SelectClient } from '../db.model';
@@ -23,11 +23,11 @@ const mockClientData = { id: 'clientid', name: 'Client 1', contactUserId: 'useri
 // Mock the database query function
 vi.mock('$lib/drizzle/postgres/client');
 
-vi.spyOn(drizzleClient.query.client, 'findMany')
+vi.spyOn(db.query.client, 'findMany')
   .mockResolvedValueOnce(mockClients)
   .mockResolvedValueOnce([]);
   
-vi.spyOn(drizzleClient, 'insert').mockReturnValue({
+vi.spyOn(db, 'insert').mockReturnValue({
   values: vi.fn().mockReturnThis(),
   onConflictDoUpdate: vi.fn().mockReturnThis(),
   returning: vi.fn().mockResolvedValue(mockClientData),
@@ -62,7 +62,7 @@ describe('clients', () => {
       await createClient(mockClientData);
 
       // Assert that the database insert function was called with the correct arguments
-      expect(drizzleClient.insert).toHaveBeenCalledOnce();
+      expect(db.insert).toHaveBeenCalledOnce();
     });
   });
 });

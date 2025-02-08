@@ -1,22 +1,22 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { getEmployees, getEmployee, createEmployee, updateEmployee } from './employees';
-import { drizzleClient } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import { employee } from '../schema';
 import type { InsertEmployee, InsertEmployeeProfile, SelectEmployee } from '$lib/drizzle/postgres/db.model';
 
 vi.mock('$lib/drizzle/postgres/client');
 
-vi.spyOn(drizzleClient.query.employee, 'findMany')
+vi.spyOn(db.query.employee, 'findMany')
   .mockResolvedValueOnce([{ id: '1', clientId: 'client1' } as SelectEmployee])
   .mockRejectedValueOnce(new Error('Test error'));
   
-vi.spyOn(drizzleClient.query.employee, 'findFirst')
+vi.spyOn(db.query.employee, 'findFirst')
   .mockResolvedValueOnce({ id: '1', clientId: 'client1' } as SelectEmployee)
   .mockResolvedValueOnce({} as SelectEmployee);
   
-vi.spyOn(drizzleClient, 'insert').mockReturnThis();
+vi.spyOn(db, 'insert').mockReturnThis();
   
-vi.spyOn(drizzleClient, 'update')
+vi.spyOn(db, 'update')
   .mockReturnValueOnce({} as any)
   .mockRejectedValueOnce(new Error('Test error'));
 

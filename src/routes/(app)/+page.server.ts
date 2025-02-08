@@ -6,7 +6,7 @@ import type {
 import { getLastPayrollCycle, getPayrollCycles } from '$lib/drizzle/postgres/models/payroll-cycles';
 import { UserClient } from '$lib/drizzle/postgres/models/user-clients';
 import type { PageServerLoad } from './$types';
-import { drizzleClient as db } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user || !locals.user.profile) {

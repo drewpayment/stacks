@@ -1,4 +1,4 @@
-import { drizzleClient } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import type { InsertCampaign, SelectCampaign } from '$lib/drizzle/postgres/db.model';
 import { and, eq } from 'drizzle-orm';
 import { campaigns } from '../schema';
@@ -10,7 +10,7 @@ const getCampaign = async (clientId: string, campaignId: string): Promise<Select
     return null;
   }
   
-  const data = await drizzleClient.query.campaigns.findFirst({
+  const data = await db.query.campaigns.findFirst({
     where: (campaign, { and, eq }) => and(
       eq(campaign.clientId, clientId),
       eq(campaign.id, campaignId),
@@ -25,7 +25,7 @@ const getCampaigns = async (clientId: string): Promise<SelectCampaign[]> => {
     return [];
   }
   
-  const data = await drizzleClient.query.campaigns.findMany({
+  const data = await db.query.campaigns.findMany({
     where: (campaign, { eq }) => eq(campaign.clientId, clientId),
     orderBy: (campaign, { asc }) => [asc(campaign.name)],
   });
@@ -42,7 +42,7 @@ const updateCampaign = async (campaign: InsertCampaign): Promise<SelectCampaign 
     
     if (!current) return null;
     
-    await drizzleClient.update(campaigns)
+    await db.update(campaigns)
       .set({
         name: campaign.name,
         description: campaign.description,
@@ -83,7 +83,7 @@ const addCampaign = async (campaign: InsertCampaign): Promise<SelectCampaign | n
   } as InsertCampaign;
   
   try {
-    await drizzleClient.insert(campaigns)
+    await db.insert(campaigns)
       .values(dto);
   } catch (ex) {
     console.error(ex);
@@ -97,7 +97,7 @@ export const addCampaigns = async (dtos: InsertCampaign[]): Promise<SelectCampai
   if (!dtos) return [];
   
   try {
-    await drizzleClient.insert(campaigns)
+    await db.insert(campaigns)
       .values(dtos);
     return dtos as SelectCampaign[];
   } catch (err) {
@@ -108,7 +108,7 @@ export const addCampaigns = async (dtos: InsertCampaign[]): Promise<SelectCampai
 
 export const disableCampaign = async (clientId: string, campaignId: string): Promise<boolean> => {
    try {
-    await drizzleClient.update(campaigns)
+    await db.update(campaigns)
       .set({ active: false })
       .where(and(eq(campaigns.clientId, clientId), eq(campaigns.id, campaignId)));
     return true;

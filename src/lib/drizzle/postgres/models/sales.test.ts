@@ -4,7 +4,7 @@ import {
   toClientDto,
   getUnallocatedSalesByEmployee,
 } from './sales';
-import { drizzleClient } from '../client';
+import { db } from '../client';
 import dayjs from 'dayjs';
 import type { InsertSale, SelectSale } from '../db.model';
 
@@ -77,7 +77,7 @@ const TESTDATA = {
 
 vi.mock('../client');
 
-vi.spyOn(drizzleClient.query.sale, 'findMany')
+vi.spyOn(db.query.sale, 'findMany')
   .mockResolvedValueOnce(TESTDATA.salesList)
 
 describe('sales', () => {

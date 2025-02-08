@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { bigint, boolean, decimal, foreignKey, pgEnum, pgTable, primaryKey, text, timestamp, unique, varchar } from 'drizzle-orm/pg-core';
+import { bigint, boolean, decimal, foreignKey, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, unique, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('auth_user', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -48,7 +48,7 @@ export const userProfile = pgTable('user_profile', {
 	firstName: varchar('first_name', { length: 255 }),
 	lastName: varchar('last_name', { length: 255 }),
 	picture: varchar('picture', { length: 1024 }),
-	
+
 	address: varchar('address', { length: 255 }),
 	address2: varchar('address_2', { length: 255 }),
 	city: varchar('city', { length: 255 }),
@@ -98,7 +98,7 @@ export const userSession = pgTable('user_session', {
 	userId: varchar('user_id', { length: 255 })
 		.notNull()
 		.references(() => user.id),
-	expiresAt: timestamp('expires_at').notNull(),
+	expiresAt: timestamp('expires_at', { mode: 'string' }).notNull(),
 });
 
 export const oauthAccount = pgTable('oauth_account', {
@@ -219,10 +219,43 @@ export const client = pgTable('client', {
 	name: varchar('name', { length: 255 }).notNull(),
 	contactUserId: varchar('contact_user_id', { length: 255 })
 		.references(() => user.id),
+
+	slug: varchar('slug', { length: 255 }).notNull().unique(),
+
+	// Business Information
+	legalName: varchar('legal_name', { length: 255 }),
+	taxId: varchar('tax_id', { length: 50 }),
+	industry: varchar('industry', { length: 100 }),
+
+	// Contact Information
+	primaryContactName: varchar('primary_contact_name', { length: 255 }),
+	primaryContactEmail: varchar('primary_contact_email', { length: 255 }),
+	primaryContactPhone: varchar('primary_contact_phone', { length: 50 }),
+
+	// Billing Information
+	billingAddress: jsonb('billing_address'),  // Structured address data
+	billingEmail: varchar('billing_email', { length: 255 }),
+
+	// Tenant Configuration
+	subdomain: varchar('subdomain', { length: 63 }).unique(),
+	timezone: varchar('timezone', { length: 100 }).notNull().default('UTC'),
+	locale: varchar('locale', { length: 15 }).notNull().default('en-US'),
+
+	// Feature Flags & Limits
+	maxUsers: integer('max_users').notNull().default(10),
+	featuresEnabled: jsonb('features_enabled').notNull().default('{}'),
+
+	// Subscription & Status
+	subscriptionTier: varchar('subscription_tier', { length: 50 }).notNull().default('standard'),
+	isActive: boolean('is_active').notNull().default(true),
+	trialEndsAt: timestamp('trial_ends_at'),
+
 	created: timestamp('created').notNull(),
-	updated: timestamp('updated').notNull(),
+	updated: timestamp('updated').defaultNow().notNull(),
 	deleted: timestamp('deleted'),
-});
+}, (table) => [
+	uniqueIndex('idx_client_subdomain_name').on(table.subdomain),
+]);
 
 export const campaigns = pgTable('campaigns', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -377,7 +410,7 @@ export const saleOverrideRelations = relations(saleOverride, ({ one }) => ({
 
 export const approvalStatusEnum = pgEnum('approval_status', ['pending', 'approved', 'rejected']);
 
-export const expenseCategoryEnum = pgEnum('expense_category', ['travel', 'meals', 'supplies', 'equipment', 'vehicles', 'utilities', 
+export const expenseCategoryEnum = pgEnum('expense_category', ['travel', 'meals', 'supplies', 'equipment', 'vehicles', 'utilities',
 	'rent', 'marketing', 'professional_development', 'subscriptions', 'insurance', 'professional_services', 'repairs', 'shipping',
 	'employee_benefits', 'taxes_licenses', 'interest_bank_fees', 'misc',
 ]);

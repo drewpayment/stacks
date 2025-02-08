@@ -1,15 +1,15 @@
 import { vi, describe, it, expect, afterAll } from 'vitest';
 import { getPayrollCycles, getPayrollCycle, addPayrollCycle, togglePayrollCycleClose } from './payroll-cycles';
-import { drizzleClient } from '../client';
+import { db } from '../client';
 import type { SelectPayrollCycle } from '../db.model';
 
 vi.mock('../client');
 
-vi.spyOn(drizzleClient.query.payrollCycle, 'findMany')
+vi.spyOn(db.query.payrollCycle, 'findMany')
   .mockResolvedValueOnce([{ id: '1', clientId: 'clientid1', } as SelectPayrollCycle])
   .mockResolvedValueOnce([{ id: '1', clientId: 'test', startDate: 12345, isClosed: false } as SelectPayrollCycle]);
   
-vi.spyOn(drizzleClient.query.payrollCycle, 'findFirst')
+vi.spyOn(db.query.payrollCycle, 'findFirst')
   .mockResolvedValueOnce({ id: '1', clientId: 'test', startDate: 12345, isClosed: false } as SelectPayrollCycle);
 
 describe('payroll-cycles', () => {

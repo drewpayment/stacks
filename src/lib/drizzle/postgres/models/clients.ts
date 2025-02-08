@@ -1,4 +1,4 @@
-import { drizzleClient as db } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import type { SelectClient } from '$lib/drizzle/postgres/db.model';
 import { client } from '../schema';
 

@@ -1,6 +1,6 @@
 import { getExpenseReport } from '$lib/drizzle/postgres/models/expenses.js';
 import { fail, type Actions } from '@sveltejs/kit';
-import { drizzleClient as db } from '$lib/drizzle/postgres/client.js';
+import { db } from '$lib/drizzle/postgres/client.js';
 import { expenseReport } from '$lib/drizzle/postgres/schema.js';
 import { eq } from 'drizzle-orm';
 import dayjs from 'dayjs';
