@@ -52,36 +52,41 @@ export async function validateSessionToken(sessionCookie: string): Promise<Sessi
 	const hashBuffer = await sha256(new TextEncoder().encode(token));
 	const sessionId = encodeHexLowerCase(new Uint8Array(hashBuffer));
 	
-	const sessionData = await db.query.userSession
-		.findFirst({
-			where: (us, { eq }) => eq(us.id, sessionId),
-		});
+	// const sessionData = await db.query.userSession
+	// 	.findFirst({
+	// 		where: (us, { eq }) => eq(us.id, sessionId),
+	// 	});
 		
-	if (!sessionData) {
+	const { sessionData, authUser } = await db.transaction(async (tx) => {
+		const sessionData = await tx.query.userSession
+			.findFirst({
+				where: (us, { eq }) => eq(us.id, sessionId),
+			});
+			
+		if (!sessionData) {
+			return {
+				sessionData,
+				authUser: null,
+			}
+		}
+			
+		const authUser = await tx.query.user
+			.findFirst({
+				where: (u, { eq }) => eq(u.id, sessionData.userId),
+			});
+			
+		return {
+			sessionData,
+			authUser,
+		};
+	});
+		
+	if (!sessionData || !authUser) {
 		return {
 			session: null,
 			user: null,
 		};
 	}
-	
-	// const sessionResults = await db
-	// 	.select({
-	// 		id: userSession.id,
-	// 		userSessionUserId: userSession.userId,
-	// 		expiresAt: userSession.expiresAt,
-	// 		userId: dbUser.id,
-	// 	})
-	// 	.from(userSession)
-	// 	.innerJoin(dbUser, eq(dbUser.id, userSession.userId))
-	// 	.where(eq(userSession.id, sessionId));
-	// const sessionData = sessionResults[0];
-		
-	// if (!sessionData) {
-	// 	return {
-	// 		session: null,
-	// 		user: null,
-	// 	};
-	// }
 	
 	const session = {
 		id: sessionData.id,
@@ -91,6 +96,7 @@ export async function validateSessionToken(sessionCookie: string): Promise<Sessi
 	
 	const user = {
 		id: sessionData.userId,
+		emailVerified: authUser.emailVerified,
 	} as User;
 	
 	if (now.isAfter(dayjs(session.expiresAt))) {
