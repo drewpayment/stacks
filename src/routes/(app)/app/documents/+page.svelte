@@ -1,16 +1,13 @@
 <script lang="ts">
-  import { db } from '$lib/stores';
+	import { db, type Documents } from '$lib/client/instantdb';  
+  
+  export let data;
+  console.log(data);
   
   $: if (db) {
-    db.subscribeQuery({ documentMetadata: {} }, (resp) => {
-      if (resp.error) {
-        console.error(resp.error);
-        return;
-      }
-      
-      if (resp.data) {
-        console.log(`Document metadata: ${resp.data}`);
-      }
+    db.subscribeQuery({ documents: {} }, (resp: { data: { documents: Documents[] } }) => {
+      const documents = resp.data.documents;
+      console.log(documents);
     })
   }
 </script>

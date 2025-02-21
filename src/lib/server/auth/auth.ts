@@ -37,7 +37,7 @@ export async function createSession(token: string, userId: string): Promise<Sess
 	}
 }
 
-export async function validateSessionToken(sessionCookie: string): Promise<SessionValidationResult> {
+export async function validateSessionCookie(sessionCookie: string): Promise<SessionValidationResult> {
 	const now = dayjs();
 	const sessionCookieParts = sessionCookie.split(';');
 	
@@ -48,14 +48,8 @@ export async function validateSessionToken(sessionCookie: string): Promise<Sessi
 		};
 		
 	const token = sessionCookieParts[0];
-	// const sessionId = encodeHexLowerCase(new TextEncoder().encode(token));
 	const hashBuffer = await sha256(new TextEncoder().encode(token));
 	const sessionId = encodeHexLowerCase(new Uint8Array(hashBuffer));
-	
-	// const sessionData = await db.query.userSession
-	// 	.findFirst({
-	// 		where: (us, { eq }) => eq(us.id, sessionId),
-	// 	});
 		
 	const { sessionData, authUser } = await db.transaction(async (tx) => {
 		const sessionData = await tx.query.userSession

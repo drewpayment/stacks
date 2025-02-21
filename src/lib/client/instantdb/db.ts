@@ -27,3 +27,6 @@ export class ClientDatabase {
   }
   
 }
+
+export type ClientDatabaseSchema = InstantCoreDatabase<typeof schema>;
+export const db = (browser ? ClientDatabase.connect() : null) as unknown as ClientDatabaseSchema;

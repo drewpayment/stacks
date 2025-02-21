@@ -1,6 +1,6 @@
 import type { CurrentUser, UserProfile } from '$lib/drizzle/postgres/db.model';
 import { getUserProfileData } from '$lib/drizzle/postgres/models/users';
-import { AUTH_COOKIE, validateSessionToken } from '$lib/server/auth/auth';
+import { AUTH_COOKIE, validateSessionCookie } from '$lib/server/auth/auth';
 import { deleteSessionTokenCookie, setSessionTokenCookie } from '$lib/server/auth/cookies';
 import type { Session } from '$lib/server/auth/types';
 import { redirect, type Handle } from '@sveltejs/kit';
@@ -14,9 +14,9 @@ const superAdminRoutesBase = '/app/client';
 const authRoutesBase = ['/auth', '/oauth'];
 
 const authHandler: Handle = async ({ event, resolve }) => {
-	const sessionToken = event.cookies.get(AUTH_COOKIE);
+	const sessionCookie = event.cookies.get(AUTH_COOKIE)?.split(';')[0];
 	
-	if (!sessionToken) {
+	if (!sessionCookie) {
 		// If the user is not logged in and is trying to access a protected route,
 		// redirect them to the login page
 		if (event.url.pathname.startsWith(protectedRoutesBase) ||
@@ -29,8 +29,10 @@ const authHandler: Handle = async ({ event, resolve }) => {
 		return resolve(event);
 	}
 	
-	const { session, user } = await validateSessionToken(sessionToken);
+	const { session, user } = await validateSessionCookie(sessionCookie);
 	
+	// parse the sessionCookie and use only the sessionToken
+	const sessionToken = sessionCookie?.split(';')[0];
 	if (session) {
 		setSessionTokenCookie(event.cookies, sessionToken, dayjs(session.expiresAt, 'YYYY-MM-DD').toDate());
 		event.locals.session = session as Session;

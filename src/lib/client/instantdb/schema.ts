@@ -2,7 +2,7 @@ import { i, type InstaQLEntity } from '@instantdb/core';
 
 export const schema = i.schema({
   entities: {
-    documentMetadata: i.entity({
+    documents: i.entity({
       id: i.string(),
       filename: i.string(),
       mimeType: i.string(),
@@ -16,4 +16,4 @@ export const schema = i.schema({
   }
 })
 
-export type DocumentMetadata = InstaQLEntity<typeof schema, 'documentMetadata'>;
+export type Documents = InstaQLEntity<typeof schema, 'documents'>;

@@ -4,6 +4,7 @@ import { AUTH_COOKIE } from './auth';
 
 
 export function setSessionTokenCookie(cookies: Cookies, token: string, expiresAt: Date, path = '/'): void {
+  deleteSessionTokenCookie(cookies);
   if (!dev) {
     // When deployed over HTTPS   
     cookies.set(
