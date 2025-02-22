@@ -4,10 +4,9 @@ import { DriveService } from '$lib/server/drive';
 
 const driveService = new DriveService();
 
-export async function POST({ request, }) {
+export async function POST({ request, locals }) {
   const formData = await request.formData();
   const file = formData.get('file');
-  const userId = formData.get('userId')
   const documentType = formData.get('documentType');
   
   if (!file || !(file instanceof File)) {
@@ -26,7 +25,7 @@ export async function POST({ request, }) {
     mimeType: file.type,
     googleDriveFileId: fileId,
     uploadDate: new Date(),
-    userId,
+    userId: locals.user.id,
     documentType,
     fileSize: file.size,
     status: 'UPLOADED',
