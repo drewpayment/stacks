@@ -9,139 +9,198 @@
 	import {
 		Button,
 		Card,
-		Checkbox,
-		Table,
-		TableBody,
-		TableBodyCell,
-		TableBodyRow,
-		TableHead,
-		TableHeadCell
+		Heading
 	} from 'flowbite-svelte';
-	import { CheckCircleSolid } from 'flowbite-svelte-icons';
-	import { Icon, ArrowUpRight } from 'svelte-hero-icons';
+	import { FileText, Users2, Clock, TrendingUp, Upload, Download, Calendar } from 'lucide-svelte';
+
 	export let data;
 	const { lastPayrollCycle, profile, user, cycles: historyCycles } = data;
 	const cycle = (lastPayrollCycle || {}) as SelectPayrollCycle & {
 		paystubs: (SelectPaystub & { employee: SelectEmployee })[];
 	};
 	const cycles = historyCycles as (SelectPayrollCycle & { paystubs: SelectPaystub[] })[];
+
+	const quickActions = [
+		{
+			title: "Document Portal",
+			description: "Upload and share company documents",
+			icon: FileText,
+			link: "/app/documents"
+		},
+		{
+			title: "Team Directory",
+			description: "Find and connect with colleagues",
+			icon: Users2,
+			link: "/app/employee"
+		},
+		{
+			title: "Time & Attendance",
+			description: "Manage schedules and time off",
+			icon: Clock,
+			link: "/app/time"
+		},
+		{
+			title: "Reports",
+			description: "Access business insights and analytics",
+			icon: TrendingUp,
+			link: "/app/reports"
+		}
+	];
+
+	// Get recent activities
+	const recentActivities = [
+		{
+			icon: Upload,
+			text: "New document uploaded",
+			timestamp: "2 hours ago"
+		},
+		{
+			icon: Download,
+			text: "Payroll report downloaded",
+			timestamp: "5 hours ago"
+		}
+	];
 </script>
 
 <svelte:head>
 	<title>Stacks</title>
 </svelte:head>
 
-<div class="flex flex-col">
+<div class="flex flex-col space-y-6">
 	{#if user}
-		<h4>Welcome, {profile?.firstName} {profile?.lastName}.</h4>
-	{/if}
-	{#if user && ['org_admin', 'super_admin', 'admin'].includes(user.profile.role)}
-		<div
-			class="flex flex-col gap-2 mt-4 px-1 py-6 bg-secondary-100 border-secondary-100
-		dark:bg-background-300 border dark:border-background-300 rounded-md shadow-md"
-		>
-			<div class="px-4 mb-4 text-2xl font-medium">Latest Payroll</div>
-			<div class="flex flex-col md:flex-row md:justify-around">
-				{#if user && ['org_admin', 'super_admin'].includes(user.profile.role)}
-					{#if cycle !== null && cycle.paystubs?.length > 0}
-					<Card size="sm">
-						<h5 class="mb-4 text-2xl font-medium text-gray-600 dark:text-gray-50">
-							{toHumanDate(cycle?.paymentDate)}
-						</h5>
-						<div class="flex items-baseline text-gray-900 dark:text-white">
-							<ul class="my-7 space-y-4">
-								{#if cycle.paystubs?.length > 0}
-								<li class="flex space-x-2 rtl:space-x-reverse">
-									<CheckCircleSolid class="w-4 h-4 text-primary-600 dark:text-primary-500" />
-									<span class="text-xl font-extrabold tracking-tight"
-										>{cycle.paystubs?.length} paystubs</span
-									>
-								</li>
-								{/if}
-								{#if cycle.paystubs?.length > 0}
-								<li class="flex space-x-2 rtl:space-x-reverse">
-									<CheckCircleSolid class="w-4 h-4 text-primary-600 dark:text-primary-500" />
-									<span class="text-xl font-extrabold tracking-tight"
-										>${cycle.paystubs?.reduce((acc, curr) => acc + Number(curr.netPay), 0)}</span
-									> total net
-								</li>
-								{/if}
-							</ul>
-						</div>
-						<div class="flex flex-col w-full md:flex-row md:justify-end md:w-auto">
-							<Button href={'/app/payroll-cycles/' + cycle?.id}>View Details</Button>
-						</div>
-					</Card>
-					{/if}
-					<Card size="sm">
-						<div class="mb-4 text-xl font-medium text-gray-400 dark:text-gray-500">
-							Top Performers
-						</div>
-						<div class="flex items-baseline text-gray-900 dark:text-white">
-							{#if cycle?.paystubs?.length > 0}
-							{#each cycle?.paystubs as paystub (paystub.id)}
-								<div class="flex flex-col md:flex-row justify-between gap-2 w-full">
-									<span class="text-xl font-extrabold tracking-tight"
-										>{paystub.employee.firstName} {paystub.employee.lastName}</span
-									>
-									<span class="text-lg font-bold tracking-tight"
-										>{formatCurrency(paystub.netPay)}</span
-									>
+		<!-- Welcome and Quick Actions Section -->
+		<div class="flex flex-col space-y-6">
+			<div class="flex justify-between items-center">
+				<Heading tag="h1" class="text-3xl font-bold dark:text-white">
+					Welcome, {profile?.firstName} {profile?.lastName}
+				</Heading>
+			</div>
+
+			<!-- Quick Actions Grid -->
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+				{#each quickActions as action}
+					<Card padding="lg" class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+						<a href={action.link} class="block">
+							<div class="flex items-start space-x-4">
+								<div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+									<svelte:component this={action.icon} class="w-6 h-6 text-blue-700 dark:text-blue-300" />
 								</div>
-							{/each}
-							{:else}
-							<span class="text-xl font-extrabold tracking-tight">No paystubs</span>
-							{/if}
-						</div>
+								<div>
+									<h6 class="font-semibold dark:text-white">{action.title}</h6>
+									<p class="text-sm text-gray-500 dark:text-gray-400">{action.description}</p>
+								</div>
+							</div>
+						</a>
 					</Card>
-				{:else}
-					<h5 class="dark:text-text-600">What is Stacks?</h5>
-					<p class="leading-9">Please log in to get started.</p>
-				{/if}
+				{/each}
 			</div>
 		</div>
-		<div
-			class="flex flex-col gap-2 mt-4 px-1 py-6 bg-secondary-100 border-secondary-100 dark:bg-background-300 border dark:border-background-300 rounded-md shadow-md"
-		>
-			<div class="px-4 mb-4 text-2xl font-medium">Payroll Cycles</div>
-			<div class="flex flex-col md:flex-row md:justify-start px-12">
-				<Table striped={true} shadow={true}>
-					<TableHead theadClass="bg-primary-100">
-						<TableHeadCell>&nbsp;</TableHeadCell>
-						<TableHeadCell>Paid Date</TableHeadCell>
-						<TableHeadCell>Started</TableHeadCell>
-						<TableHeadCell>End</TableHeadCell>
-						<TableHeadCell>No of Paystubs</TableHeadCell>
-						<TableHeadCell>Closed</TableHeadCell>
-					</TableHead>
-					<TableBody>
-						{#if cycles.length > 0}
-						{#each cycles as cycle (cycle.id)}
-							<TableBodyRow>
-								<TableBodyCell>
-									<a href={`/app/payroll-cycles/${cycle.id}`} class="w-4 h-4">
-										<Icon src={ArrowUpRight} class="w-4 h-4" />
-									</a>
-								</TableBodyCell>
-								<TableBodyCell>{toHumanDate(cycle.paymentDate)}</TableBodyCell>
-								<TableBodyCell>{toHumanDate(cycle.startDate)}</TableBodyCell>
-								<TableBodyCell>{toHumanDate(cycle.endDate)}</TableBodyCell>
-								<TableBodyCell tdClass="text-center">{cycle.paystubs?.length}</TableBodyCell>
-								<TableBodyCell>
-									<Checkbox checked={cycle.isClosed} disabled="true" />
-								</TableBodyCell>
-							</TableBodyRow>
-						{/each}
-						{:else}
-							<TableBodyRow>
-								<TableBodyCell colSpan={6} class="text-center">
-									No payroll cycles found
-								</TableBodyCell>
-							</TableBodyRow>
-						{/if}
-					</TableBody>
-				</Table>
+
+		<!-- Admin Dashboard Section -->
+		{#if ['org_admin', 'super_admin', 'admin'].includes(user.profile.role)}
+			<!-- Recent Activity and Payroll Summary -->
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+				<!-- Recent Activity -->
+				<Card class="dark:bg-gray-800">
+					<div class="p-4">
+						<Heading tag="h6" class="mb-4 dark:text-white">Recent Activity</Heading>
+						<div class="space-y-4">
+							{#each recentActivities as activity}
+								<div class="flex items-center space-x-3">
+									<svelte:component this={activity.icon} class="w-5 h-5 text-blue-500" />
+									<div>
+										<p class="text-sm dark:text-white">{activity.text}</p>
+										<p class="text-xs text-gray-500 dark:text-gray-400">{activity.timestamp}</p>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				</Card>
+
+				<!-- Latest Payroll -->
+				<Card class="dark:bg-gray-800">
+					<div class="p-4">
+						<Heading tag="h6" class="mb-4 dark:text-white">Latest Payroll</Heading>
+						<div class="space-y-4">
+							<div class="flex items-center justify-between">
+								<div>
+									<p class="text-sm font-medium dark:text-white">Next Pay Date</p>
+									<p class="text-xs text-gray-500 dark:text-gray-400">
+										{cycle ? toHumanDate(cycle.paymentDate) : 'No upcoming payroll'}
+									</p>
+								</div>
+								<Calendar class="w-5 h-5 text-gray-400" />
+							</div>
+							<div>
+								<p class="text-sm font-medium dark:text-white">Top Performers</p>
+								{#if cycle?.paystubs?.length > 0}
+									{#each cycle.paystubs.slice(0, 3) as paystub}
+										<div class="flex justify-between items-center mt-2">
+											<p class="text-sm dark:text-gray-300">
+												{paystub.employee.firstName} {paystub.employee.lastName}
+											</p>
+											<p class="text-sm font-medium dark:text-gray-300">
+												{formatCurrency(paystub.netPay)}
+											</p>
+										</div>
+									{/each}
+									{#if cycle.paystubs.length > 3}
+										<Button href={'/app/payroll-cycles/' + cycle?.id} class="mt-4">
+											View All
+										</Button>
+									{/if}
+								{:else}
+									<p class="text-sm text-gray-500 dark:text-gray-400">No paystubs available</p>
+								{/if}
+							</div>
+						</div>
+					</div>
+				</Card>
+				
+				<!-- Recent Payroll Cycles -->
+				<Card class="dark:bg-gray-800">
+					<div class="p-4">
+						<div class="flex justify-between items-center mb-4">
+							<Heading tag="h6" class="dark:text-white">Recent Payroll Cycles</Heading>
+							<Button href="/app/payroll-cycles">View All</Button>
+						</div>
+						<div class="space-y-4">
+							{#if cycles.length > 0}
+								{#each cycles.slice(0, 5) as cycle}
+									<div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+										<div class="flex flex-col">
+											<p class="text-sm font-medium dark:text-white">
+												{toHumanDate(cycle.paymentDate)}
+											</p>
+											<p class="text-xs text-gray-500 dark:text-gray-400">
+												{cycle.paystubs?.length} paystubs
+											</p>
+										</div>
+										<div class="flex items-center gap-4">
+											<span class="text-sm text-gray-500 dark:text-gray-400">
+												{cycle.isClosed ? 'Closed' : 'Open'}
+											</span>
+											<Button size="sm" href={`/app/payroll-cycles/${cycle.id}`}>
+												Details
+											</Button>
+										</div>
+									</div>
+								{/each}
+							{:else}
+								<p class="text-center text-gray-500 dark:text-gray-400">No payroll cycles found</p>
+							{/if}
+						</div>
+					</div>
+				</Card>
 			</div>
+
+			
+		{/if}
+	{:else}
+		<div class="text-center">
+			<h5 class="dark:text-text-600">What is Stacks?</h5>
+			<p class="leading-9">Please log in to get started.</p>
 		</div>
 	{/if}
 </div>

@@ -1,13 +1,24 @@
 <script lang="ts">
   import { db, type Documents } from '$lib/client/instantdb';
+	import type { HttpResponse } from '$lib/types/http-response';
+	import { id } from '@instantdb/core';
   import { Button, Card, Spinner } from 'flowbite-svelte';
   import { FolderSolid, ListSolid, GridSolid, FileSolid } from 'flowbite-svelte-icons';
 	import { onMount } from 'svelte';
+	import type { PageProps } from './$types';
+	import dayjs from 'dayjs';
+	import FilePreviewModal from './FilePreviewModal.svelte';
+	import type { FileUploadResult } from '$lib/types/file-upload';
+	import { Search } from 'lucide-svelte';
 
+  let { data }: PageProps = $props();
+  let userId = data.user.id;
   let viewMode: 'list' | 'grid' = $state('list');
   let selectedPath = 'All Files';
   let documents = $state<Documents[]>([]);
   let loading = $state(true);
+  let isPreviewOpen = $state(false);
+  let selectedDocument: Documents | null = $state(null);
   
   onMount(() => {
     if (!db) return;
@@ -19,6 +30,11 @@
   })
   
   let activeDocuments = $derived(documents.filter(d => d.status == 'active'));
+  
+  function openPreview(document: Documents) {
+    selectedDocument = document;
+    isPreviewOpen = true;
+  }
 
   function formatFileSize(bytes: number) {
     if (bytes === 0) return '0 Bytes';
@@ -57,13 +73,32 @@
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData
-      });
+      }) as HttpResponse<FileUploadResult>;
 
+      if (!response.ok) {
+        throw new Error('Upload failed!');
+      }
+      
+      const resp = (await response.json());
+      
+      const uploadId = id();
+      db.transact(db.tx.documents[uploadId].update({
+        id: uploadId,
+        filePath: resp.filePath,
+        documentType: resp.documentType,
+        filename: resp.fileName,
+        fileSize: resp.fileSize,
+        mimeType: resp.mimeType,
+        userId,
+        status: 'active',
+        uploadDate: dayjs(resp.uploadDate).toISOString(),
+      }));
     } catch (error) {
       console.error('Upload failed:', error);
       // TODO: Add error toast notification
     }
   }
+  
 </script>
 
 <div class="flex h-screen bg-white dark:bg-gray-800">
@@ -80,7 +115,7 @@
           <input
             type="file"
             class="hidden"
-            on:change={handleUpload}
+            onchange={handleUpload}
             accept="application/pdf,image/*"
           />
           Upload File
@@ -124,7 +159,7 @@
       <!-- File Grid/List -->
       <div class={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-2'}>
         {#each activeDocuments as doc (doc.id)}
-          <Card padding="sm" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+          <Card padding="sm" class="hover:border-gray-50 hover:border-2 dark:hover:border-gray-700 dark:hover:border-2">
             <div class={viewMode === 'grid' 
               ? 'flex flex-col items-center text-center space-y-2'
               : 'flex items-center justify-between p-2'
@@ -145,6 +180,10 @@
                 <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                   {doc.documentType}
                 </span>
+                <!-- Preview Button -->
+                <Button size="xs" color="light" on:click={() => openPreview(doc)}>
+                  <Search />
+                </Button>
               </div>
             </div>
           </Card>
@@ -158,4 +197,6 @@
       </div>
     {/if}
   </div>
+  
+  <FilePreviewModal document={selectedDocument!} bind:isPreviewOpen={isPreviewOpen} />
 </div>

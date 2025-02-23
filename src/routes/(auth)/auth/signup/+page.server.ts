@@ -9,10 +9,25 @@ import type { InsertUser, InsertUserKey, InsertUserProfile, SelectEmployee } fro
 import { AuthUtils } from '$lib/utils/auth';
 import { dev } from '$app/environment';
 import { getEmployeeByEmail } from '$lib/drizzle/postgres/models/employees';
+import { AUTH_INITIALIZE, CMP_CLIENT_ID } from '$env/static/private';
+import { createClient, getClient } from '$lib/drizzle/postgres/models/clients';
+import dayjs from 'dayjs';
 
 const signupUserSchema = z.object({
   email: z.string().email()
 });
+
+const SETUP_AUTH_MODE = dev && Boolean(AUTH_INITIALIZE);
+
+const FATAL_ERROR = {
+  feedbacks: getFeedbackObjects([
+    {
+      type: 'error',
+      title: 'FATAL ERROR',
+      message: 'Your development mode authentication setup failed. You will need to debug it like a real dev.',
+    },
+  ]),
+};
 
 export const actions: Actions = {
   signupUser: async ({ request, url }) => {
@@ -70,8 +85,57 @@ export const actions: Actions = {
         };
       }
       
-      if (dev) {
-        console.log('User does not exist, sending email verification link');
+      if (SETUP_AUTH_MODE) {
+        console.log('Authentication startup mode initiatied.');
+        
+        // check for base client 
+        const cmpClient = await getClient(CMP_CLIENT_ID);
+        
+        if (!cmpClient) {
+          try {
+            const now = dayjs().toDate();
+            await createClient({
+              id: CMP_CLIENT_ID,
+              name: 'Choice Marketing Partners',
+              slug: 'cmp',
+              billingEmail: 'drewpayment@choice-marketing-partners.com',
+              billingAddress: JSON.stringify({
+                street: '4038 Zion Ct SE',
+                city: 'Kentwood',
+                state: 'Michigan',
+                country: 'USA',
+                zip: 49512,
+              }),
+              isActive: true,
+              legalName: 'Choice Marketing Partners LLP',
+              primaryContactName: 'Terri Payment',
+              primaryContactEmail: 'tpayment@choice-marketing-partners.com',
+              primaryContactPhone: '2318879945',
+              industry: 'Marketing',
+              created: now,
+              updated: now,
+            });
+          } catch (error) {
+            console.error(error);
+            return FATAL_ERROR;
+          }
+        }
+        
+        const { success } = await setupAuthModeNewUser(email);
+        
+        if (!success) {
+          return FATAL_ERROR;
+        } else {
+          return {
+            feedbacks: getFeedbackObjects([
+              {
+                type: 'success',
+                title: 'Success',
+                message: 'Your super user has been created.',
+              },
+            ]),
+          };
+        }
       }
 
       // If user doesn't exist, return same message to avoid email enumeration
@@ -85,20 +149,55 @@ export const actions: Actions = {
         ])
       };
     } catch (e) {
-      const feedbacks = getFeedbackObjects([
-        {
-          type: 'error',
-          title: 'Unknown error',
-          message: 'An unknown error occurred. Please try again.'
-        }
-      ]);
-
-      return fail(500, {
-        feedbacks
-      });
+      console.error(e);
+      return FATAL_ERROR;
     }
   }
 };
+
+const setupAuthModeNewUser = async (email: string) => {
+  const userId = nanoid();
+  const newUser = {
+    id: userId,
+    email,
+    emailVerified: true,
+  } as InsertUser;
+  
+  const newUserKey = {
+    id: `email:${email}`,
+    userId,
+    hashedPassword: await new Argon2id().hash(`N1MDAP@SSWD`),
+  } as InsertUserKey;
+  
+  const newUserProfile = {
+    id: nanoid(),
+    userId,
+    clientId: CMP_CLIENT_ID,
+    role: 'super_admin',
+    firstName: 'Super',
+    lastName: 'Admin',
+  } as InsertUserProfile;
+  
+  try {
+    const { success, error } = await createUser(newUser, newUserKey, newUserProfile);
+    
+    if (error) throw error;
+    
+    return {
+      success,
+      user: {
+        user: newUser,
+        profile: newUserProfile,
+      },
+    }
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      user: null,
+    };
+  }
+}
 
 const createNewUserFromEmployee = async (email: string, existingEmployee: SelectEmployee) => {
   // Create user record for existing employee

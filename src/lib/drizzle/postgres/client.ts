@@ -20,6 +20,7 @@ const connection = postgres({
 	password: POSTGRES_DB_PASSWORD,
 	database: POSTGRES_DB_NAME,
 	max: POSTGRES_MAX_CONNECTIONS ? Number(POSTGRES_MAX_CONNECTIONS) : 10,
+	prepare: false,
 });
 
 export const db = drizzle(connection, {

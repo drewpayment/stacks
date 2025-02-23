@@ -6,7 +6,7 @@ export const schema = i.schema({
       id: i.string(),
       filename: i.string(),
       mimeType: i.string(),
-      googleDriveFileId: i.string(),
+      filePath: i.string(),
       uploadDate: i.date(),
       userId: i.string(),
       documentType: i.string(),
