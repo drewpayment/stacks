@@ -13,7 +13,18 @@ export const schema = i.schema({
       fileSize: i.number(),
       status: i.string(),
     }),
+    workflows: i.entity({
+      id: i.string(),
+      executedByUserId: i.string(),
+      description: i.string(),
+      data: i.json(),
+      status: i.string(),
+      startDate: i.date(),
+      endDate: i.date(),
+    }),
   }
 })
 
 export type Documents = InstaQLEntity<typeof schema, 'documents'>;
+
+export type Workflow = InstaQLEntity<typeof schema, 'workflows'>;

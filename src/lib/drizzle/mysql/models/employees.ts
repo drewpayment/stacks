@@ -72,6 +72,18 @@ export const getLegacyEmployee = async (employeeId: number): Promise<SelectLegac
 	}
 };
 
+export const getLegacyEmployeeListByIds = async (ids: number[]): Promise<SelectLegacyEmployee[]> => {
+	try {
+		return (await legacyDb.query.legacyEmployees.findMany({
+			where: (legacyEmployees, { inArray }) => inArray(legacyEmployees.id, ids),
+			with: {},
+		})) as SelectLegacyEmployee[];
+	} catch (error) {
+		console.error(error);
+		return [];
+	}
+}
+
 export const getLegacyManagerOfEmployee = async (
 	ofEmployeeId: number
 ): Promise<SelectLegacyManagerEmploeyee> => {
