@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 
 const protectedRoutesBase = '/app';
 const emailVerificationPath = '/app/email-verification';
-const superAdminRoutesBase = '/app/client';
+const superAdminRoutesBase = '/app/admin';
 
 const authRoutesBase = ['/auth', '/oauth'];
 

@@ -4,15 +4,20 @@ import { getLegacyEmployeeListByIds, getLegacyEmployees } from '$lib/drizzle/mys
 import type { InsertEmployee, InsertEmployeeProfile } from '$lib/drizzle/postgres/db.model';
 import { db } from '$lib/server/instantdb';
 import { id } from '@instantdb/admin';
-import { fail, json, type Actions } from '@sveltejs/kit';
+import { fail, json, redirect, type Actions } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 import { nanoid } from 'nanoid';
-
-
+import { db as pgDb } from '$lib/drizzle/postgres/client';
+import { employee, employeeProfile } from '$lib/drizzle/postgres/schema';
+import { parseAddressData } from '$lib/utils/address-parser';
 
 export const actions: Actions = {
   migrateEmployees: async ({ locals }) => {
     try {
+      const clientId = locals.user.profile.clientId;
+      
+      if (!clientId) return fail(400, { message: 'No client found.' });
+      
       const legacyEmployees = await getLegacyEmployees();
     
       if (!legacyEmployees || !legacyEmployees?.length) {
@@ -23,6 +28,7 @@ export const actions: Actions = {
       await createWorkflows(workflows);  
       
       // process workflows now
+      await processBatches(clientId, workflows);
       
       return {
         success: true,
@@ -35,41 +41,64 @@ export const actions: Actions = {
   }
 };
 
-const processBatches = async (workflows: Workflow[]) => {
-  for (const workflow of workflows) {
-    const employeeIds = JSON.parse(workflow.data).employeeIds;
-    const employees = await getLegacyEmployeeListByIds(employeeIds);
+const processBatches = async (clientId: string, workflows: Partial<Workflow>[]) => {
+  try {
+    await pgDb.transaction(async (tx) => {
+      const ees = [] as InsertEmployee[];
+      const eps = [] as InsertEmployeeProfile[];
+      
+      for (const workflow of workflows) {
+        const employeeIds = JSON.parse(workflow.data).employeeIds;
+        const employees = await getLegacyEmployeeListByIds(employeeIds);
+        
+        for (const emp of employees) {
+          const nameParts = emp.name.split(' ');
+          const now = dayjs();
+          
+          const ee = {
+            id: nanoid(),
+            clientId,
+            firstName: nameParts[0],
+            lastName: nameParts[1],
+            isCommissionable: !emp.hiddenPayroll && !emp.isAdmin && 
+              !emp.isMgr && (
+                emp.salesId1 != null || 
+                emp.salesId2 != null ||
+                emp.salesId3 != null),
+            created: now.toDate(),
+            updated: now.toDate(),
+          } as InsertEmployee;
+          
+          ees.push(ee);
+          
+          const ep = parseAddressData(emp);
+          
+          eps.push({
+            ...ep,
+            id: nanoid(),
+            employeeId: ee.id,
+            email: emp.email,
+            phone: emp.phoneNo,
+          } as InsertEmployeeProfile);
+        }
+      }
+      
+      await tx.insert(employee).values(ees);
+      await tx.insert(employeeProfile).values(eps);
+    });
     
-    for (const employee of employees) {
-      const nameParts = employee.name.split(' ');
-      const now = dayjs();
-      
-      const ee = {
-        id: nanoid(),
-        clientId: '',
-        firstName: nameParts[0],
-        lastName: nameParts[1],
-        isCommissionable: !employee.hiddenPayroll && !employee.isAdmin && 
-          !employee.isMgr && (
-            employee.salesId1 != null || 
-            employee.salesId2 != null ||
-            employee.salesId3 != null),
-        created: now.toDate(),
-        updated: now.toDate(),
-      } as InsertEmployee;
-      
-      const ep = {
-        id: nanoid(),
-        address: employee.address,
-        address2: employee.address2,
-        city: employee.city,
-        state: employee.state,
-        zip: employee.postalCode,
-        employeeId: ee.id,
-        email: employee.email,
-        phone: employee.phoneNo,
-      } as InsertEmployeeProfile;
+    for (const workflow of workflows) {
+      if (workflow.id != null) 
+        db.transact(db.tx.workflows[workflow.id].update({
+          status: 'active',
+          endDate: dayjs().toDate().toISOString(),
+        }));
     }
+    
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { success: false };
   }
 }
 

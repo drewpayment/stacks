@@ -14,9 +14,11 @@
 	} from 'flowbite-svelte';
 	import { AddressCardSolid, DotsHorizontalOutline } from 'flowbite-svelte-icons';
 	import { enhance } from '$app/forms';
+	import type { SelectClient } from '$lib/drizzle/postgres/db.model.js';
 
 	export let data;
-	const { users, client } = data;
+	const { users, client: maybeClient } = data;
+	const client = maybeClient as unknown as SelectClient;
 
 	if (users) UserStore.set(users);
 </script>
@@ -65,7 +67,7 @@
 					{user.user_profile.lastName}
 				</h5>
 				<span class="text-sm text-gray-500 dark:text-gray-400"
-					>{user.auth_user.githubUsername ? user.auth_user.githubUsername : ''}</span
+					>{user.auth_user.email ? user.auth_user.email : ''}</span
 				>
 				<div class="flex flex-col mt-4 lg:mt-6 space-y-3 w-full">
 					<div class="flex items-center space-x-3 rtl:space-x-reverse w-full">

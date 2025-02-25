@@ -3,6 +3,11 @@
 	import type { SelectClient } from '$lib/drizzle/postgres/db.model';
   import { Button, Helper, Input, Label, Modal, Select } from 'flowbite-svelte';
   import { CopySolid } from 'flowbite-svelte-icons';
+  
+  interface Props {
+    client: SelectClient;
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  }
 	  
   const options = [
     { name: 'User', value: 'user' },
@@ -10,14 +15,13 @@
     { name: 'Admin', value: 'admin' },
   ];
   
-  export let client: SelectClient | undefined;
+  let { client, size = 'xs' }: Props = $props();
   
-  let open = false;
-  export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'xs';
-  let showRoleHelperText = false;
-  let temporaryPassword = '';
-  let showTemporaryPassword = false;
-  let copyTempPasswordColor: any = undefined;
+  let open = $state(false);
+  let showRoleHelperText = $state(false);
+  let temporaryPassword = $state('');
+  let showTemporaryPassword = $state(false);
+  let copyTempPasswordColor: any = $state(undefined);
   
   const copyTemporaryPassword = async () => {
     if (!navigator.clipboard) {
@@ -41,10 +45,10 @@
     copyTempPasswordColor = undefined;
   }
   
-  setTimeout(() => {
-    temporaryPassword = 'test_password';
-    showTemporaryPassword = true;
-  }, 500)
+  // setTimeout(() => {
+  //   temporaryPassword = 'test_password';
+  //   showTemporaryPassword = true;
+  // }, 500)
 </script>
 
 <div class="p-2">
