@@ -36,7 +36,7 @@
 
 <AddUserDialog {client} />
 
-<div class="flex flex-row justify-start gap-2 py-3">
+<div class="grid grid-cols-4 justify-start gap-2 py-3">
 	{#each $UserStore as user}
 		<Card padding="sm">
 			<div class="flex justify-end">
@@ -66,12 +66,12 @@
 					{user.user_profile.firstName}
 					{user.user_profile.lastName}
 				</h5>
-				<span class="text-sm text-gray-500 dark:text-gray-400"
-					>{user.auth_user.email ? user.auth_user.email : ''}</span
-				>
+				<!-- <span class="text-sm text-gray-500 dark:text-gray-400">
+					{user.auth_user.email ? user.auth_user.email : ''}
+				</span> -->
 				<div class="flex flex-col mt-4 lg:mt-6 space-y-3 w-full">
-					<div class="flex items-center space-x-3 rtl:space-x-reverse w-full">
-						<span class="flex-shrink-0"><AddressCardSolid /></span>
+					<div class="flex items-center">
+						<span class=""><AddressCardSolid /></span>
 						<span class="truncate text-sm" title={user.auth_user.email}>{user.auth_user.email}</span>
 					</div>
 					<div class="flex justify-center items-center">

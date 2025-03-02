@@ -1,155 +1,104 @@
-# üöÄ KitForStartups - Stacks
+# Stacks =Ä
 
-The Open Source SvelteKit SaaS boilerplate.
+A modern full-stack development platform for building robust web applications.
 
-_KitForStartups_ is a starter kit for building and shipping fast, secure, and scalable full-stack SaaS applications with SvelteKit and TypeScript. This particular instance, named **Stacks**, is tailored for payroll and employee management.
+## Features (
 
-If you already found yourself in a situation where you were:
+- =‡ SvelteKit for frontend and backend
+- = Authentication with Lucia
+- =  Database with Drizzle ORM
+- <® UI components with TailwindCSS and Shadcn
+- =¡ File storage with Supabase
+- =» Analytics with PostHog
 
-- Trying to set up various authentication systems (email/password, social logins, OAuth, etc.)
-- Scratching your head over how to structure your app
-- Spending too much time setting up payments for your SvelteKit app either with Stripe or Lemon Squeezy
-- Fighting against your email provider for sending emails from your app, and testing them reliably on your local machine
-- Doing all the above again and again for every new project
+## Prerequisites =À
 
-Then _KitForStartups_ is for you üéâ!
+- Node.js 18+ or Bun 1.0+
+- Docker (optional, for local database)
 
-## ‚öíÔ∏è Tech Stack
+## Installation =ª
 
-- SvelteKit
-- TypeScript
-- Zod
-- Drizzle ORM
-- Drizzle Kit
-- Tailwind CSS
-- PostgreSQL
-- Lucia Auth
-- Resend
-- Playwright
-- Vitest
-- Docker
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/stacks.git
+cd stacks
 
-## üì¶ Getting Started
+# Install dependencies
+npm install
+# or with Bun
+bun install
+```
 
-This project uses PostgreSQL as a database.
+## Configuration ô
 
-### Prerequisites
+1. Copy example environment variables
+```bash
+cp .env.example .env
+```
 
-- Node.js 18+
-- PostgreSQL 13+
-- pnpm
-- Docker Compose (optional)
+2. Update the `.env` file with your configuration
 
-### Installation
+## Development ='
 
-1.  **Setup**
+Start the development server:
 
-    - Clone or fork the repository:
+```bash
+npm run dev
+# or with Bun
+bun run dev
+```
 
-    ```bash
-    git clone https://github.com/okupter/kitforstartups my-project
-    ```
+Your app will be running at [http://localhost:5173](http://localhost:5173)
 
-2.  **Install dependencies**
+## Database Setup =√
 
-    ```bash
-    cd my-project
-    pnpm install
-    ```
+### Option 1: Docker (recommended)
 
-3.  **Setup the environment variables**
+```bash
+# Start PostgreSQL
+docker-compose -f docker/postgres.yml up -d
 
-    Duplicate the `.env.example` file and rename it to `.env`. Then, fill in the values for the environment variables.
+# Run migrations
+npm run db:migrate
+```
 
-    ```bash
-    cp .env.example .env
-    ```
+### Option 2: Use your own database
 
-4.  **Setup the database**
+Update the `DATABASE_URL` in your `.env` file to point to your database.
 
-    For easy local development, there is a `./docker/mysql.yml` file that you can use to spin up a MySQL database in a Docker container. If you don't want to use Docker, you can install MySQL locally and skip this step.
+## Testing >Í
 
-    ```bash
-    docker-compose -f docker/mysql.yml up -d
-    ```
+```bash
+# Run unit tests
+npm run test
 
-    Remember to update the `POSTGRES_*` environment variables in the `.env` file with your database credentials.
+# Run E2E tests with Playwright
+npm run test:e2e
+```
 
-5.  **Run the migrations**
+## Building for Production <◊
 
-    We use [`Drizzle Kit`](https://orm.drizzle.team/kit-docs/overview) for automatic SQL migrations and prototyping.
+```bash
+npm run build
+```
 
-    To run the migrations for PostgreSQL, run the following command:
+## Deployment =¢
 
-    ```bash
-    pnpm generate-migrations:postgres
-    ```
+The project is compatible with Vercel, Netlify, and other SvelteKit-compatible hosting platforms.
 
-    This will generate the SQL migrations, as well as migrations metadata files in the `./src/lib/drizzle/postgres/migrations/data` directory.
+```bash
+# Deploy to Vercel
+vercel
+```
 
-    You can now run the following command to push the migrations to the database:
+## Documentation =⁄
 
-    ```bash
-    pnpm migrate:postgres
-    ```
+Additional documentation can be found in the `docs/` directory.
 
-    In the early stage of development or when you're at the prototyping stage, you can directly update the database schema and run the following command to directly push the schema changes to the database:
+## License =ƒ
 
-    ```bash
-    pnpm push:postgres
-    ```
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-6.  **Setup MailHog for local email testing**
+## Contributing >
 
-    We use MailHog to send and test emails locally. The boilerplate is configured to automatically send emails to MailHog when running in development mode.
-
-    Check `./src/lib/emails/send.ts` for more details about the implementation.
-
-    We also provide a Docker Compose file to quickly spin up a MailHog container.
-
-    ```bash
-    docker-compose -f docker/mailhog.yml up -d
-    ```
-
-    The MailHog server will be available at `http://localhost:8025`.
-
-7.  **Run the app**
-
-    ```bash
-    pnpm dev
-    ```
-
-### Changing the database
-
-This project is configured to use PostgreSQL. If you want to use a different database, you will need to manually change the drizzle config and schema files.
-
-**PS**: We plan to add a central configuration file for the app and a CLI to generate a starter project with the database of your choice.
-
-## üöÄ Key Features
-
--   **Authentication:** Built with Lucia for secure user authentication.
--   **Database:** Uses Drizzle ORM for type-safe database interactions with PostgreSQL.
--   **Email:** Integrated with Resend for sending emails, with local testing via MailHog.
--   **Testing:** Includes Playwright for end-to-end testing and Vitest for unit testing.
--   **Styling:** Uses Tailwind CSS for a modern and responsive design.
--   **Components:** Leverages Flowbite Svelte for UI components.
--   **Payroll Management:** Core functionality for managing pay cycles, paystubs, and employee information.
--   **Sales Tracking:** Functionality to import and manage sales data.
--   **Employee Management:** Features for managing employee information, notes, and more.
--   **Client Management:** Functionality to manage clients.
--   **User Management:** Functionality to manage users and their roles.
--   **Theme:** Dark mode support.
-
-## üó∫Ô∏è Roadmap
-
-KitForStartups is still in the early stages of development. Here is a list of features that we plan to add in the very near future:
-
--   [x] PostgreSQL support
--   [x] Proper error handling on the client with toast notifications
--   [ ] A central configuration file for the app
--   [ ] Magic link authentication
--   [x] Authorization logic with load functions and hooks
--   [ ] Stripe integration
--   [ ] Lemon Squeezy integration
--   [ ] Mailgun integration
--   [ ] CLI for generating a starter project
+Contributions are welcome! Please feel free to submit a Pull Request.
