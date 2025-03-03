@@ -96,12 +96,6 @@
 <div class="container mx-auto px-4 py-8">
 	<div class="flex justify-between items-center mb-6">
 		<h1 class="text-2xl font-bold">Client Information</h1>
-		<div class="relative">
-			<input type="text" placeholder="Search" class="py-2 pl-4 pr-10 border rounded-lg w-full" />
-			<span class="absolute right-3 top-1/2 transform -translate-y-1/2">
-				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-			</span>
-		</div>
 	</div>
 
 	<div class="mb-6">
@@ -111,31 +105,7 @@
 		</a>
 	</div>
 
-	<div class="flex mb-8">
-		<div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
-			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path></svg>
-		</div>
-		<div>
-			<h2 class="text-xl font-semibold">Company details</h2>
-			<!-- <p class="text-gray-600">These details will be shown publicly on your profile.</p> -->
-		</div>
-		<!-- <div class="ml-auto">
-			{#if data?.saved}
-				<div class="flex items-center text-green-600">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-					Changes saved
-				</div>
-			{/if}
-		</div> -->
-	</div>
-
-	<form action="?/update" method="post" class="max-w-3xl" use:enhance={({ formData, cancel }) => {
-		const data = prepareFormData(formData);
-		
-		data.forEach(d => console.log(d))
-		
-		cancel();
-		
+	<form action="?/update" method="post" class="max-w-3xl" use:enhance={() => {
 		return ({ result }) => {
 			console.log(result);	
 		}
@@ -379,6 +349,8 @@
 		</div>
 		
 		<div class="mt-8">
+			<input type="hidden" name="activeTab" bind:value={activeTab} />
+			<input type="hidden" name="id" bind:value={client.id} />
 			<Button type="submit">Save changes</Button>
 		</div>
 	</form>

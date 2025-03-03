@@ -1,4 +1,4 @@
-import { getClients, createClient } from '$lib/drizzle/postgres/models/clients';
+import { getClients, upsertClient } from '$lib/drizzle/postgres/models/clients';
 import { fail, redirect } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 import { nanoid } from 'nanoid';
@@ -21,7 +21,7 @@ export const actions: Actions = {
 		const data = Object.fromEntries(payload.entries()) as { name: string };
 
 		try {
-			await createClient({
+			await upsertClient({
 				id: nanoid(),
 				name: data.name,
 				contactUserId: locals.user?.id,

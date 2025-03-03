@@ -10,7 +10,7 @@ import { AuthUtils } from '$lib/utils/auth';
 import { dev } from '$app/environment';
 import { getEmployeeByEmail } from '$lib/drizzle/postgres/models/employees';
 import { AUTH_INITIALIZE, CMP_CLIENT_ID } from '$env/static/private';
-import { createClient, getClient } from '$lib/drizzle/postgres/models/clients';
+import { getClient, upsertClient } from '$lib/drizzle/postgres/models/clients';
 import dayjs from 'dayjs';
 
 const signupUserSchema = z.object({
@@ -94,7 +94,7 @@ export const actions: Actions = {
         if (!cmpClient) {
           try {
             const now = dayjs().toDate();
-            await createClient({
+            await upsertClient({
               id: CMP_CLIENT_ID,
               name: 'Choice Marketing Partners',
               slug: 'cmp',

@@ -24,6 +24,7 @@ export type User = { auth_user: SelectUser, user_profile: SelectUserProfile };
 export type CurrentUser = import('../../server/auth/types').User & { profile: UserProfile & { client: SelectClient } };
 
 export type SelectClient = typeof client.$inferSelect;
+export type InsertClient = typeof client.$inferInsert;
 
 export type SelectEmployee = typeof employee.$inferSelect;
 export type SelectEmployeeProfile = typeof employeeProfile.$inferSelect;
