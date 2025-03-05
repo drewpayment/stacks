@@ -1,9 +1,13 @@
-import type { campaigns, client, employee, employeeCodes, employeeNotes, employeeProfile, expenseItem, expenseReport, overridingEmployee, payrollCycle, paystub, sale, saleOverride, user, userKey, userProfile } from './schema';
+import type { campaigns, client, employee, employeeCodes, employeeNotes, employeeProfile, expenseItem, expenseReport, overridingEmployee, payrollCycle, paystub, sale, saleOverride, user, userKey, userProfile, userSession } from './schema';
 
 
 export type InsertUserKey = typeof userKey.$inferInsert;
 export type UpdateUserKey = InsertUserKey;
 export type SelectUserKey = typeof userKey.$inferSelect;
+
+export type InsertUserSession = typeof userSession.$inferInsert;
+export type UpdateUserSession = Partial<InsertUserSession>;
+export type SelectUserSession = typeof userSession.$inferSelect;
 
 export type InsertUser = typeof user.$inferInsert;
 export type UpdateUser = InsertUser;
@@ -17,9 +21,10 @@ export type RoleTypes = "user" | "supervisor" | "admin" | "org_admin" | "super_a
 
 export type UserProfile = SelectUserProfile & { client: SelectClient };
 export type User = { auth_user: SelectUser, user_profile: SelectUserProfile };
-export type CurrentUser = import('lucia').User & { profile: UserProfile & { client: SelectClient } };
+export type CurrentUser = import('../../server/auth/types').User & { profile: UserProfile & { client: SelectClient } };
 
 export type SelectClient = typeof client.$inferSelect;
+export type InsertClient = typeof client.$inferInsert;
 
 export type SelectEmployee = typeof employee.$inferSelect;
 export type SelectEmployeeProfile = typeof employeeProfile.$inferSelect;

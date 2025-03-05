@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
   import { enhance } from '$app/forms';
+	import Autocomplete from '$lib/components/Autocomplete.svelte';
 	import CurrencyInput from '$lib/components/CurrencyInput.svelte';
+	import EmployeeAutocomplete from '$lib/components/EmployeeAutocomplete.svelte';
 	import { createToast } from '$lib/components/Toast.svelte';
 	import dayjs from 'dayjs';
 	import { Breadcrumb, BreadcrumbItem, Button, Input, Label, Select } from 'flowbite-svelte';
 
-  export let data;
+  const { data } = $props();
   const { campaigns, employees, employeeId } = data;
-  
-  let addMore = false;
+  let selectedEmployee = $state(null) as { name: string; value: string } | null;  
+  let selectedEmployeeId = $derived(selectedEmployee != null ? selectedEmployee.value : '');
+  let addMore = $state(false);
 </script>
 
 <div class="container max-w-3xl p-4">
@@ -31,7 +34,7 @@
   </div>
   
   <form method="post" class="grid grid-cols-2 gap-4"
-    use:enhance={({ formElement, formData, action, cancel, submitter }) => {        
+    use:enhance={({ formElement, formData, action, cancel, submitter }) => {    
       return async ({ result, update }) => {
         if (result.status != 200) return;
         
@@ -53,7 +56,12 @@
   >
     <div class="mb-6">
       <Label class="block mb-2">Employee</Label>
-      <Select name="employee_id" id="employee_id" items={employees} value={employeeId} required />
+      <input type="hidden" name="employee_id" id="employee_id" value={selectedEmployeeId} >
+      <Autocomplete
+        items={employees!}
+        bind:value={selectedEmployee}
+        name="employee"
+      />
     </div>
     
     <div class="mb-6">&nbsp;</div>

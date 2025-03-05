@@ -4,7 +4,7 @@ import type {
 	SelectPaystub
 } from '$lib/drizzle/postgres/db.model';
 import { eq } from 'drizzle-orm';
-import { drizzleClient } from '../client';
+import { db } from '../client';
 import { payrollCycle } from '../schema';
 import dayjs from 'dayjs';
 
@@ -16,7 +16,7 @@ export const getPayrollCycles = async (
 		return [];
 	}
 
-	const data = await drizzleClient.query.payrollCycle.findMany({
+	const data = await db.query.payrollCycle.findMany({
 		where: showIsClosed
 			? (pc, { eq }) => eq(pc.clientId, clientId)
 			: (pc, { and, eq }) => and(eq(pc.clientId, clientId), eq(pc.isClosed, false)),
@@ -31,7 +31,7 @@ export const getLastPayrollCycle = async (
 ): Promise<(SelectPayrollCycle & { paystubs: SelectPaystub[] }) | null> => {
 	if (!clientId) return null;
 
-	const data = await drizzleClient.query.payrollCycle.findFirst({
+	const data = await db.query.payrollCycle.findFirst({
 		where: (pc, { eq, and, lte }) =>
 			and(eq(pc.clientId, clientId), lte(pc.paymentDate, dayjs().toDate())),
 		orderBy: (pc, { desc }) => [desc(pc.startDate)],
@@ -52,7 +52,7 @@ export const getLastPayrollCycle = async (
 export const getPayrollCycle = async (id: string): Promise<SelectPayrollCycle> => {
 	if (!id) return null as unknown as SelectPayrollCycle;
 
-	const data = await drizzleClient.query.payrollCycle.findFirst({
+	const data = await db.query.payrollCycle.findFirst({
 		where: (pc, { eq }) => eq(pc.id, id)
 	});
 
@@ -65,7 +65,7 @@ export const addPayrollCycle = async (
 	if (!dto) return null;
 
 	try {
-		await drizzleClient.insert(payrollCycle).values(dto);
+		await db.insert(payrollCycle).values(dto);
 	} catch (ex) {
 		console.error(ex);
 		return null;
@@ -78,7 +78,7 @@ export const togglePayrollCycleClose = async (id: string, isClosed: boolean): Pr
 	if (!id) return false;
 
 	try {
-		await drizzleClient
+		await db
 			.update(payrollCycle)
 			.set({
 				isClosed: Boolean(isClosed)

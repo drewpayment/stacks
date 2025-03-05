@@ -1,4 +1,4 @@
-import { drizzleClient as db } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import { and, eq } from 'drizzle-orm';
 import { employee, employeeCodes, employeeNotes, employeeProfile } from '../schema';
 import type { Employee, EmployeeProfile, InsertEmployee, InsertEmployeeCode, InsertEmployeeNotes, InsertEmployeeProfile, SelectEmployee, SelectEmployeeCode, SelectEmployeeProfile } from '$lib/drizzle/postgres/db.model';

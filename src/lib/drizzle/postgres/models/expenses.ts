@@ -1,4 +1,4 @@
-import { drizzleClient as db } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import { expenseReport } from '../schema';
 import { and, eq, inArray } from 'drizzle-orm';
 import { fail, type ActionFailure } from '@sveltejs/kit';

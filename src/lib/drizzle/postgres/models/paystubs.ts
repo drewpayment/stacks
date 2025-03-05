@@ -1,5 +1,5 @@
 import { eq, or } from 'drizzle-orm';
-import { drizzleClient } from '../client';
+import { db } from '../client';
 import { paystub } from '../schema';
 import type { PaystubWith } from '$lib/drizzle/postgres/types/paystbus.model';
 import type { InsertPaystub, } from '$lib/drizzle/postgres/db.model';
@@ -19,7 +19,7 @@ export const getPaystubs = async (
     return [] as PaystubWith[];
   }
   
-  const data = await drizzleClient.query.paystub.findMany({
+  const data = await db.query.paystub.findMany({
     where: filterPayrollCycles 
       ? (employeeId || campaignId)
         ? (ps, { eq, and, isNull }) => and(
@@ -67,7 +67,7 @@ export const getPaystubById = async (clientId: string, paystubId: string): Promi
   if (!clientId || !paystubId) return null as unknown as Promise<PaystubWith>;
   
   try {
-    return await drizzleClient.query.paystub.findFirst({
+    return await db.query.paystub.findFirst({
       where: (ps, { eq, and }) => and(
         eq(ps.clientId, clientId),
         eq(ps.id, paystubId),
@@ -99,7 +99,7 @@ export const getPaystubsWoPayrollCycle = async (clientId: string, startDate: Dat
     return [] as PaystubWith[];
   }
   
-  const data = await drizzleClient.query.paystub.findMany({
+  const data = await db.query.paystub.findMany({
     where: (ps, { and, eq, isNull }) => and(
       eq(ps.clientId, clientId),
       or(
@@ -130,7 +130,7 @@ export const getPaystubsWoPayrollCycle = async (clientId: string, startDate: Dat
 export const getPaystubsByPayrollCycleId = async (clientId: string, payrollCycleId: string): Promise<PaystubWith[]> => {
   if (!payrollCycleId) return [] as PaystubWith[];
   
-  const data = await drizzleClient.query.paystub.findMany({
+  const data = await db.query.paystub.findMany({
     where: (ps, { and, eq }) => and(
       eq(ps.clientId, clientId),
       eq(ps.payrollCycleId, payrollCycleId),
@@ -162,7 +162,7 @@ export const detachPayrollCycleFromPaystubs = async (payrollCycleId: string): Pr
   if (!payrollCycleId) return false;
   
   try {
-    await drizzleClient.update(paystub)
+    await db.update(paystub)
       .set({
         payrollCycleId: null,
       })
@@ -186,7 +186,7 @@ export const detachPayrollCycleFromPaystub = async (paystubId: string): Promise<
   if (!paystubId) return false;
   
   try {
-    await drizzleClient.update(paystub)
+    await db.update(paystub)
       .set({
         payrollCycleId: null,
       })
@@ -203,7 +203,7 @@ export const detachPaystubFromPayrollCycles = async (paystubId: string): Promise
   if (!paystubId) return false;
   
   try {
-    await drizzleClient.update(paystub)
+    await db.update(paystub)
       .set({
         payrollCycleId: null,
       })
@@ -220,7 +220,7 @@ export const attachPayrollCycleToPaystub = async (paystubId: string, payrollCycl
   if (!paystubId || !payrollCycleId) return false;
   
   try {
-    await drizzleClient.update(paystub)
+    await db.update(paystub)
       .set({
         payrollCycleId,
       })
@@ -238,7 +238,7 @@ export const numberOfPaystubsByPayrollCycleId = async (payrollCycleId: string): 
   if (!payrollCycleId) return data;
   
   try {
-    const results = await drizzleClient.query.paystub.findMany({
+    const results = await db.query.paystub.findMany({
       where: (ps, { eq }) => eq(ps.payrollCycleId, payrollCycleId),
     });
     
@@ -274,7 +274,7 @@ export const insertPaystub = async (dto: InsertPaystub): Promise<InsertPaystub> 
   if (!dto) return null as unknown as InsertPaystub;
   
   try {
-    await drizzleClient.insert(paystub).values({...dto});
+    await db.insert(paystub).values({...dto});
   } catch (ex) {
     console.error(ex);
     error(500, 'Error saving paystub');

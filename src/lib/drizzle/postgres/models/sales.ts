@@ -1,6 +1,6 @@
 import type { InsertSale, SaleDto, SelectSale } from '$lib/drizzle/postgres/db.model';
 import { nanoid } from 'nanoid';
-import { drizzleClient } from '../client';
+import { db } from '../client';
 import { sale } from '../schema';
 import dayjs from 'dayjs';
 import { desc, inArray } from 'drizzle-orm';
@@ -46,7 +46,7 @@ export const saveSale = async (dto: InsertSale): Promise<SelectSale> => {
   if (!dto.paystubId) dto.paystubId = null;
   
   try {
-    await drizzleClient.insert(sale).values({...dto});
+    await db.insert(sale).values({...dto});
   } catch (ex) {
     console.error(ex);
     return null as unknown as SelectSale;
@@ -58,7 +58,7 @@ export const saveSale = async (dto: InsertSale): Promise<SelectSale> => {
 export const saveSales = async (dtos: InsertSale[]): Promise<SelectSale[]> => {
   
   try {
-    await drizzleClient.insert(sale).values(dtos);
+    await db.insert(sale).values(dtos);
   } catch (ex) {
     console.error(ex);
     error(500, { message: 'Error saving sales' });
@@ -69,7 +69,7 @@ export const saveSales = async (dtos: InsertSale[]): Promise<SelectSale[]> => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getSales = async <T = SelectSale>(clientId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs, withStmt: any = undefined): Promise<T[]> => {
-  const sales = await drizzleClient.query.sale.findMany({
+  const sales = await db.query.sale.findMany({
     with: withStmt || undefined,
     where: (sale, { and, eq, lte, gte }) => and(
       eq(sale.clientId, clientId),
@@ -83,7 +83,7 @@ export const getSales = async <T = SelectSale>(clientId: string, startDate: dayj
 }
 
 export const getUnallocatedSalesByEmployee = async (clientId: string, campaignId: string, employeeId: string): Promise<SelectSale[]> => {
-  const sales = await drizzleClient.query.sale.findMany({
+  const sales = await db.query.sale.findMany({
     where: (sale, { and, eq, isNull }) => and(
       eq(sale.clientId, clientId),
       eq(sale.campaignId, campaignId),
@@ -164,7 +164,7 @@ export const updateSelectedSalesToPaystub = async (sales: SelectSale[], paystubI
   if (!sales?.length) return Promise.resolve(false);
   
   try {
-    await drizzleClient.update(sale)
+    await db.update(sale)
       .set({ paystubId, isComplete: true, })
       .where(inArray(sale.id, sales.map(s => s.id)));
   } catch (ex) {

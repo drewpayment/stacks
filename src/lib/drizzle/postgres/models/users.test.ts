@@ -2,7 +2,7 @@ import { expect, test, describe, afterAll, vi } from 'vitest';
 import {
   getUserByEmail,
 } from './users';
-import { drizzleClient } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 
 // Mock data
 const mockUser = { id: '1', email: 'test@test.com' };
@@ -10,7 +10,7 @@ const mockUserProfile = { id: '1', userId: '1', firstName: 'Test', lastName: 'Us
 
 vi.mock('$lib/drizzle/postgres/client');
 
-vi.spyOn(drizzleClient.query.user, 'findFirst')
+vi.spyOn(db.query.user, 'findFirst')
   .mockResolvedValueOnce(mockUser as {
     id: string;
     email: string;

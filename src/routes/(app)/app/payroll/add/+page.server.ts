@@ -15,7 +15,7 @@ import type { Employee, SelectSale, SelectSaleOverride } from '$lib/drizzle/post
 import type { InsertManualOverride } from '$lib/drizzle/types/override.model.js';
 import { formatDate } from '$lib/utils/utils.js';
 import { error, fail } from '@sveltejs/kit';
-import { drizzleClient as db } from '$lib/drizzle/postgres/client.js';
+import { db } from '$lib/drizzle/postgres/client.js';
 import { saveExpenseReportsToPaystub } from '$lib/drizzle/postgres/models/expenses';
 import type { Actions, PageServerLoad } from './$types';
 

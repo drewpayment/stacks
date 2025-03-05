@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import utils from './utils';
 import dayjs from 'dayjs';
-import { drizzleClient as db } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import { employee } from '$lib/drizzle/postgres/schema';
 import { eq } from 'drizzle-orm';
 

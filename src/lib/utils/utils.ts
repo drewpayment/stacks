@@ -57,6 +57,11 @@ const formatDate = (date: any, format = 'MMMM D, YYYY') => {
 	const dateNum = Number(date);
 	
 	if (isNaN(dateNum)) {
+		const dayjsDate = dayjs(date);
+		if (dayjsDate.isValid()) {
+			return dayjsDate.format(format);
+		}
+		
 		return 'Invalid date';
 	}
 	

@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { drizzleClient } from '../client';
+import { db } from '../client';
 import { overridingEmployee, saleOverride } from '../schema';
 import type { InsertSaleOverride, SelectSale, SelectSaleOverride } from '$lib/drizzle/postgres/db.model';
 import type { InsertManualOverride } from '$lib/drizzle/types/override.model';
@@ -9,7 +9,7 @@ export const getPendingSaleOverrides = async (employeeId: string): Promise<Selec
   if (!employeeId) return [] as SelectSaleOverride[];
   
   try {
-    return await drizzleClient.query.saleOverride.findMany({
+    return await db.query.saleOverride.findMany({
       where: (so, { eq, and, isNull }) => and(
         eq(so.beneficiaryEmployeeId, employeeId),
         isNull(so.paidOnPaystubId),
@@ -32,14 +32,14 @@ export const saveOverridingEmployee = async (employeeId: string, overridesToEmpl
   if (!employeeId || !overridesToEmployeeId) return false;
   
   // check for existing override 
-  const existingOverride = await drizzleClient.query.overridingEmployee.findFirst({
+  const existingOverride = await db.query.overridingEmployee.findFirst({
     where: (oe, { and, eq }) => and(eq(oe.employeeId, overridesToEmployeeId), eq(oe.overridesEmployeeId, employeeId)),
   });
   
   if (existingOverride) return true;
   
   try {
-    await drizzleClient.insert(overridingEmployee)
+    await db.insert(overridingEmployee)
       .values({
         id: nanoid(),
         employeeId: overridesToEmployeeId,
@@ -70,7 +70,7 @@ export const createOverridesFromSalesForOverridingManagers = async (sales: Selec
   const saleEmployeeIds = Array.from((new Set(sales.map(s => s.employeeId))).values());
   
   // get the override amounts for each employee
-  const employeesReceivingOverrides = await drizzleClient.query.overridingEmployee.findMany({
+  const employeesReceivingOverrides = await db.query.overridingEmployee.findMany({
     where: (oe, { inArray }) => inArray(oe.overridesEmployeeId, saleEmployeeIds),
   });
   
@@ -95,7 +95,7 @@ export const createOverridesFromSalesForOverridingManagers = async (sales: Selec
   });
   
   try {
-    await drizzleClient.insert(saleOverride).values(saleOverrides);
+    await db.insert(saleOverride).values(saleOverrides);
   } catch (ex) {
     console.error(ex);
     return { success: false, total: 0, };
@@ -134,7 +134,7 @@ export const saveManualOverrides = async (clientId: string, paystubId: string, p
   });
   
   try {
-    await drizzleClient.insert(saleOverride).values(saleOverrides);
+    await db.insert(saleOverride).values(saleOverrides);
   } catch (ex) {
     console.error(ex);
     return { success: false, total: 0, };

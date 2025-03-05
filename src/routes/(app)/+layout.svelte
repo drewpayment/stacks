@@ -97,7 +97,7 @@
 				</NavLi>
 				<Dropdown class="w-44 z-20">
 					{#if ['super_admin'].includes(data.profile?.role)}
-						<DropdownItem href="/app/client">Clients</DropdownItem>
+						<DropdownItem href="/app/admin/client">Clients</DropdownItem>
 					{/if}
 					<DropdownItem href="/app/campaigns">Campaigns</DropdownItem>
 					<DropdownDivider />

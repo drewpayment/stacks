@@ -1,13 +1,12 @@
-/// <reference types="lucia" />
-
 import type { CurrentUser } from '$lib/drizzle/postgres/db.model';
+import type { Session } from '$lib/server/auth/types';
 
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
 			user: CurrentUser;
-			session: import('lucia').Session;
+			session: Session;
 		}
 		// interface PageData {}
 		// interface Platform {}

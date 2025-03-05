@@ -4,9 +4,12 @@ import { z } from 'zod';
 import type { Actions } from './$types';
 import { getUserByEmail } from '$lib/drizzle/postgres/models/users';
 import { Argon2id } from "oslo/password";
-import { drizzleClient } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import { LegacyScrypt } from 'lucia';
 import { lucia } from '$lib/lucia/postgres';
+import { createSession, generateSessionToken } from '$lib/server/auth/auth';
+import { setSessionTokenCookie } from '$lib/server/auth/cookies';
+import dayjs from 'dayjs';
 
 const loginUserSchema = z.object({
   email: z.string().email(),
@@ -41,7 +44,7 @@ export const actions: Actions = {
       const user = await getUserByEmail(email);
       const userId = user?.id as string;
       
-      const userKey = await drizzleClient.query.userKey
+      const userKey = await db.query.userKey
         .findFirst({
           where: (uk, { eq }) => eq(uk.userId, userId),
           columns: {
@@ -67,15 +70,12 @@ export const actions: Actions = {
         });
       }
       
-      const session = await lucia.createSession(userId, {});
-      const sessionCookie = lucia.createSessionCookie(session.id);
+      const token = generateSessionToken();
+      await createSession(token, userId);
       
-      cookies.set(sessionCookie.name, sessionCookie.value, {
-        path: ".",
-        ...sessionCookie.attributes
-      });
-      
+      setSessionTokenCookie(cookies, token, dayjs().add(60, 'minutes').toDate());
     } catch (e) {
+      console.error(e);
       const feedbacks = getFeedbackObjects([
         {
           type: 'error',

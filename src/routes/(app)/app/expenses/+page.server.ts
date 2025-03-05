@@ -2,7 +2,7 @@ import { getExpenseReports } from '$lib/drizzle/postgres/models/expenses.js';
 import { type Actions, fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getEmployees } from '$lib/drizzle/postgres/models/employees';
-import { drizzleClient as db } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import { payrollCycle } from '$lib/drizzle/postgres/schema';
 import dayjs from 'dayjs';
 import type { SelectOptionType } from 'flowbite-svelte';

@@ -1,5 +1,5 @@
 import { getCampaign, getCampaigns, updateCampaign, addCampaign, disableCampaign } from './campaigns';
-import { drizzleClient } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import { vi, describe, it, expect, beforeEach, afterAll } from 'vitest';
 import type { InsertCampaign } from '../db.model';
 import type { PgTable, TableConfig } from 'drizzle-orm/pg-core';
@@ -15,20 +15,20 @@ const campaignUpdateMockImplementation = (table: PgTable<TableConfig>) => {
 // Mock the drizzleClient
 vi.mock('$lib/drizzle/postgres/client');
 
-vi.spyOn(drizzleClient.query.campaigns, 'findMany')
+vi.spyOn(db.query.campaigns, 'findMany')
   .mockResolvedValueOnce([{ id: 'campaignId', clientId: 'clientId', name: 'Campaign' } as any]);
   
-vi.spyOn(drizzleClient.query.campaigns, 'findFirst')
+vi.spyOn(db.query.campaigns, 'findFirst')
   .mockResolvedValueOnce({ id: 'campaignId', clientId: 'clientId', name: 'Campaign' } as any)
   .mockResolvedValueOnce({ id: 'campaignId', clientId: 'clientId', name: 'Campaign' } as any)
   .mockResolvedValueOnce({ id: 'campaignId', clientId: 'clientId', name: 'Campaign' } as any);
   
-vi.spyOn(drizzleClient, 'update')
+vi.spyOn(db, 'update')
   .mockImplementationOnce(campaignUpdateMockImplementation)
   .mockImplementationOnce(campaignUpdateMockImplementation)
   .mockRejectedValue(new Error('Test error'));
 
-vi.spyOn(drizzleClient, 'insert').mockReturnValue({
+vi.spyOn(db, 'insert').mockReturnValue({
   values: vi.fn().mockReturnThis(),
   returning: vi.fn().mockResolvedValue([{ id: 'campaignId', clientId: 'clientId', name: 'Campaign' }] as any),
 } as any);

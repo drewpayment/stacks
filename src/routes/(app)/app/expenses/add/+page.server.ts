@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { SelectOptionType } from 'flowbite-svelte';
-import { drizzleClient as db } from '$lib/drizzle/postgres/client';
+import { db } from '$lib/drizzle/postgres/client';
 import type { InsertExpenseReport, InsertExpenseItem } from '$lib/drizzle/postgres/db.model';
 import { nanoid } from 'nanoid';
 import { expenseItem, expenseReport } from '$lib/drizzle/postgres/schema.js';
