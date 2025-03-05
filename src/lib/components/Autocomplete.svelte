@@ -21,6 +21,11 @@
     required?: boolean;
     multiple?: boolean;
     clearable?: boolean;
+    /**
+     * On focus, how much time should the autocomplete wait for input before it shows the entire options results?
+     * Defaults to 750ms.
+     */
+    inputDelay?: number;
   };
 
   // const { class: classFromProps, ...restProps } = defineProps(['class']);
@@ -36,6 +41,7 @@
     required = false,
     multiple = false,
     clearable = false,
+    inputDelay = 750,
     ...restProps
   }: $$Props = $props();
 
@@ -51,6 +57,7 @@
   let searchValue = $state('');
   let options = $derived(searchValue ? items.filter(i => i.name.toString().replace(' ', '').toLowerCase().includes(searchValue.trim().toLowerCase())): items);
   let isSearchReadonly = $state(false);
+  let userInputTimer: NodeJS.Timer | null = $state(null);
 
   let selectClass = $derived(twMerge(common, underline ? underlineClass : defaultClass, sizes[size], underline && 'px-0!', restProps.class as ClassNameValue));
   
@@ -71,20 +78,23 @@
     };
   }
   
+  const showNativeSelectDropdown = () => {
+    // Method 1: Using showPicker() (modern browsers)
+    if (typeof selectElement.showPicker === 'function') {
+      selectElement.showPicker();
+    } 
+    // Method 2: Fallback to click simulation
+    else {
+      selectElement.dispatchEvent(new MouseEvent('mousedown'));
+    }
+  }
+  
   const handleKeyDown = debounce((e: KeyboardEvent) => {
+    if (userInputTimer) userInputTimer = null;
     const inputVal = (e.target as any)?.value ?? '';
     searchValue = inputVal;
     
-    tick().then(() => {
-      // Method 1: Using showPicker() (modern browsers)
-      if (typeof selectElement.showPicker === 'function') {
-        selectElement.showPicker();
-      } 
-      // Method 2: Fallback to click simulation
-      else {
-        selectElement.dispatchEvent(new MouseEvent('mousedown'));
-      }
-    })
+    tick().then(() => showNativeSelectDropdown());
   });
   
   const handleSelectOption = (e: Event) => {
@@ -103,6 +113,16 @@
   function isObject(instance: any) {
     return instance !== null && typeof instance === 'object' && !Array.isArray(instance);
   }
+  
+  function onInputFocus() {
+    // if the input is in a readonly state we shouldn't ever show the results 
+    if (isSearchReadonly) return;
+    // if the user doesn't start search by $$Props.inputDelay we should show all results
+    userInputTimer = setTimeout(() => {
+      showNativeSelectDropdown();
+      userInputTimer = null;
+    }, inputDelay);
+  }
 </script>
 
 <div class="relative space-y-8 pb-6">
@@ -112,7 +132,7 @@
         <Badge color="none" class="relative" large dismissable on:close={handleRemoveSelected}>{value.name}</Badge>
       </div>
     {/if}
-    <Input type="search" {name} onkeydown={handleKeyDown} bind:value={searchInput} readonly={isSearchReadonly} />
+    <Input type="search" {name} onkeydown={handleKeyDown} bind:value={searchInput} readonly={isSearchReadonly} onfocus={onInputFocus} />
     <select {...restProps} class={selectClass + ' invisible'} on:change={handleSelectOption} on:contextmenu on:input bind:this={selectElement}>
       {#if placeholder}
         <option disabled selected={(value === '') ? true : undefined} value="">{placeholder}</option>

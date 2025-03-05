@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { bigint, boolean, decimal, foreignKey, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, unique, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
+import type { TeamManager } from '../types/team.model';
 
 export const user = pgTable('auth_user', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -440,7 +441,7 @@ export const expenseItem = pgTable('expense_item', {
 	clientId: varchar('client_id', { length: 255 })
 		.notNull()
 		.references(() => client.id),
-	exportReportId: varchar('expense_report_id', { length: 255 })
+	expenseReportId: varchar('expense_report_id', { length: 255 })
 		.notNull()
 		.references(() => expenseReport.id),
 	category: expenseCategoryEnum('category').notNull().default('misc'),
@@ -451,7 +452,7 @@ export const expenseItem = pgTable('expense_item', {
 
 export const expenseItemRelations = relations(expenseItem, ({ one }) => ({
 	expenseReport: one(expenseReport, {
-		fields: [expenseItem.exportReportId],
+		fields: [expenseItem.expenseReportId],
 		references: [expenseReport.id],
 	}),
 }));
@@ -468,3 +469,46 @@ export const expenseReportRelations = relations(expenseReport, ({ one, many }) =
 		references: [paystub.id],
 	}),
 }));
+
+export const location = pgTable('location', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	clientId: varchar('client_id', { length: 255 })
+		.notNull()
+		.references(() => client.id),
+	name: varchar('name', { length: 200 }),
+	address: varchar('address', { length: 200 }),
+	city: varchar('city', { length: 200 }),
+	state: varchar('state', { length: 200 }),
+	zip: varchar('zip', { length: 200 }),
+	country: varchar('country', { length: 200 }),
+	created: timestamp('created').notNull(),
+	updated: timestamp('updated').notNull(),
+	deleted: timestamp('deleted'),
+}, (table) => [
+	primaryKey({ columns: [table.id, table.clientId] }),
+])
+
+export const team = pgTable('team', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	clientId: varchar('client_id', { length: 255 })
+		.notNull()
+		.references(() => client.id),
+	isBroker: boolean().default(false),
+	name: varchar('name', { length: 200 }),
+	generalManager: jsonb('general_manager')
+		.$type<TeamManager>()
+		.default({} as TeamManager),
+	regionalManager: jsonb('regional_manager')
+		.$type<TeamManager>()
+		.default({} as TeamManager),
+	teamMemberEmployeeIds: jsonb('team_member_employee_ids')
+		.$type<string[]>()
+		.default([]),
+	locationId: varchar('location_id', { length: 255 })
+		.references(() => location.id),
+	created: timestamp('created').notNull(),
+	updated: timestamp('updated').notNull(),
+	deleted: timestamp('deleted'),
+}, (table) => [
+	unique('idx_client_id_name').on(table.id, table.name),
+]);
