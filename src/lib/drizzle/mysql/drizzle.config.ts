@@ -5,7 +5,7 @@ dotenv.config();
 
 export default {
 	schema: './src/lib/drizzle/mysql/schema.ts',
-	driver: 'mysql2',
+	dialect: 'mysql',
 	dbCredentials: {
 		host: process.env.MYSQL_DB_HOST as string,
 		port: Number(process.env.MYSQL_DB_PORT),
