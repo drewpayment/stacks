@@ -71,6 +71,7 @@ jobs:
           echo "SUPABASE_API_KEY=${{ secrets.SUPABASE_API_KEY }}" >> .env
           echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env
           echo "PUBLIC_POSTHOG_KEY=${{ secrets.PUBLIC_POSTHOG_KEY }}" >> .env
+          echo "AUTH_INITIALIZE=false" >> .env
           
           cat .env
           
