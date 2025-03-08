@@ -32,7 +32,9 @@ const getPrivateKey = async (): Promise<string> => {
     // Otherwise use the direct key value
     if (TUNNEL_PRIVATE_KEY) {
       debug('Using provided SSH private key...');
-      return TUNNEL_PRIVATE_KEY;
+      const base64TunnelPrivateKey = TUNNEL_PRIVATE_KEY;
+            
+      return Buffer.from(base64TunnelPrivateKey, 'base64').toString('utf8');
     }
 
     throw new Error('No private key provided. Set either TUNNEL_PRIVATE_KEY or TUNNEL_PRIVATE_KEY_PATH');
@@ -128,7 +130,7 @@ const createConnection = async (): Promise<Connection> => {
     const debugLogger = TUNNEL_DEBUG === 'true' ? console.log : undefined;
     
     const [server] = await createTunnel(
-      { 
+      {
         debug: TUNNEL_DEBUG === 'true',
         debugLogger,
         keepAlive: true

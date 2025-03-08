@@ -1,7 +1,7 @@
 # Build with:   docker build -t IMAGE_NAME .
 # Run with:     docker run -p 3000:3000 --rm --name IMAGE_NAME IMAGE_NAME
 
-FROM node:20-slim AS builder
+FROM oven/bun:1 AS builder
 WORKDIR /staging
 
 # Install necessary build dependencies
@@ -12,31 +12,28 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files first for better caching
-COPY package.json pnpm-lock.yaml ./
+COPY package.json bun.lockb* ./
 
-# Enable corepack and install dependencies
-RUN corepack enable && \
-    pnpm install --frozen-lockfile
+# Install dependencies
+RUN bun install --frozen-lockfile
 
 # Copy the rest of the application
 COPY . .
 
 # Generate Drizzle models first, then build
-RUN pnpm generate-migrations:postgres && \
-    pnpm generate-migrations:mysql && \
-    pnpm build && \
-    pnpm prune --prod
+RUN bun run generate-migrations:postgres && \
+    bun run generate-migrations:mysql && \
+    bun run build
 
-FROM node:20-slim
+FROM oven/bun:1-slim
 ARG ORIGIN=http://localhost:3000
 ENV ORIGIN=$ORIGIN
 WORKDIR /app
 
 # Copy necessary files from builder
-COPY --from=builder /staging/package.json /staging/pnpm-lock.yaml ./
+COPY --from=builder /staging/package.json ./
 COPY --from=builder /staging/node_modules ./node_modules
 COPY --from=builder /staging/build ./build
-COPY --from=builder /staging/.tunnel_key ./.tunnel_key
 
 EXPOSE 3000
-CMD ["node", "-r", "dotenv/config", "./build/index.js"]
+CMD ["bun", "run", "./build/index.js"]
