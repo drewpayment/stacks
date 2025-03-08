@@ -73,6 +73,9 @@ jobs:
           echo "PUBLIC_POSTHOG_KEY=${{ secrets.PUBLIC_POSTHOG_KEY }}" >> .env
           echo "AUTH_INITIALIZE=false" >> .env
           
+          echo "INSTANTDB_ADMIN_TOKEN=${{ secrets.INSTANTDB_ADMIN_TOKEN }}" >> .env
+          echo "PUBLIC_APP_ID=${{ secrets.PUBLIC_APP_ID }}" >> .env
+          
           cat .env
           
       - name: Setup SSH key
