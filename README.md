@@ -1,22 +1,22 @@
-# Stacks ??
+# Stacks 🚀
 
 A modern full-stack development platform for building robust web applications.
 
-## Features ??
+## Features 🔥
 
-- ?? SvelteKit for frontend and backend
-- ?? Authentication with Lucia
-- ??? Database with Drizzle ORM
-- ?? UI components with TailwindCSS and Shadcn
-- ?? File storage with Supabase
-- ?? Analytics with PostHog
+- 🔶 SvelteKit for frontend and backend
+- 🔒 Authentication with Lucia
+- 🗃️ Database with Drizzle ORM
+- 🎨 UI components with TailwindCSS and Shadcn
+- 📁 File storage with Supabase
+- 📊 Analytics with PostHog
 
-## Prerequisites ???
+## Prerequisites 🛠️
 
 - Node.js 18+ or Bun 1.0+
 - Docker (optional, for local database)
 
-## Installation ??
+## Installation 📥
 
 ```bash
 # Clone the repository
@@ -29,7 +29,7 @@ npm install
 bun install
 ```
 
-## Configuration ??
+## Configuration ⚙️
 
 1. Copy example environment variables
 ```bash
@@ -38,7 +38,7 @@ cp .env.example .env
 
 2. Update the `.env` file with your configuration
 
-## Development ??
+## Development 💻
 
 Start the development server:
 
@@ -50,7 +50,7 @@ bun run dev
 
 Your app will be running at [http://localhost:5173](http://localhost:5173)
 
-## Database Setup ???
+## Database Setup 🗄️
 
 ### Option 1: Docker (recommended)
 
@@ -66,7 +66,7 @@ npm run db:migrate
 
 Update the `DATABASE_URL` in your `.env` file to point to your database.
 
-## Testing ?
+## Testing ✅
 
 ```bash
 # Run unit tests
@@ -76,13 +76,13 @@ npm run test
 npm run test:e2e
 ```
 
-## Building for Production ???
+## Building for Production 🏗️
 
 ```bash
 npm run build
 ```
 
-## Deployment ??
+## Deployment 🚢
 
 The project is compatible with Vercel, Netlify, and other SvelteKit-compatible hosting platforms.
 
@@ -91,14 +91,14 @@ The project is compatible with Vercel, Netlify, and other SvelteKit-compatible h
 vercel
 ```
 
-## Documentation ??
+## Documentation 📚
 
 Additional documentation can be found in the `docs/` directory.
 
-## License ??
+## License 📄
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Contributing ??
+## Contributing 🤝
 
 Contributions are welcome! Please feel free to submit a Pull Request.
