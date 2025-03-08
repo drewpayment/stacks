@@ -77,11 +77,6 @@ jobs:
           echo "PUBLIC_APP_ID=${{ secrets.PUBLIC_APP_ID }}" >> .env
           
           cat .env
-          
-      - name: Setup SSH key
-        run: |
-          echo "${{ secrets.TUNNEL_PRIVATE_KEY }}" > .tunnel_key
-          chmod 600 .tunnel_key
 
       - name: Build and push Docker image for Linux
         uses: docker/build-push-action@v6
