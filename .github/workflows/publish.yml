@@ -67,6 +67,11 @@ jobs:
           echo "FROM_EMAIL=${{ secrets.FROM_EMAIL }}" >> .env
           echo "CMP_CLIENT_ID=${{ secrets.CMP_CLIENT_ID }}" >> .env
           
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_API_KEY=${{ secrets.SUPABASE_API_KEY }}" >> .env
+          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env
+          echo "PUBLIC_POSTHOG_KEY=${{ secrets.PUBLIC_POSTHOG_KEY }}" >> .env
+          
           cat .env
           
       - name: Setup SSH key
