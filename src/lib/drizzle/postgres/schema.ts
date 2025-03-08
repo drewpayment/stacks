@@ -1,12 +1,13 @@
 import { relations } from 'drizzle-orm';
-import { bigint, boolean, decimal, foreignKey, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, unique, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
+import { bigint, boolean, decimal, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, unique, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
 import type { TeamManager } from '../types/team.model';
+import type { OnboardingRequirements } from './types/onboarding.model';
 
 export const user = pgTable('auth_user', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	email: text('email').notNull().unique(),
 	emailVerified: boolean('email_verified').notNull().default(false),
-});
+}).enableRLS();
 
 export const userRoleEnum = pgEnum('user_role', ['user', 'supervisor', 'admin', 'org_admin', 'super_admin']);
 
@@ -20,7 +21,7 @@ export const userClient = pgTable('user_client', {
 		.references(() => client.id),
 }, (table) => ({
 	unique: [table.userId, table.clientId],
-}));
+})).enableRLS();
 
 export const userClientRelations = relations(userClient, ({ one }) => ({
 	user: one(user, {
@@ -55,7 +56,7 @@ export const userProfile = pgTable('user_profile', {
 	city: varchar('city', { length: 255 }),
 	state: varchar('state', { length: 2 }),
 	zip: varchar('zip', { length: 10 }),
-});
+}).enableRLS();
 
 export const userProfileRelations = relations(userProfile, ({ one }) => ({
 	user: one(user, {
@@ -76,7 +77,7 @@ export const emailVerification = pgTable('email_verification', {
 		.notNull()
 		.references(() => user.id),
 	expires: timestamp('expires').notNull()
-});
+}).enableRLS();
 
 export const password = pgTable('password', {
 	id: text('id').primaryKey(),
@@ -84,7 +85,7 @@ export const password = pgTable('password', {
 	userId: varchar('user_id', { length: 255 })
 		.notNull()
 		.references(() => user.id),
-});
+}).enableRLS();
 
 export const passwordResetToken = pgTable('password_reset_token', {
 	id: text('id').primaryKey(),
@@ -92,7 +93,7 @@ export const passwordResetToken = pgTable('password_reset_token', {
 		.notNull()
 		.references(() => user.id),
 	expires: timestamp('expires').notNull()
-});
+}).enableRLS();
 
 export const userSession = pgTable('user_session', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -100,15 +101,17 @@ export const userSession = pgTable('user_session', {
 		.notNull()
 		.references(() => user.id),
 	expiresAt: timestamp('expires_at', { mode: 'string' }).notNull(),
-});
+}).enableRLS();
 
 export const oauthAccount = pgTable('oauth_account', {
 	providerId: text('provider_id').notNull(),
 	providerUserId: text('provider_user_id').notNull(),
 	userId: text('user_id').notNull().references(() => user.id),
-}, (table) => ({
-	pk: primaryKey(table.providerId, table.providerUserId),
-}))
+}, (table) => ([
+	primaryKey({
+		columns: [table.providerId, table.providerUserId],
+	}),
+])).enableRLS();
 
 export const employee = pgTable('employee', {
 	id: text('id').primaryKey(),
@@ -121,10 +124,10 @@ export const employee = pgTable('employee', {
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
 	isCommissionable: boolean('is_commissionable').notNull().default(false),
-	created: timestamp('created').notNull(),
-	updated: timestamp('updated').notNull(),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
 	deleted: timestamp('deleted'),
-});
+}).enableRLS();
 
 export const employeeProfile = pgTable('employee_profile', {
 	id: text('id').primaryKey(),
@@ -139,7 +142,7 @@ export const employeeProfile = pgTable('employee_profile', {
 	phone: text('phone').notNull(),
 	phone2: text('phone_2'),
 	email: text('email').notNull(),
-});
+}).enableRLS();
 
 export const employeeNotes = pgTable('employee_notes', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -147,8 +150,8 @@ export const employeeNotes = pgTable('employee_notes', {
 		.notNull()
 		.references(() => employee.id),
 	note: text('note').notNull(),
-	created: timestamp('created').notNull(),
-})
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+}).enableRLS()
 
 export const employeeNotesRelations = relations(employeeNotes, ({ one }) => ({
 	employee: one(employee, {
@@ -172,7 +175,7 @@ export const employeeCodes = pgTable('employee_codes', {
 		foreignColumns: [employee.id],
 	}),
 	// unq: unique().on(t.employeeId, t.employeeCode),
-}));
+})).enableRLS();
 
 export const employeeCodesRelations = relations(employeeCodes, ({ one }) => ({
 	employee: one(employee, {
@@ -192,7 +195,7 @@ export const overridingEmployee = pgTable('overriding_employee', {
 		.references(() => employee.id),
 	overrideAmount: decimal('override_amount', { precision: 10, scale: 2 }).notNull()
 		.default("0.00"),
-});
+}).enableRLS();
 
 export const employeeRelations = relations(employee, ({ many, one }) => ({
 	employeeProfile: one(employeeProfile, {
@@ -213,7 +216,7 @@ export const userKey = pgTable('user_key', {
 		.notNull()
 		.references(() => user.id),
 	hashedPassword: varchar('hashed_password', { length: 255 })
-});
+}).enableRLS();
 
 export const client = pgTable('client', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -251,12 +254,12 @@ export const client = pgTable('client', {
 	isActive: boolean('is_active').notNull().default(true),
 	trialEndsAt: timestamp('trial_ends_at'),
 
-	created: timestamp('created').notNull(),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
 	updated: timestamp('updated').defaultNow().notNull(),
 	deleted: timestamp('deleted'),
 }, (table) => [
 	uniqueIndex('idx_client_subdomain_name').on(table.subdomain),
-]);
+]).enableRLS();
 
 export const campaigns = pgTable('campaigns', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -268,9 +271,9 @@ export const campaigns = pgTable('campaigns', {
 	url: varchar('url', { length: 255 }).default(''),
 	description: text('description').default(''),
 	active: boolean('active').default(false).notNull(),
-	created: timestamp('created').notNull(),
-	updated: timestamp('updated').notNull(),
-});
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
+}).enableRLS();
 
 export const payrollCycle = pgTable('payroll_cycle', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -280,11 +283,11 @@ export const payrollCycle = pgTable('payroll_cycle', {
 	startDate: timestamp('start_date').notNull(),
 	endDate: timestamp('end_date').notNull(),
 	paymentDate: timestamp('payment_date').notNull(),
-	created: timestamp('created').notNull(),
-	updated: timestamp('updated').notNull(),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
 	deleted: timestamp('deleted'),
 	isClosed: boolean('is_closed').notNull().default(false),
-});
+}).enableRLS();
 
 export const payrollCycleRelations = relations(payrollCycle, ({ many }) => ({
 	paystubs: many(paystub),
@@ -311,10 +314,10 @@ export const paystub = pgTable('paystub', {
 	netPay: decimal('net_pay').notNull(),
 	taxDeductions: decimal('tax_deductions').notNull().default("0.00"),
 	otherDeductions: decimal('other_deductions').notNull().default("0.00"),
-	created: timestamp('created').notNull(),
-	updated: timestamp('updated').notNull(),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
 	deleted: timestamp('deleted'),
-});
+}).enableRLS();
 
 export const paystubRelations = relations(paystub, ({ one, many }) => ({
 	employee: one(employee, {
@@ -360,10 +363,10 @@ export const sale = pgTable('sale', {
 	saleAmount: decimal('sale_amount').notNull().default("0.00"),
 	isComplete: boolean('is_complete').notNull().default(false),
 	statusDescription: statusDescriptionEnum('status_description').notNull().default('rejected'),
-	created: timestamp('created').notNull(),
-	updated: timestamp('updated').notNull(),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
 	deleted: timestamp('deleted'),
-});
+}).enableRLS();
 
 export const saleRelations = relations(sale, ({ one }) => ({
 	paystub: one(paystub, {
@@ -396,7 +399,7 @@ export const saleOverride = pgTable('sale_override', {
 	overrideAmount: decimal('override_amount').notNull().default("0.00"),
 	paidOnPaystubId: varchar('paid_on_paystub_id', { length: 255 })
 		.references(() => paystub.id),
-});
+}).enableRLS();
 
 export const saleOverrideRelations = relations(saleOverride, ({ one }) => ({
 	paystub: one(paystub, {
@@ -431,10 +434,10 @@ export const expenseReport = pgTable('expense_report', {
 	approvalDate: timestamp('approval_date'),
 	approvalNotes: text('approval_notes'),
 	totalAmount: decimal('total_amount').notNull().default("0.00"),
-	created: timestamp('created').notNull(),
-	updated: timestamp('updated').notNull(),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
 	deleted: timestamp('deleted'),
-});
+}).enableRLS();
 
 export const expenseItem = pgTable('expense_item', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -448,7 +451,7 @@ export const expenseItem = pgTable('expense_item', {
 	description: text('description').notNull(),
 	amount: decimal('amount').notNull().default("0.00"),
 	date: timestamp('date_incurred').notNull(),
-});
+}).enableRLS();
 
 export const expenseItemRelations = relations(expenseItem, ({ one }) => ({
 	expenseReport: one(expenseReport, {
@@ -471,22 +474,23 @@ export const expenseReportRelations = relations(expenseReport, ({ one, many }) =
 }));
 
 export const location = pgTable('location', {
-	id: varchar('id', { length: 255 }).primaryKey(),
+	id: varchar('id', { length: 255 }).unique(),
 	clientId: varchar('client_id', { length: 255 })
 		.notNull()
 		.references(() => client.id),
-	name: varchar('name', { length: 200 }),
+	name: varchar('name', { length: 200 })
+		.notNull(),
 	address: varchar('address', { length: 200 }),
 	city: varchar('city', { length: 200 }),
 	state: varchar('state', { length: 200 }),
 	zip: varchar('zip', { length: 200 }),
 	country: varchar('country', { length: 200 }),
-	created: timestamp('created').notNull(),
-	updated: timestamp('updated').notNull(),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
 	deleted: timestamp('deleted'),
 }, (table) => [
 	primaryKey({ columns: [table.id, table.clientId] }),
-])
+]).enableRLS();
 
 export const team = pgTable('team', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -506,9 +510,34 @@ export const team = pgTable('team', {
 		.default([]),
 	locationId: varchar('location_id', { length: 255 })
 		.references(() => location.id),
-	created: timestamp('created').notNull(),
-	updated: timestamp('updated').notNull(),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
 	deleted: timestamp('deleted'),
 }, (table) => [
 	unique('idx_client_id_name').on(table.id, table.name),
-]);
+]).enableRLS();
+
+export const onboarding = pgTable('onboarding', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	clientId: varchar('client_id', { length: 255 })
+		.notNull()
+		.references(() => client.id),
+	employeeId: varchar('employee_id', { length: 255 })
+		.references(() => employee.id),
+	requirements: jsonb('requirements')
+		.$type<OnboardingRequirements>()
+		.default({
+			hasHireDate: false,
+			hasFullName: false,
+			hasAddress: false,
+			hasPhone: false,
+			hasEmail: false,
+			hasDirectPayroll: false,
+			hasW9Requirement: false,
+			hasW9Completed: false,
+			optionalTasks: [],
+		} as OnboardingRequirements),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
+	deleted: timestamp('deleted'),
+}).enableRLS();

@@ -11,7 +11,7 @@
 		Card,
 		Heading
 	} from 'flowbite-svelte';
-	import { FileText, Users2, Clock, TrendingUp, Upload, Download, Calendar } from 'lucide-svelte';
+	import { FileText, Users2, Clock, TrendingUp, Upload, Download, Calendar, Building2 } from 'lucide-svelte';
 
 	export let data;
 	const { lastPayrollCycle, profile, user, cycles: historyCycles } = data;
@@ -34,10 +34,10 @@
 			link: "/app/employee"
 		},
 		{
-			title: "Time & Attendance",
-			description: "Manage schedules and time off",
-			icon: Clock,
-			link: "/app/time"
+			title: "Locations",
+			description: "View & Manage Locations",
+			icon: Building2,
+			link: "/app/locations"
 		},
 		{
 			title: "Reports",
