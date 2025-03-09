@@ -16,7 +16,7 @@
 			<BreadcrumbItem href="/" home>Home</BreadcrumbItem>
 			<BreadcrumbItem>Clients</BreadcrumbItem>
 		</Breadcrumb>
-		<h2 class="text-3xl font-bold dark:text-gray-300 text-gray-900 mb-4">{profile.client.name}'s Locations</h2>
+		<h2 class="text-3xl font-bold dark:text-gray-300 text-gray-900 mb-4">Locations</h2>
 	</div>
 	
 	<div class="flex justify-between items-center mb-10">
@@ -37,5 +37,11 @@
 				<Button href={`/app/locations/${location.id}`}>View Details</Button>
 			</Card>
 		{/each}
+    
+    {#if !locations || locations.length < 1}
+      <h4 class="mb-2 text-2xl font-bold tracking-tight text-gray-800 dark:text-gray-400 col-span-2">
+        No locations
+      </h4>
+    {/if}
 	</div>
 </div>

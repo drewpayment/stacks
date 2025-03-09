@@ -1,5 +1,6 @@
 import { db } from '$lib/drizzle/postgres/client';
 import type { SelectLocation } from '$lib/drizzle/postgres/db.model';
+import type { Actions } from '@sveltejs/kit';
 
 
 
@@ -13,4 +14,10 @@ export const load = async () => {
   return {
     locations: await getLocations(),
   };
+};
+
+export const actions: Actions = {
+  add: async ({}) => {
+    
+  },
 };
