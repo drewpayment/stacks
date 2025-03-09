@@ -17,6 +17,7 @@
 	const { data } = $props();
   const { location } = data;
 	
+  const client = {};
 	let activeTab = $state('overview');
 	
 	// For country selection
@@ -90,18 +91,18 @@
 </script>
 
 <svelte:head>
-	<title>Client Information</title>
+	<title>Location Information</title>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8">
 	<div class="flex justify-between items-center mb-6">
-		<h1 class="text-2xl font-bold">Client Information</h1>
+		<h1 class="text-2xl font-bold">Location Information</h1>
 	</div>
 
 	<div class="mb-6">
-		<a href="/app/admin/client" class="inline-flex items-center text-gray-600 hover:text-gray-900">
+		<a href="/app/locations" class="inline-flex items-center text-gray-600 hover:text-gray-900">
 			<ArrowLeft class="w-4 h-4 mr-2" />
-			<span>All Clients</span>
+			<span>All Locations</span>
 		</a>
 	</div>
 

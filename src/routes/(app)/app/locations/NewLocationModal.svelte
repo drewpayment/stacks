@@ -1,8 +1,14 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Button, Checkbox, Input, Label, Modal } from 'flowbite-svelte';
+	import type { SelectLocation } from '$lib/drizzle/postgres/db.model';
+	import { Button, Input, Label, Modal } from 'flowbite-svelte';
 	import { PlusSolid } from 'flowbite-svelte-icons';
 	import { ListPlus } from 'lucide-svelte';
+  
+  interface Props {
+    onClose: (location: SelectLocation | null) => void;
+  }
+  let { onClose }: Props = $props();
 
   let clickOutsideModal = $state(false);
 </script>
@@ -11,8 +17,16 @@
   <PlusSolid class="size-3" />
   Location
 </Button>
-<Modal title="New Location" bind:open={clickOutsideModal} autoclose outsideclose>
-  <form action="?/add" method="post" class="flex flex-col gap-4" use:enhance>
+<Modal title="New Location" bind:open={clickOutsideModal} outsideclose>
+  <form action="?/add" method="post" class="flex flex-col gap-4" use:enhance={() => {
+    console.log('posted')
+    return ({ result }) => {
+      if (result.status === 200) {
+        onClose((result as any).data);
+        clickOutsideModal = false
+      };
+    }
+  }}>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Label class="col-span-2 space-y-2">
         <span>Name *</span>
