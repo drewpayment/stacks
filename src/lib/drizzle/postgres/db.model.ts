@@ -1,4 +1,4 @@
-import type { campaigns, client, employee, employeeCodes, employeeNotes, employeeProfile, expenseItem, expenseReport, location, overridingEmployee, payrollCycle, paystub, sale, saleOverride, user, userKey, userProfile, userSession } from './schema';
+import type { campaigns, client, employee, employeeCodes, employeeNotes, employeeProfile, expenseItem, expenseReport, location, overridingEmployee, payrollCycle, paystub, sale, saleOverride, team, user, userKey, userProfile, userSession } from './schema';
 
 
 export type InsertUserKey = typeof userKey.$inferInsert;
@@ -77,3 +77,6 @@ export interface SaleDto {
 
 export type SelectLocation = typeof location.$inferSelect;
 export type InsertLocation = typeof location.$inferInsert;
+
+export type SelectTeam = typeof team.$inferSelect;
+export type InsertTeam = typeof team.$inferInsert;

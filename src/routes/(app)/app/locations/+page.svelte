@@ -23,7 +23,7 @@
 	<div class="mb-6">
 		<Breadcrumb aria-label="Breadcrumb" class="mb-4">
 			<BreadcrumbItem href="/" home>Home</BreadcrumbItem>
-			<BreadcrumbItem>Clients</BreadcrumbItem>
+			<BreadcrumbItem>Locations</BreadcrumbItem>
 		</Breadcrumb>
 		<h2 class="text-3xl font-bold dark:text-gray-300 text-gray-900 mb-4">Locations</h2>
 	</div>

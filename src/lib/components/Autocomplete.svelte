@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Badge, Input, type SelectOptionType } from 'flowbite-svelte';
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
   import type { HTMLSelectAttributes } from 'svelte/elements';
   import { twMerge, type ClassNameValue } from 'tailwind-merge';
   
@@ -52,6 +52,7 @@
     lg: 'text-base py-3 px-4'
   };
   
+  let isMultiSelect = $state(multiple);
   let selectElement: HTMLSelectElement;
   let searchInput = $state('');
   let searchValue = $state('');
@@ -100,14 +101,20 @@
   const handleSelectOption = (e: Event) => {
     const id = (e.target as any).value;
     const item = items.find(i => i.value === id);
-    value = item;
+    
+    if (isMultiSelect) {
+      value.push(item);
+    } else {
+      value = item;  
+    }
+    
     searchInput = '';
-    isSearchReadonly = true;
+    if (!isMultiSelect) isSearchReadonly = true;
   }
   
   const handleRemoveSelected = () => {
     value = '';
-    isSearchReadonly = false;
+    if (!isMultiSelect) isSearchReadonly = false;
   }
   
   function isObject(instance: any) {
@@ -116,32 +123,63 @@
   
   function onInputFocus() {
     // if the input is in a readonly state we shouldn't ever show the results 
-    if (isSearchReadonly) return;
+    if (!isMultiSelect && isSearchReadonly) return;
     // if the user doesn't start search by $$Props.inputDelay we should show all results
     userInputTimer = setTimeout(() => {
       showNativeSelectDropdown();
       userInputTimer = null;
     }, inputDelay);
   }
+  
+  onMount(() => {
+    if (!isMultiSelect && Array.isArray(value)) {
+      isMultiSelect = true;
+    }
+    
+    if (isMultiSelect && (!Array.isArray(value) || value == null)) {
+      value = [];
+    }
+  });
 </script>
 
 <div class="relative space-y-8 pb-6">
   <div class="absolute w-full">
-    {#if value !== null && isObject(value)}
-      <div class="absolute h-11 flex items-center pl-4">
-        <Badge color="none" class="relative" large dismissable on:close={handleRemoveSelected}>{value.name}</Badge>
-      </div>
-    {/if}
-    <Input type="search" {name} onkeydown={handleKeyDown} bind:value={searchInput} readonly={isSearchReadonly} onfocus={onInputFocus} />
-    <select {...restProps} class={selectClass + ' invisible'} on:change={handleSelectOption} on:contextmenu on:input bind:this={selectElement}>
-      {#if placeholder}
-        <option disabled selected={(value === '') ? true : undefined} value="">{placeholder}</option>
-      {/if}
-      {#if options && options.length > 0}
-        {#each options as { value: itemValue, name, disabled }}
-          <option disabled={disabled} value={itemValue} selected={(itemValue === value) ? true : undefined}>{name}</option>
+    {#if isMultiSelect}
+      {#if value?.length > 0}
+        {#each value as val}
+          <div class="absolute h-11 flex items-center pl-4">
+            <Badge color="none" class="relative" large dismissable on:close={handleRemoveSelected}>{val.name}</Badge>
+          </div>
         {/each}
       {/if}
-    </select>
+      <Input type="search" {name} onkeydown={handleKeyDown} bind:value={searchInput} onfocus={onInputFocus} />
+      <select {...restProps} class={selectClass + ' invisible'} on:change={handleSelectOption} on:contextmenu on:input bind:this={selectElement}>
+        {#if placeholder}
+          <option disabled selected={(value === '') ? true : undefined} value="">{placeholder}</option>
+        {/if}
+        {#if options && options.length > 0}
+          {#each options as { value: itemValue, name, disabled }}
+            <option disabled={disabled} value={itemValue} selected={(itemValue === value) ? true : undefined}>{name}</option>
+          {/each}
+        {/if}
+      </select>
+    {:else}
+      {#if value !== null && isObject(value)}
+        <div class="absolute h-11 flex items-center pl-4">
+          <Badge color="none" class="relative" large dismissable on:close={handleRemoveSelected}>{value.name}</Badge>
+        </div>
+      {/if}
+      <Input type="search" {name} onkeydown={handleKeyDown} bind:value={searchInput} readonly={isSearchReadonly} onfocus={onInputFocus} />
+      <select {...restProps} class={selectClass + ' invisible'} on:change={handleSelectOption} on:contextmenu on:input bind:this={selectElement}>
+        {#if placeholder}
+          <option disabled selected={(value === '') ? true : undefined} value="">{placeholder}</option>
+        {/if}
+        {#if options && options.length > 0}
+          {#each options as { value: itemValue, name, disabled }}
+            <option disabled={disabled} value={itemValue} selected={(itemValue === value) ? true : undefined}>{name}</option>
+          {/each}
+        {/if}
+      </select>
+    {/if}
   </div>  
 </div>
