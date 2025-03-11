@@ -20,6 +20,8 @@ RUN bun install --frozen-lockfile
 # Copy the rest of the application
 COPY . .
 
+RUN scripts/env.sh
+
 # Generate Drizzle models first, then build
 RUN bun run generate-migrations:postgres && \
     bun run generate-migrations:mysql && \
