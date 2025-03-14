@@ -12,15 +12,22 @@ const connection = postgres({
 	password: process.env.POSTGRES_DB_PASSWORD,
 	database: process.env.POSTGRES_DB_NAME,
 	max: 1,
+	ssl: process.env.NODE_ENV === 'production' ? 'require' : undefined,
 });
 
 const drizzleClient = drizzle(connection);
 
+console.log('Migration started ⌛')
+
 await migrate(drizzleClient, { migrationsFolder: 'src/lib/drizzle/postgres/migrations/data', })
 	.then(() => {
-		console.log('Migrations completed');
+		console.log('Migration completed ✅')
 		process.exit(0);
 	})
 	.catch((err) => {
+		console.error('Migration failed 🚨:', err)
 		throw err;
+	})
+	.finally(async () => {
+		await connection.end();
 	});
