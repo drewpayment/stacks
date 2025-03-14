@@ -148,6 +148,31 @@ WORKDIR /app
 COPY --from=builder /staging/package.json ./
 COPY --from=builder /staging/node_modules ./node_modules
 COPY --from=builder /staging/build ./build
+# Copy migration scripts so they can be run at startup if needed
+COPY --from=builder /staging/drizzle ./drizzle
+
+# Create a startup script
+COPY --from=builder /staging/src/lib/db ./src/lib/db
+COPY --from=builder /staging/src/lib/drizzle ./src/lib/drizzle
+
+# Create a startup script
+RUN echo '#!/bin/sh\n\
+# Run migrations at startup if environment variables are available\n\
+if [ -n "$POSTGRES_DB_HOST" ] || [ -n "$MYSQL_DB_HOST" ]; then\n\
+  echo "Running database migrations..."\n\
+  if [ -n "$POSTGRES_DB_HOST" ]; then\n\
+    bun run generate-migrations:postgres || echo "Postgres migrations failed but continuing..."\n\
+  fi\n\
+  if [ -n "$MYSQL_DB_HOST" ]; then\n\
+    bun run generate-migrations:mysql || echo "MySQL migrations failed but continuing..."\n\
+  fi\n\
+else\n\
+  echo "Skipping migrations as database connection details are not available"\n\
+fi\n\
+\n\
+# Start the application\n\
+exec bun run ./build/index.js\n\
+' > /app/start.sh && chmod +x /app/start.sh
 
 EXPOSE 3000
-CMD ["bun", "run", "./build/index.js"]
+CMD ["/app/start.sh"]
