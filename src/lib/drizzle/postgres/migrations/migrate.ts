@@ -5,8 +5,14 @@ import postgres from 'postgres';
 
 dotenv.config();
 
+const dbHost = process.env.POSTGRES_DB_HOST;
+
+if (!dbHost) {
+	throw new Error(`No POSTGRES_DB_HOST found, value found: ${process.env.POSTGRES_DB_HOST}`);
+}
+
 const connection = postgres({
-	host: process.env.POSTGRES_DB_HOST,
+	host: dbHost,
 	port: Number(process.env.POSTGRES_DB_PORT),
 	user: process.env.POSTGRES_DB_USER,
 	password: process.env.POSTGRES_DB_PASSWORD,
