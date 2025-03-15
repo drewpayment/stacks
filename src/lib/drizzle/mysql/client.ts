@@ -5,7 +5,7 @@ import {
   TUNNEL_LOCAL_PORT, TUNNEL_DEBUG,
   MYSQL_USE_SSH
 } from '$env/static/private';
-import { drizzle } from 'drizzle-orm/mysql2';
+import { drizzle, MySql2Database } from 'drizzle-orm/mysql2';
 import * as schema from './schema';
 import * as mysql from 'mysql2';
 import config from './drizzle.config';
@@ -183,13 +183,23 @@ const createConnection = async (): Promise<Connection> => {
   }
 };
 
-const connection = await createConnection();
+const isBuild = process.env.NODE_ENV === 'production' && process.env.BUILD_MODE === 'true';
+let client: mysql.Connection;
+let drizzleClient: MySql2Database<typeof schema> & {
+  $client: mysql.Connection;
+};
 
-const drizzleClient = drizzle(connection, {
-  ...config,
-  schema,
-  mode: 'default',
-  logger: ENABLE_DRIZZLE_LOGGER ? Boolean(ENABLE_DRIZZLE_LOGGER) : dev,
-});
+if (isBuild) {
+  drizzleClient = {} as any;
+  console.log('Using mock database for build');
+} else {
+  client = await createConnection();
+  drizzleClient = drizzle(client, {
+    ...config,
+    schema,
+    mode: 'default',
+    logger: ENABLE_DRIZZLE_LOGGER ? Boolean(ENABLE_DRIZZLE_LOGGER) : dev,
+  });
+}
 
 export { drizzleClient as legacyDb };

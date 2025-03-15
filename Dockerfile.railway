@@ -40,6 +40,7 @@ ARG INSTANTDB_ADMIN_TOKEN
 ARG PUBLIC_APP_ID
 
 FROM oven/bun:1 AS base
+ENV BUILD_MODE=true
 ENV ORIGIN=$ORIGIN
 ENV ENABLE_DRIZZLE_LOGGER=$ENABLE_DRIZZLE_LOGGER
 ENV POSTGRES_DB_HOST=$POSTGRES_DB_HOST
@@ -109,7 +110,7 @@ COPY . .
 # Set Node options for increased memory
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Generate Drizzle models first, then build
+# Build it! 
 RUN bun run build
 
 FROM base
