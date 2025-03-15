@@ -6,8 +6,7 @@ FROM base AS prod-deps
 
 WORKDIR /app 
 
-RUN --mount=type=cache,id=s/71915380-5e82-47b2-b351-9f2e843a9a99/root/.local/share/pnpm/store,target=/root/.local/share/pnpm/store \
-    bun install --frozen-lockfile --production
+RUN bun install --frozen-lockfile --production
 
 
 FROM base AS build
@@ -25,8 +24,7 @@ RUN apt-get update && apt-get install -y \
 COPY package.json bun.lock* ./
 
 # Install dependencies
-RUN --mount=type=cache,id=s/71915380-5e82-47b2-b351-9f2e843a9a99/root/.local/share/pnpm/store,target=/root/.local/share/pnpm/store \
-    bun install --frozen-lockfile
+RUN bun install --frozen-lockfile
 
 # Copy the rest of the application
 COPY . .
@@ -35,8 +33,7 @@ COPY . .
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # Generate Drizzle models first, then build
-RUN --mount=type=cache,id=s/71915380-5e82-47b2-b351-9f2e843a9a99/root/.cache/pnpm,target=/root/.cache/pnpm \
-    bun run build
+RUN bun run build
 
 FROM base
 
