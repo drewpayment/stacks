@@ -30,7 +30,7 @@
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report",
     "docker:build": "docker build --pull --rm -f 'Dockerfile' -t stacks:latest --build-arg ORIGIN=https://stacks.drewpayment.com '.'",
-    "railway:migrate": "NODE_ENV=production bun run .drizzle/migrate.ts",
+    "railway:migrate": "NODE_ENV=production bun run .drizzle/postgres/migrations/migrate.ts",
     "railway:start": "bun run railway:migrate && bun run build"
   },
   "devDependencies": {
