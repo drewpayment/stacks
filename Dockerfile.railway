@@ -122,7 +122,7 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
 COPY --from=build /app/package.json ./
 # Copy migration scripts so they can be run at startup if needed
-COPY --from=build /app/src/lib/drizzle ./drizzle
+COPY --from=build /app/src/lib/drizzle .drizzle
 COPY --from=build /app/src/lib/drizzle/postgres/drizzle.config.ts ./drizzle.config.ts
 
 EXPOSE 3000
