@@ -1,0 +1,10 @@
+[build]
+builder = "RAILPACK"
+buildCommand = "bun run build"
+
+[deploy]
+preDeployCommand = ["bun run railway:migrate"]
+startCommand = "bun run ./build/index.js"
+healthcheckPath = "/"
+healthcheckTimeout = 100
+restartPolicyType = "ALWAYS"
