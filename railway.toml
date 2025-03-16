@@ -1,6 +1,6 @@
 [build]
 builder = "RAILPACK"
-buildCommand = "bun run build"
+buildCommand = "bun run railway:build"
 
 [deploy]
 preDeployCommand = ["bun run railway:migrate"]
