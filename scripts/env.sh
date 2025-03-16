@@ -5,6 +5,7 @@ touch .env
 
 # Append environment variables to the .env file
 echo "ORIGIN=https://stacks.hoytlabs.app" >> .env
+echo "PORT=3000" >> .env
 echo "ENABLE_DRIZZLE_LOGGER=$ENABLE_DRIZZLE_LOGGER" >> .env
 echo "POSTGRES_DB_HOST=$POSTGRES_DB_HOST" >> .env
 echo "POSTGRES_DB_PORT=$POSTGRES_DB_PORT" >> .env
