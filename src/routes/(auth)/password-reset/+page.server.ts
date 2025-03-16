@@ -4,12 +4,14 @@ import { sendEmail } from '$lib/emails/send';
 import { getFeedbackObjects } from '$lib/utils/utils';
 import { fail } from '@sveltejs/kit';
 import { z } from 'zod';
+import type { Actions } from './$types';
+import { FROM_EMAIL } from '$env/static/private';
 
 const passwordResetSchema = z.object({
 	email: z.string().email()
 });
 
-export const actions = {
+export const actions: Actions = {
 	sendPasswordResetLink: async ({ request, url }) => {
 		const formData = Object.fromEntries(await request.formData());
 		const passwordReset = passwordResetSchema.safeParse(formData);
@@ -53,7 +55,7 @@ export const actions = {
 		try {
 			const resetToken = await generatePasswordResetToken(storedUser.id);
 
-			const sender = 'Stacks <drew@verostack.dev>';
+			const sender = `Hoyt Labs <${FROM_EMAIL}>`;
 			const recipient = profile?.firstName ? `${profile.firstName}` : storedUser.email;
 			const emailHtml = `Hello ${recipient},<br><br>Here is your password reset link:<br><br><a href="${url.origin}/password-reset/${resetToken}">Reset Password</a><br><br>Thanks,<br>Drew from Stacks`;
 
