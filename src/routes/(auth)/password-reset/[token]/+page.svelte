@@ -6,9 +6,10 @@
 	import { getFeedbackObjectByPath } from '$lib/utils/utils';
 	import type { SubmitFunction } from '@sveltejs/kit';
 
-	export let form;
-
-	let running = false;
+	const { form, data } = $props();
+	const { token } = data;
+	
+	let running = $state(false);
 	const submitResetPassword: SubmitFunction = () => {
 		running = true;
 
@@ -18,7 +19,7 @@
 		};
 	};
 
-	$: {
+	$effect(() => {
 		if (form?.feedbacks && form.feedbacks.length > 0) {
 			form.feedbacks.forEach((feedback) => {
 				if (!feedback.path) {
@@ -30,7 +31,7 @@
 				}
 			});
 		}
-	}
+	});
 </script>
 
 <svelte:head>
@@ -46,10 +47,11 @@
 		<div class="form-control">
 			<label for="password">New Password</label>
 			<input type="password" name="password" placeholder="Your new password" required />
+			<input type="hidden" name="token" value={token} />
 			<InlineFormNotice feedback={getFeedbackObjectByPath(form?.feedbacks, 'password')} />
 		</div>
 
-		<SubmitButton {running} text="Reset your password" />
+		<SubmitButton running={running} text="Reset your password" />
 	</form>
 </div>
 
