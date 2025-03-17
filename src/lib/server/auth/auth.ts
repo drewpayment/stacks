@@ -37,6 +37,20 @@ export async function createSession(token: string, userId: string): Promise<Sess
 	}
 }
 
+export async function getSessionIdFromSessionCookie(sessionCookie: string): Promise<string> {
+	if (!sessionCookie) return '';
+	
+	const sessionCookieParts = sessionCookie.split(';');
+	const token = sessionCookieParts[0];
+	
+	if (!token) return '';
+	
+	const hashBuffer = await sha256(new TextEncoder().encode(token));
+	const sessionId = encodeHexLowerCase(new Uint8Array(hashBuffer));
+	
+	return sessionId;
+}
+
 export async function validateSessionCookie(sessionCookie: string): Promise<SessionValidationResult> {
 	const now = dayjs();
 	const sessionCookieParts = sessionCookie.split(';');

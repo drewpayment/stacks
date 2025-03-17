@@ -7,7 +7,7 @@ import { Argon2id } from "oslo/password";
 import { db } from '$lib/drizzle/postgres/client';
 import { LegacyScrypt } from 'lucia';
 import { lucia } from '$lib/lucia/postgres';
-import { createSession, generateSessionToken } from '$lib/server/auth/auth';
+import { createSession, generateSessionToken, invalidateSession } from '$lib/server/auth/auth';
 import { setSessionTokenCookie } from '$lib/server/auth/cookies';
 import dayjs from 'dayjs';
 
@@ -95,12 +95,12 @@ export const actions: Actions = {
   logout: async ({ cookies, locals }) => {
     if (!locals.user) return fail(401);
     
-    await lucia.invalidateSession(locals.session!.id);
-    const sessionCookie = lucia.createBlankSessionCookie();
-    cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
-			...sessionCookie.attributes
-		});
+    await invalidateSession(locals.session!.id);
+    
+    const sessionToken = generateSessionToken();
+    await createSession(sessionToken, locals.user.id);
+    setSessionTokenCookie(cookies, sessionToken, dayjs().add(60, 'minutes').toDate());
+    
 		redirect(302, "/auth/login");
   }
 };
