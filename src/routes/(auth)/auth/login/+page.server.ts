@@ -8,7 +8,7 @@ import { db } from '$lib/drizzle/postgres/client';
 import { LegacyScrypt } from 'lucia';
 import { lucia } from '$lib/lucia/postgres';
 import { createSession, generateSessionToken, invalidateSession } from '$lib/server/auth/auth';
-import { setSessionTokenCookie } from '$lib/server/auth/cookies';
+import { deleteSessionTokenCookie, setSessionTokenCookie } from '$lib/server/auth/cookies';
 import dayjs from 'dayjs';
 
 const loginUserSchema = z.object({
@@ -95,11 +95,8 @@ export const actions: Actions = {
   logout: async ({ cookies, locals }) => {
     if (!locals.user) return fail(401);
     
-    await invalidateSession(locals.session!.id);
-    
-    const sessionToken = generateSessionToken();
-    await createSession(sessionToken, locals.user.id);
-    setSessionTokenCookie(cookies, sessionToken, dayjs().add(60, 'minutes').toDate());
+    await invalidateSession(locals.session!.id);    
+    deleteSessionTokenCookie(cookies);
     
 		redirect(302, "/auth/login");
   }
