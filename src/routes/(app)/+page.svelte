@@ -31,7 +31,7 @@
 			title: "Team Directory",
 			description: "Find and connect with colleagues",
 			icon: Users2,
-			link: "/app/employee"
+			link: "/app/teams"
 		},
 		{
 			title: "Locations",
