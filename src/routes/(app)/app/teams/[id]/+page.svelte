@@ -14,7 +14,7 @@
 	import { BuildingSolid } from 'flowbite-svelte-icons';
 	
 	const { data } = $props();
-  const { team } = data;
+  const { team, employees, } = data;
   
   let currentTeamName = $state(team.name);
   let teamMembers = $state(team.teamMembers.map(tm => tm.value));
@@ -71,7 +71,7 @@
 						<div class="grid grid-cols-3 gap-4 items-center">
 							<Label for="general_manager" class="font-medium">General Manager</Label>
 							<div class="col-span-2">
-								<Input id="general_manager" name="general_manager" type="text" placeholder="Mr. GM" value={team?.generalManager} />
+								<Input id="general_manager" name="general_manager" type="text" placeholder="<General Manager>" value={team?.generalManager} />
 							</div>
 						</div>
             
@@ -79,14 +79,14 @@
             <div class="grid grid-cols-3 gap-4 items-center">
               <Label for="regional_manager" class="font-medium">Regional Manager</Label>
               <div class="col-span-2">
-                <Input id="regional_manager" name="regional_manager" type="text" placeholder="Mr. RM" value={team?.regionalManager} />
+                <Input id="regional_manager" name="regional_manager" type="text" placeholder="<Regional Manager>" value={team?.regionalManager} />
               </div>
             </div>
             
             <div class="grid grid-cols-3 gap-4 items-center">
               <Label for="team_members" class="font-medium">Team Members</Label>
               <div class="col-span-2">
-                <MultiSelect id="team_members" name="team_members" items={team.teamMembers} bind:value={teamMembers}  />
+                <MultiSelect id="team_members" name="team_members" items={employees} bind:value={teamMembers}  />
               </div>
             </div>
             

@@ -59,7 +59,7 @@
         }}
       >
         {campaign.active ? 'Disable' : 'Enable'}
-        <input type="hidden" name="campaign_id" value={campaign.id} required />
+        <input type="hidden" name="campaignId" value={campaign.id} required />
         <button type="submit" class="hidden" bind:this={disableCampaignBtn}
           >{campaign.active ? 'Disable' : 'Enable'}</button
         >

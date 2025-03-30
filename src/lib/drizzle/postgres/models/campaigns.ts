@@ -26,7 +26,10 @@ const getCampaigns = async (clientId: string): Promise<SelectCampaign[]> => {
   }
   
   const data = await db.query.campaigns.findMany({
-    where: (campaign, { eq }) => eq(campaign.clientId, clientId),
+    where: (campaign, { eq, and }) => and(
+      eq(campaign.clientId, clientId),
+      eq(campaign.active, true),
+    ),
     orderBy: (campaign, { asc }) => [asc(campaign.name)],
   });
   

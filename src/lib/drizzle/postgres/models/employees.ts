@@ -21,6 +21,7 @@ const getEmployees = async (clientId: string, isCommissionable = false): Promise
       where: (employee, { eq, and }) => isCommissionable
         ? and(eq(employee.clientId, clientId), eq(employee.isCommissionable, true))
         : eq(employee.clientId, clientId),
+      orderBy: (employee, { asc }) => asc(employee.lastName),
     }) as Employee[];
   } catch (ex) {
     console.error(ex);
