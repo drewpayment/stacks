@@ -51,7 +51,6 @@
   <form action="?/search" method="post" class="flex flex-col pt-4"
     use:enhance={({ formData, cancel }) => {
       const data = Object.fromEntries(formData.entries());
-      console.dir(data);
       
       return ({ result, update }) => {
         if (!result.data) return;
@@ -93,11 +92,16 @@
       </Card>
     </div>
     
-    <div class="w-full pt-4">
-      <Toggle bind:checked={filterPayrollCycles} value={`${filterPayrollCycles}`} on:change={() => submitBtn.click()}>
-        Hide paystubs attached to payroll cycles
-      </Toggle>
-      <input type="hidden" name="filterPayrollCycles" bind:value={filterPayrollCycles} />
+    <div class="flex justify-between w-full pt-4">
+      <div>
+        <Toggle bind:checked={filterPayrollCycles} value={`${filterPayrollCycles}`} on:change={() => submitBtn.click()}>
+          Hide paystubs attached to payroll cycles
+        </Toggle>
+        <input type="hidden" name="filterPayrollCycles" bind:value={filterPayrollCycles} />
+      </div>
+      <div>
+        <Button href="/app/payroll/add" type="button" size="sm">Add</Button>
+      </div>
     </div>
   </form>
   
