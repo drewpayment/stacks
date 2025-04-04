@@ -31,6 +31,7 @@
 	import { ArrowRightOutline } from 'flowbite-svelte-icons';
 	import { ArrowUpRight, Icon } from 'svelte-hero-icons';
 	import { createToast } from '$lib/components/Toast.svelte';
+	import { goto } from '$app/navigation';
 
 	export let data;
 	const { employees, campaigns, cycles, preloadEmployeeId, expenseReports } = data;
@@ -238,6 +239,8 @@
 							title: 'Saved!',
 							description: ''
 						});
+						
+						goto('/app/payroll/search');
 					} else {
 						createToast({
 							type: 'error',
