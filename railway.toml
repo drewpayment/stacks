@@ -3,7 +3,7 @@ builder = "RAILPACK"
 buildCommand = "bun run railway:build"
 
 [deploy]
-preDeployCommand = ["bun run railway:migrate"]
+# preDeployCommand = ["bun run railway:migrate"]
 startCommand = "bun run ./build/index.js"
 healthcheckPath = "/"
 healthcheckTimeout = 100
