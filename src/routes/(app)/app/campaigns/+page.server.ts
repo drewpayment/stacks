@@ -41,5 +41,19 @@ export const actions: Actions = {
     }
     
      return { success: true };
+  },
+  disable: async ({ request, locals }) => {
+    if (!locals.user) return fail(401, { message: 'Not authorized' });
+    
+    try {
+      const clientId = locals.user.profile.clientId as string;
+      const formData = await request.formData();
+      const data = Object.fromEntries(formData.entries());
+      const { campaignId } = data;
+      
+      await disableCampaign(clientId, campaignId as string);
+    } catch (error) {
+      return fail(500, { error });
+    }
   }
 };

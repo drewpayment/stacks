@@ -23,6 +23,8 @@
 	let search = '';
 	$: campaigns = allCampaigns.filter((campaign) => campaign.name.toLowerCase().includes(search.trim().replace(' ', '').toLowerCase()))
 	// const campaigns = writable(allCampaigns);
+	
+	const activeBadgeClass = (campaign: SelectCampaign) => campaign?.active ? 'text-emerald-500 bg-emerald-100/60' : 'text-red-500 bg-red-100/60';
 
 	const searchOnBlur = (event: any) => {
 		const value = event.target.value;
@@ -225,7 +227,7 @@
 									</td>
 									<td class="px-12 py-4 text-sm font-medium whitespace-nowrap">
 										<div
-											class="inline px-3 py-1 text-sm font-normal rounded-full text-emerald-500 gap-x-2 bg-emerald-100/60 dark:bg-gray-800"
+											class="inline px-3 py-1 text-sm font-normal rounded-full gap-x-2 dark:bg-gray-800 {activeBadgeClass(campaign)}"
 										>
 											{campaign.active ? 'Active' : 'Inactive'}
 										</div>

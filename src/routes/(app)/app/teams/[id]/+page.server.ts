@@ -45,7 +45,7 @@ export const load = async ({ params, locals }) => {
   
   return {
     team: await getTeam(),
-    employees: await getEmployees(clientId),
+    employees: (await getEmployees(clientId))?.map(emp => ({ name: `${emp.firstName} ${emp.lastName}`, value: emp.id })),
   };
 };
 

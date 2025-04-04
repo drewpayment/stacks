@@ -1,5 +1,5 @@
 import { SUPABASE_API_KEY, SUPABASE_URL } from '$env/static/private';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const isBuild = process.env.NODE_ENV === 'production' && process.env.BUILD_MODE === 'true';
 let supabase: SupabaseClient<any, "public", any>;
