@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { bigint, boolean, decimal, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, unique, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
+import { bigint, boolean, decimal, foreignKey, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, unique, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
 import type { TeamManager } from '../types/team.model';
 import type { OnboardingRequirements } from './types/onboarding.model';
 
@@ -517,27 +517,319 @@ export const team = pgTable('team', {
 	unique('idx_client_id_name').on(table.id, table.name),
 ]).enableRLS();
 
-export const onboarding = pgTable('onboarding', {
+export const stepCategoryEnum = pgEnum('step_category', [
+  'personal', 
+  'documents',
+  'it_setup',
+  'training',
+  'compliance',
+  'benefits',
+  'general'
+]);
+
+export const stepStatusEnum = pgEnum('step_status', [
+  'not_started',
+  'in_progress',
+  'completed',
+  'rejected',
+  'skipped'
+]);
+
+export const assigneeTypeEnum = pgEnum('assignee_type', [
+  'employee',
+  'hr',
+  'manager',
+  'it',
+  'finance',
+  'department_head'
+]);
+
+export const fieldTypeEnum = pgEnum('field_type', [
+  'text',
+  'number',
+  'date',
+  'email',
+  'phone',
+  'select',
+  'checkbox',
+  'radio',
+  'textarea',
+  'file_upload'
+]);
+
+export const workflowTemplate = pgTable('onboarding_workflow_templates', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	clientId: varchar('client_id', { length: 255 })
+		.notNull()
+		.references(() => client.id),
+	name: text('name').notNull(),
+	description: text('description'),
+	isDefault: boolean('is_default').default(false).notNull(),
+	isSystem: boolean('is_system').default(false).notNull(),
+	category: text('category'),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
+	createdBy: varchar('created_by', { length: 255 })
+		.notNull()
+		.references(() => user.id),
+	isActive: boolean('is_active').default(true).notNull(),
+});
+
+export const stepDefinition = pgTable('onboarding_workflow_step_definitions', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	clientId: varchar('client_id', { length: 255 })
+		.notNull()
+		.references(() => client.id),
+	name: text('name').notNull(),
+	description: text('description'),
+	category: stepCategoryEnum('category').notNull(),
+	isSystem: boolean('is_system').default(false).notNull(),
+	requiresSignature: boolean('requires_signature').default(false).notNull(),
+	hasDocuments: boolean('has_documents').default(false).notNull(),
+	defaultDueDay: integer('default_due_day'),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
+	createdBy: varchar('created_by', { length: 255 })
+		.notNull()
+		.references(() => user.id),
+	isActive: boolean('is_active').default(true).notNull(),
+	configuration: jsonb('configuration'),
+});
+
+export const field = pgTable('onboarding_workflow_step_fields', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	stepDefinitionId: varchar('step_definition_id', { length: 255 })
+		.notNull()
+		.references(() => stepDefinition.id),
+	name: text('name').notNull(),
+	label: text('label').notNull(),
+	type: fieldTypeEnum('type').notNull(),
+	placeholder: text('placeholder'),
+	helpText: text('help_text'),
+	isRequired: boolean('is_required').default(false).notNull(),
+	isSystem: boolean('is_system').default(false).notNull(),
+	position: integer('position').notNull(),
+	options: jsonb('options'),
+	validations: jsonb('validations'),
+	defaultValue: text('default_value'),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
+});
+
+export const templateStep = pgTable('template_steps', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	templateId: varchar('template_id')
+		.notNull()
+		.references(() => workflowTemplate.id),
+	stepDefinitionId: varchar('step_definition_id')
+		.notNull()
+		.references(() => stepDefinition.id),
+	position: integer('position').notNull(),
+	isRequired: boolean('is_required').default(true).notNull(),
+	dueDay: integer('due_day'),
+	configuration: jsonb('configuration'),
+	conditionalLogic: jsonb('conditional_logic'),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
+});
+
+export const templateStepAssignee = pgTable('template_step_assignee', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	templateStepId: varchar('template_step_id', { length: 255 })
+		.notNull()
+		.references(() => templateStep.id),
+	assigneeType: assigneeTypeEnum('assignee_type').notNull(),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
+}, (table) => [
+	uniqueIndex('assignee_idx').on(table.templateStepId, table.assigneeType),
+]);
+
+export const onboardingWorkflow = pgTable('onboarding_workflows', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	employeeId: varchar('employee_id', { length: 255 })
+		.notNull()
+		.references(() => employee.id),
+	templateId: varchar('template_id', { length: 255 })
+		.notNull()
+		.references(() => workflowTemplate.id),
+	status: text('status').notNull().default('in_progress'),
+	startedAt: timestamp('started_at').defaultNow().notNull(),
+  completedAt: timestamp('completed_at'),
+  dueDate: timestamp('due_date'),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
+	metadata: jsonb('metadata'),
+}, (table) => [
+	index('employee_workflow_idx').on(table.employeeId),
+]);
+
+export const onboardingStep = pgTable('onboarding_steps', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	workflowId: varchar('id', { length: 255 })
+		.notNull()
+		.references(() => onboardingWorkflow.id),
+	templateStepId: varchar('id', { length: 255 })
+		.notNull()
+		.references(() => templateStep.id),
+	status: stepStatusEnum('status').default('not_started').notNull(),
+	position: integer('position').notNull(),
+	isVisible: boolean('is_visible').default(true).notNull(),
+	startedAt: timestamp('started_at'),
+  completedAt: timestamp('completed_at'),
+  dueDate: timestamp('due_date'),
+	rejectionReason: text('rejection_reason'),
+	notes: text('notes'),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
+});
+
+export const stepResponse = pgTable('onboarding_step_responses', {
+	id: varchar('id', { length: 255 }).primaryKey(),
+	onboardingStepId: varchar('onboarding_step_id', { length: 255 })
+		.notNull()
+		.references(() => onboardingStep.id),
+	fieldId: varchar('id', { length: 255 })
+		.notNull()
+		.references(() => field.id),
+	value: text('value'),
+	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
+}, (table) => [
+	uniqueIndex('step_response_idx').on(table.onboardingStepId, table.fieldId),
+]);
+
+export const onboardingDocument = pgTable('onboarding_documents', {
 	id: varchar('id', { length: 255 }).primaryKey(),
 	clientId: varchar('client_id', { length: 255 })
 		.notNull()
 		.references(() => client.id),
 	employeeId: varchar('employee_id', { length: 255 })
+		.notNull()
 		.references(() => employee.id),
-	requirements: jsonb('requirements')
-		.$type<OnboardingRequirements>()
-		.default({
-			hasHireDate: false,
-			hasFullName: false,
-			hasAddress: false,
-			hasPhone: false,
-			hasEmail: false,
-			hasDirectPayroll: false,
-			hasW9Requirement: false,
-			hasW9Completed: false,
-			optionalTasks: [],
-		} as OnboardingRequirements),
+	onboardingStepId: varchar('onboarding_step_id', { length: 255 })
+		.notNull()
+		.references(() => onboardingStep.id),
+	name: text('name').notNull(),
+	fileName: text('file_name').notNull(),
+	mimeType: text('mime_type').notNull(),
+	size: integer('size').notNull(),
+	storagePath: text('storage_path').notNull(),
+	category: text('category'),
+	isTemplate: boolean('is_template').default(false).notNull(),
 	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
 	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
-	deleted: timestamp('deleted'),
-}).enableRLS();
+	uploadedBy: varchar('id', { length: 255 })
+		.notNull()
+		.references(() => user.id),
+	metadata: jsonb('metadata'),
+});
+
+// NEED TO EDIT THESES
+// Signatures
+export const signatures = pgTable('signatures', {
+  id: serial('id').primaryKey(),
+  onboardingStepId: integer('onboarding_step_id').references(() => onboardingSteps.id).notNull(),
+  employeeId: integer('employee_id').references(() => employees.id),
+  userId: integer('user_id').references(() => users.id),
+  signatureData: text('signature_data').notNull(),
+  signedAt: timestamp('signed_at').defaultNow().notNull(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  verificationMethod: text('verification_method'),
+  verified: boolean('verified').default(false).notNull(),
+  documentId: integer('document_id').references(() => documents.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Notifications
+export const notifications = pgTable('notifications', {
+  id: serial('id').primaryKey(),
+  type: text('type').notNull(),
+  onboardingStepId: integer('onboarding_step_id').references(() => onboardingSteps.id),
+  employeeId: integer('employee_id').references(() => employees.id),
+  recipientId: integer('recipient_id').references(() => users.id),
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  isRead: boolean('is_read').default(false).notNull(),
+  sentAt: timestamp('sent_at').defaultNow().notNull(),
+  readAt: timestamp('read_at'),
+  metadata: json('metadata')
+});
+
+// Relations
+export const employeesRelations = relations(employees, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [employees.organizationId],
+    references: [organizations.id]
+  }),
+  manager: one(employees, {
+    fields: [employees.managerId],
+    references: [employees.id]
+  }),
+  workflows: many(onboardingWorkflows)
+}));
+
+export const workflowTemplateRelations = relations(workflowTemplates, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [workflowTemplates.organizationId],
+    references: [organizations.id]
+  }),
+  creator: one(users, {
+    fields: [workflowTemplates.createdBy],
+    references: [users.id]
+  }),
+  templateSteps: many(templateSteps)
+}));
+
+export const stepDefinitionRelations = relations(stepDefinitions, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [stepDefinitions.organizationId],
+    references: [organizations.id]
+  }),
+  creator: one(users, {
+    fields: [stepDefinitions.createdBy],
+    references: [users.id]
+  }),
+  fields: many(fields),
+  templateSteps: many(templateSteps)
+}));
+
+export const templateStepRelations = relations(templateSteps, ({ one, many }) => ({
+  template: one(workflowTemplates, {
+    fields: [templateSteps.templateId],
+    references: [workflowTemplates.id]
+  }),
+  stepDefinition: one(stepDefinitions, {
+    fields: [templateSteps.stepDefinitionId],
+    references: [stepDefinitions.id]
+  }),
+  assignees: many(templateStepAssignees)
+}));
+
+export const onboardingWorkflowRelations = relations(onboardingWorkflows, ({ one, many }) => ({
+  employee: one(employees, {
+    fields: [onboardingWorkflows.employeeId],
+    references: [employees.id]
+  }),
+  template: one(workflowTemplates, {
+    fields: [onboardingWorkflows.templateId],
+    references: [workflowTemplates.id]
+  }),
+  steps: many(onboardingSteps)
+}));
+
+export const onboardingStepRelations = relations(onboardingSteps, ({ one, many }) => ({
+  workflow: one(onboardingWorkflows, {
+    fields: [onboardingSteps.workflowId],
+    references: [onboardingWorkflows.id]
+  }),
+  templateStep: one(templateSteps, {
+    fields: [onboardingSteps.templateStepId],
+    references: [templateSteps.id]
+  }),
+  responses: many(stepResponses),
+  documents: many(documents),
+  signatures: many(signatures)
+}));
