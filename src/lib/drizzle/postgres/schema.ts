@@ -113,6 +113,19 @@ export const oauthAccount = pgTable('oauth_account', {
 	}),
 ])).enableRLS();
 
+export const employeeStatusEnum = pgEnum('employee_status', [
+	'full_time',
+	'part_time',
+	'hired_unassigned',
+	'candidate',
+	'ready_to_hire',
+	'onboarding',
+	'leave_of_absense',
+	'terminated',
+	'short_term_disability',
+	'long_term_disability',
+]);
+
 export const employee = pgTable('employee', {
 	id: text('id').primaryKey(),
 	userId: varchar('user_id', { length: 255 })
@@ -124,6 +137,7 @@ export const employee = pgTable('employee', {
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
 	isCommissionable: boolean('is_commissionable').notNull().default(false),
+	status: employeeStatusEnum('status').notNull().default('hired_unassigned'),
 	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
 	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
 	deleted: timestamp('deleted'),
@@ -728,108 +742,97 @@ export const onboardingDocument = pgTable('onboarding_documents', {
 // NEED TO EDIT THESES
 // Signatures
 export const signatures = pgTable('signatures', {
-  id: serial('id').primaryKey(),
-  onboardingStepId: integer('onboarding_step_id').references(() => onboardingSteps.id).notNull(),
-  employeeId: integer('employee_id').references(() => employees.id),
-  userId: integer('user_id').references(() => users.id),
+  id: varchar('id', { length: 255 }).primaryKey(),
+  onboardingStepId: varchar('onboarding_step_id').references(() => onboardingStep.id).notNull(),
+  employeeId: varchar('employee_id').references(() => employee.id),
+  userId: varchar('user_id').references(() => user.id),
   signatureData: text('signature_data').notNull(),
   signedAt: timestamp('signed_at').defaultNow().notNull(),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
   verificationMethod: text('verification_method'),
   verified: boolean('verified').default(false).notNull(),
-  documentId: integer('document_id').references(() => documents.id),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull()
+  documentId: varchar('document_id').references(() => onboardingDocument.id),
+  created: timestamp('created').notNull().$default(() => new Date(Date.now())),
+	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
 });
 
 // Notifications
 export const notifications = pgTable('notifications', {
-  id: serial('id').primaryKey(),
+  id: varchar('id', { length: 255 }).primaryKey(),
   type: text('type').notNull(),
-  onboardingStepId: integer('onboarding_step_id').references(() => onboardingSteps.id),
-  employeeId: integer('employee_id').references(() => employees.id),
-  recipientId: integer('recipient_id').references(() => users.id),
+  onboardingStepId: varchar('onboarding_step_id').references(() => onboardingStep.id),
+  employeeId: varchar('employee_id').references(() => employee.id),
+  recipientId: varchar('recipient_id').references(() => user.id),
   title: text('title').notNull(),
   message: text('message').notNull(),
   isRead: boolean('is_read').default(false).notNull(),
   sentAt: timestamp('sent_at').defaultNow().notNull(),
   readAt: timestamp('read_at'),
-  metadata: json('metadata')
+  metadata: jsonb('metadata'),
 });
 
 // Relations
-export const employeesRelations = relations(employees, ({ one, many }) => ({
-  organization: one(organizations, {
-    fields: [employees.organizationId],
-    references: [organizations.id]
+
+export const workflowTemplateRelations = relations(workflowTemplate, ({ one, many }) => ({
+  organization: one(client, {
+    fields: [workflowTemplate.clientId],
+    references: [client.id]
   }),
-  manager: one(employees, {
-    fields: [employees.managerId],
-    references: [employees.id]
+  creator: one(user, {
+    fields: [workflowTemplate.createdBy],
+    references: [user.id]
   }),
-  workflows: many(onboardingWorkflows)
+  templateSteps: many(templateStep)
 }));
 
-export const workflowTemplateRelations = relations(workflowTemplates, ({ one, many }) => ({
-  organization: one(organizations, {
-    fields: [workflowTemplates.organizationId],
-    references: [organizations.id]
+export const stepDefinitionRelations = relations(stepDefinition, ({ one, many }) => ({
+  organization: one(client, {
+    fields: [stepDefinition.clientId],
+    references: [client.id]
   }),
-  creator: one(users, {
-    fields: [workflowTemplates.createdBy],
-    references: [users.id]
+  creator: one(user, {
+    fields: [stepDefinition.createdBy],
+    references: [user.id]
   }),
-  templateSteps: many(templateSteps)
+  fields: many(field),
+  templateSteps: many(templateStep)
 }));
 
-export const stepDefinitionRelations = relations(stepDefinitions, ({ one, many }) => ({
-  organization: one(organizations, {
-    fields: [stepDefinitions.organizationId],
-    references: [organizations.id]
+export const templateStepRelations = relations(templateStep, ({ one, many }) => ({
+  template: one(workflowTemplate, {
+    fields: [templateStep.templateId],
+    references: [workflowTemplate.id]
   }),
-  creator: one(users, {
-    fields: [stepDefinitions.createdBy],
-    references: [users.id]
+  stepDefinition: one(stepDefinition, {
+    fields: [templateStep.stepDefinitionId],
+    references: [stepDefinition.id]
   }),
-  fields: many(fields),
-  templateSteps: many(templateSteps)
+  assignees: many(templateStepAssignee)
 }));
 
-export const templateStepRelations = relations(templateSteps, ({ one, many }) => ({
-  template: one(workflowTemplates, {
-    fields: [templateSteps.templateId],
-    references: [workflowTemplates.id]
+export const onboardingWorkflowRelations = relations(onboardingWorkflow, ({ one, many }) => ({
+  employee: one(employee, {
+    fields: [onboardingWorkflow.employeeId],
+    references: [employee.id]
   }),
-  stepDefinition: one(stepDefinitions, {
-    fields: [templateSteps.stepDefinitionId],
-    references: [stepDefinitions.id]
+  template: one(workflowTemplate, {
+    fields: [onboardingWorkflow.templateId],
+    references: [workflowTemplate.id]
   }),
-  assignees: many(templateStepAssignees)
+  steps: many(onboardingStep)
 }));
 
-export const onboardingWorkflowRelations = relations(onboardingWorkflows, ({ one, many }) => ({
-  employee: one(employees, {
-    fields: [onboardingWorkflows.employeeId],
-    references: [employees.id]
+export const onboardingStepRelations = relations(onboardingStep, ({ one, many }) => ({
+  workflow: one(onboardingWorkflow, {
+    fields: [onboardingStep.workflowId],
+    references: [onboardingWorkflow.id]
   }),
-  template: one(workflowTemplates, {
-    fields: [onboardingWorkflows.templateId],
-    references: [workflowTemplates.id]
+  templateStep: one(templateStep, {
+    fields: [onboardingStep.templateStepId],
+    references: [templateStep.id]
   }),
-  steps: many(onboardingSteps)
-}));
-
-export const onboardingStepRelations = relations(onboardingSteps, ({ one, many }) => ({
-  workflow: one(onboardingWorkflows, {
-    fields: [onboardingSteps.workflowId],
-    references: [onboardingWorkflows.id]
-  }),
-  templateStep: one(templateSteps, {
-    fields: [onboardingSteps.templateStepId],
-    references: [templateSteps.id]
-  }),
-  responses: many(stepResponses),
-  documents: many(documents),
+  responses: many(stepResponse),
+  documents: many(onboardingDocument),
   signatures: many(signatures)
 }));
