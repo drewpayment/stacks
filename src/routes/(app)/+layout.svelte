@@ -3,7 +3,7 @@
 	import { enhance } from '$app/forms';
 	import SelectClient from '$lib/components/SelectClient.svelte';
 	import SelectedClientStore from '$lib/stores/client';
-	import { ChevronDown, Moon, Plus, Sun } from 'lucide-svelte';
+	import { ChevronDown, Moon, Sun } from 'lucide-svelte';
 	import { writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import { browser } from '$app/environment';
@@ -16,17 +16,15 @@
 		NavHamburger,
 		Dropdown,
 		DropdownItem,
-		DropdownDivider,
-		Button
-	} from 'flowbite-svelte';
+		DropdownDivider	} from 'flowbite-svelte';
 	import { page } from '$app/stores';
-	import { ChevronRightSolid, PlusSolid } from 'flowbite-svelte-icons';
 	import {
 		setEmployeeOptions,
 		setManualOverrides,
 		setSelectedCampaign,
 		setSelectedEmployee
 	} from '$lib/components/context.js';
+	
 	$: activeUrl = $page.url.pathname;
 	export let data;
 
