@@ -14,7 +14,7 @@
     "generate-migrations:postgres": "drizzle-kit generate --config=src/lib/drizzle/postgres/drizzle.config.ts",
     "generate-migrations:turso": "drizzle-kit generate:turso --config=src/lib/drizzle/turso/drizzle.config.ts",
     "push:mysql": "drizzle-kit push --config=src/lib/drizzle/mysql/drizzle.config.ts",
-    "push:pg": "drizzle-kit push --config=src/lib/drizzle/postgres/drizzle.config.ts ",
+    "push:pg": "NODE_ENV=development drizzle-kit push --config=src/lib/drizzle/postgres/drizzle.config.ts ",
     "push:turso": "drizzle-kit push --config=src/lib/drizzle/turso/drizzle.config.ts",
     "migrate:mysql": "tsx src/lib/drizzle/mysql/migrations/migrate.ts",
     "migrate:drop": "drizzle-kit drop --config=src/lib/drizzle/mysql/drizzle.config.ts",

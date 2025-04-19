@@ -680,10 +680,10 @@ export const onboardingWorkflow = pgTable('onboarding_workflows', {
 
 export const onboardingStep = pgTable('onboarding_steps', {
 	id: varchar('id', { length: 255 }).primaryKey(),
-	workflowId: varchar('id', { length: 255 })
+	workflowId: varchar('workflow_id', { length: 255 })
 		.notNull()
 		.references(() => onboardingWorkflow.id),
-	templateStepId: varchar('id', { length: 255 })
+	templateStepId: varchar('template_step_id', { length: 255 })
 		.notNull()
 		.references(() => templateStep.id),
 	status: stepStatusEnum('status').default('not_started').notNull(),
@@ -703,7 +703,7 @@ export const stepResponse = pgTable('onboarding_step_responses', {
 	onboardingStepId: varchar('onboarding_step_id', { length: 255 })
 		.notNull()
 		.references(() => onboardingStep.id),
-	fieldId: varchar('id', { length: 255 })
+	fieldId: varchar('field_id', { length: 255 })
 		.notNull()
 		.references(() => field.id),
 	value: text('value'),
@@ -733,7 +733,7 @@ export const onboardingDocument = pgTable('onboarding_documents', {
 	isTemplate: boolean('is_template').default(false).notNull(),
 	created: timestamp('created').notNull().$default(() => new Date(Date.now())),
 	updated: timestamp('updated').notNull().$default(() => new Date(Date.now())),
-	uploadedBy: varchar('id', { length: 255 })
+	uploadedBy: varchar('uploaded_by_id', { length: 255 })
 		.notNull()
 		.references(() => user.id),
 	metadata: jsonb('metadata'),
