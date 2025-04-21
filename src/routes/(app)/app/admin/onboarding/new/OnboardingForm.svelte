@@ -1,14 +1,14 @@
 <script lang="ts">
   import * as Form from "$lib/components/ui/form";
-  
   import { superForm, type Infer, type SuperValidated } from 'sveltekit-superforms';
-	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { formSchema, type FormSchema } from './form-schema.js';
-	import { Input } from 'flowbite-svelte';
+  import { zodClient } from 'sveltekit-superforms/adapters';
+  import { formSchema, type FormSchema } from './form-schema.js';
+  import { Button, Input, Card, Heading, P } from 'flowbite-svelte';
+  import { UserCircle, Mail, Phone, MapPin, Building, MapPinned } from 'lucide-svelte';
   
   interface Props {
-		data: SuperValidated<Infer<FormSchema>>;
-	}
+    data: SuperValidated<Infer<FormSchema>>;
+  }
   
   const { data }: Props = $props();
   
@@ -19,80 +19,144 @@
   const { form: formData, enhance } = form;
 </script>
 
-<form method="POST" use:enhance class="space-y-6">
-  <Form.Field {form} name="firstName">
-    <Form.Control let:attrs>
-      <Form.Label>First Name</Form.Label>
-      <Input {...attrs} bind:value={$formData.firstName} />
-    </Form.Control>
-  </Form.Field>
-  
-  <Form.Field {form} name="lastName">
-    <Form.Control let:attrs>
-      <Form.Label>Last Name</Form.Label>
-      <Input {...attrs} bind:value={$formData.lastName} />
-    </Form.Control>
-  </Form.Field>
-  
-  <Form.Field {form} name="address">
-    <Form.Control let:attrs>
-      <Form.Label>Address</Form.Label>
-      <Input {...attrs} bind:value={$formData.address} />
-    </Form.Control>
-  </Form.Field>
-  
-  <Form.Field {form} name="address2">
-    <Form.Control let:attrs>
-      <Form.Label>Apt / Unit</Form.Label>
-      <Input {...attrs} bind:value={$formData.address2} />
-    </Form.Control>
-  </Form.Field>
-  
-  <Form.Field {form} name="city">
-    <Form.Control let:attrs>
-      <Form.Label>City</Form.Label>
-      <Input {...attrs} bind:value={$formData.city} />
-    </Form.Control>
-  </Form.Field>
-  
-  <Form.Field {form} name="state">
-    <Form.Control let:attrs>
-      <Form.Label>State</Form.Label>
-      <Input {...attrs} bind:value={$formData.state} />
-    </Form.Control>
-  </Form.Field>
-  
-  <Form.Field {form} name="zip">
-    <Form.Control let:attrs>
-      <Form.Label>Zip</Form.Label>
-      <Input {...attrs} bind:value={$formData.zip} />
-    </Form.Control>
-  </Form.Field>
-  
-  <Form.Field {form} name="phone">
-    <Form.Control let:attrs>
-      <Form.Label>Phone</Form.Label>
-      <Input {...attrs} bind:value={$formData.phone} />
-    </Form.Control>
-  </Form.Field>
-  
-  <!-- <div>
-    <Label for="firstName" class="mb-2">First Name</Label>
-    <Input type="text" id="firstName" name="firstName" bind:value={newForm.firstName} required />
+<Card class="max-w-4xl mx-auto shadow-lg border-0">
+  <div class="mb-6">
+    <Heading tag="h2" class="text-2xl font-bold text-primary-700">New Employee Onboarding</Heading>
+    <P class="text-gray-600 mt-1">Please fill out all required information below</P>
   </div>
-  <div>
-    <Label for="lastName" class="mb-2">Last Name</Label>
-    <Input type="text" id="lastName" name="lastName" bind:value={newForm.lastName} required />
-  </div>
-  <div>
-    <Label for="email" class="mb-2">Email</Label>
-    <Input type="email" id="email" name="email" bind:value={newForm.email} required />
-  </div>
-  <div>
-    <Label for="address" class="mb-2">Address</Label>
-    <Input type="text" id="address" name="address" bind:value={newForm.address}></Input>
-  </div> -->
-  <!-- <Button type="submit">Create Employee</Button> -->
-   
-  <Form.Button>Create Employee</Form.Button>
-</form>
+
+  <form method="POST" class="space-y-8"
+    use:enhance={{
+      onUpdated(event) {
+        console.log(event);
+      },
+    }}
+  >
+    <!-- Personal Information Section -->
+    <div>
+      <p class="text-sm font-medium text-primary-600 uppercase mb-4 flex items-center">
+        <UserCircle class="w-4 h-4 mr-2" />
+        Personal Information
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Form.Field {form} name="firstName">
+          <Form.Control let:attrs>
+            <Form.Label class="font-medium text-gray-700">First Name</Form.Label>
+            <Input {...attrs} bind:value={$formData.firstName} class="mt-1 focus:ring-primary-500 focus:border-primary-500" placeholder="John" />
+            <Form.FieldErrors class="text-sm text-red-500 mt-1" />
+          </Form.Control>
+        </Form.Field>
+        
+        <Form.Field {form} name="lastName">
+          <Form.Control let:attrs>
+            <Form.Label class="font-medium text-gray-700">Last Name</Form.Label>
+            <Input {...attrs} bind:value={$formData.lastName} class="mt-1 focus:ring-primary-500 focus:border-primary-500" placeholder="Doe" />
+            <Form.FieldErrors class="text-sm text-red-500 mt-1" />
+          </Form.Control>
+        </Form.Field>
+      </div>
+    </div>
+    
+    <!-- Contact Information Section -->
+    <div>
+      <p class="text-sm font-medium text-primary-600 uppercase mb-4 flex items-center">
+        <Mail class="w-4 h-4 mr-2" />
+        Contact Information
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Form.Field {form} name="email">
+          <Form.Control let:attrs>
+            <Form.Label class="font-medium text-gray-700">Email</Form.Label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Mail class="h-4 w-4 text-gray-400" />
+              </div>
+              <Input {...attrs} bind:value={$formData.email} class="pl-10 mt-1 focus:ring-primary-500 focus:border-primary-500" placeholder="john.doe@example.com" />
+            </div>
+            <Form.FieldErrors class="text-sm text-red-500 mt-1" />
+          </Form.Control>
+        </Form.Field>
+        
+        <Form.Field {form} name="phone">
+          <Form.Control let:attrs>
+            <Form.Label class="font-medium text-gray-700">Phone</Form.Label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Phone class="h-4 w-4 text-gray-400" />
+              </div>
+              <Input {...attrs} bind:value={$formData.phone} class="pl-10 mt-1 focus:ring-primary-500 focus:border-primary-500" placeholder="(555) 123-4567" />
+            </div>
+            <Form.FieldErrors class="text-sm text-red-500 mt-1" />
+          </Form.Control>
+        </Form.Field>
+      </div>
+    </div>
+    
+    <!-- Address Section -->
+    <div>
+      <p class="text-sm font-medium text-primary-600 uppercase mb-4 flex items-center">
+        <MapPin class="w-4 h-4 mr-2" />
+        Address
+      </p>
+      
+      <Form.Field {form} name="address">
+        <Form.Control let:attrs>
+          <Form.Label class="font-medium text-gray-700">Street Address</Form.Label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MapPinned class="h-4 w-4 text-gray-400" />
+            </div>
+            <Input {...attrs} bind:value={$formData.address} class="pl-10 mt-1 focus:ring-primary-500 focus:border-primary-500" placeholder="123 Main St" />
+          </div>
+          <Form.FieldErrors class="text-sm text-red-500 mt-1" />
+        </Form.Control>
+      </Form.Field>
+      
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Form.Field {form} name="address2">
+          <Form.Control let:attrs>
+            <Form.Label class="font-medium text-gray-700">Apt / Unit</Form.Label>
+            <Input {...attrs} bind:value={$formData.address2} class="mt-1 focus:ring-primary-500 focus:border-primary-500" placeholder="Apt 4B" />
+            <Form.FieldErrors class="text-sm text-red-500 mt-1" />
+          </Form.Control>
+        </Form.Field>
+        
+        <Form.Field {form} name="city">
+          <Form.Control let:attrs>
+            <Form.Label class="font-medium text-gray-700">City</Form.Label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Building class="h-4 w-4 text-gray-400" />
+              </div>
+              <Input {...attrs} bind:value={$formData.city} class="pl-10 mt-1 focus:ring-primary-500 focus:border-primary-500" placeholder="San Francisco" />
+            </div>
+            <Form.FieldErrors class="text-sm text-red-500 mt-1" />
+          </Form.Control>
+        </Form.Field>
+      </div>
+      
+      <div class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-6">
+        <Form.Field {form} name="state" class="col-span-1">
+          <Form.Control let:attrs>
+            <Form.Label class="font-medium text-gray-700">State</Form.Label>
+            <Input {...attrs} bind:value={$formData.state} class="mt-1 focus:ring-primary-500 focus:border-primary-500" placeholder="CA" />
+            <Form.FieldErrors class="text-sm text-red-500 mt-1" />
+          </Form.Control>
+        </Form.Field>
+        
+        <Form.Field {form} name="zip" class="col-span-1">
+          <Form.Control let:attrs>
+            <Form.Label class="font-medium text-gray-700">Zip</Form.Label>
+            <Input {...attrs} bind:value={$formData.zip} class="mt-1 focus:ring-primary-500 focus:border-primary-500" placeholder="94103" />
+            <Form.FieldErrors class="text-sm text-red-500 mt-1" />
+          </Form.Control>
+        </Form.Field>
+      </div>
+    </div>
+    
+    <div class="pt-4 flex justify-end space-x-4 border-t border-gray-200">
+      <Button color="light" class="px-6">Cancel</Button>
+      <Form.Button type="submit" class="px-6 bg-primary-600 hover:bg-primary-700">Create Employee</Form.Button>
+    </div>
+  </form>
+</Card>
