@@ -12,32 +12,14 @@ import { eq, and, isNotNull, isNull } from 'drizzle-orm';
 // definition of "onboarding" is different (e.g., a specific status field).
 async function getOnboardingEmployees(clientId: string) {
     try {
-        // Find employees linked to users whose email isn't verified yet
-        // Or perhaps employees who don't have a user linked yet (if that's part of onboarding)
-        // This example focuses on unverified emails for linked users.
-        const results = await db.select({
-            id: employee.id,
-            firstName: employee.firstName,
-            lastName: employee.lastName,
-            created: employee.created,
-            email: user.email, // Get email from the user table
-            emailVerified: user.emailVerified,
-            userId: user.id,
-        })
-        .from(employee)
-        // Left join in case an employee record exists but the user/profile link isn't fully established yet
-        .leftJoin(userProfile, eq(employee.id, userProfile.id))
-        .leftJoin(user, eq(userProfile.userId, user.id))
-        .where(and(
-            eq(employee.clientId, clientId),
-            isNull(employee.deleted), // Ensure employee is not deleted
-            isNotNull(user.id), // Ensure there is a linked user
-            eq(user.emailVerified, false) // The core "onboarding" condition in this example
-        ))
-        .orderBy(employee.created); // Order by creation date, for example
-
-        // We use structuredClone to safely pass Date objects
-        return structuredClone(results);
+        const onboardingEmployees = await db.query.employee.findMany({
+            where: and(
+                eq(employee.clientId, clientId),
+                eq(employee.status, 'onboarding'),
+            ),
+        });
+        
+        return onboardingEmployees;
     } catch (err) {
         console.error("Error fetching onboarding employees:", err);
         // Depending on requirements, you might want to return an empty array or throw
@@ -59,7 +41,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     }
 
     if (!profile.clientId) {
-         error(500, { message: 'Server Error: Client ID not found for user.' });
+        error(500, { message: 'Server Error: Client ID not found for user.' });
     }
 
     const clientId = profile.clientId;

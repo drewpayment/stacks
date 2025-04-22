@@ -25,13 +25,7 @@
     <P class="text-gray-600 mt-1">Please fill out all required information below</P>
   </div>
 
-  <form method="POST" class="space-y-8"
-    use:enhance={{
-      onUpdated(event) {
-        console.log(event);
-      },
-    }}
-  >
+  <form method="POST" class="space-y-8" use:enhance>
     <!-- Personal Information Section -->
     <div>
       <p class="text-sm font-medium text-primary-600 uppercase mb-4 flex items-center">
